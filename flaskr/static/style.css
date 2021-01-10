@@ -1,49 +1,3 @@
-/* Template: Evolo - StartUp HTML Landing Page Template
-   Author: Inovatik
-   Created: June 2019
-   Description: Master CSS file
-*/
-
-/*****************************************
-Table Of Contents:
-
-01. General Styles
-02. Preloader
-03. Navigation
-04. Header
-05. Customers
-06. Services
-07. Details 1
-08. Details 2
-09. Details Lightboxes
-10. Pricing
-11. Request
-12. Video
-13. Testimonials
-14. About
-15. Contact
-16. Footer
-17. Copyright
-18. Back To Top Button
-19. Extra Pages
-20. Media Queries
-******************************************/
-
-/*****************************************
-Colors:
-- Backgrounds - turquoise #00bfd8
-- Backgrounds - blue #0079f9
-- Backgrounds - light gray #f7fcfd
-- Buttons, bullets, icons, links - turquoise #00bfd8
-- Cards border, inputs border - light gray #c4d8dc
-- Text headers, navbar links - black #393939
-- Text body - black #626262
-******************************************/
-
-
-/******************************/
-/*     01. General Styles     */
-/******************************/
 body,
 html {
     width: 100%;
@@ -1007,7 +961,7 @@ input[type='checkbox'] {
 	margin-left: auto;
 	border: 1px solid #c4d8dc;
 	border-radius: 0.5rem;
-	vertical-align: top;
+	/* vertical-align: top; */
 }
 
 .cards-2 .card .card-body {
@@ -2182,3 +2136,35 @@ a:hover.back-to-top {
 	/* end of extra pages */
 }
 /* end of min-width width 1200px */
+
+/* Table */
+table {
+	width: 100%;
+}
+
+table,
+th,
+td {
+	border: 1px solid black;
+	border-collapse: collapse;
+}
+
+th,
+td {
+	padding: 15px;
+	text-align: left;
+}
+
+#t01 tr:nth-child(even) {
+	background-color: #eee;
+}
+
+#t01 tr:nth-child(odd) {
+	background-color: #fff;
+}
+
+#t01 th {
+	background-color: black;
+	color: white;
+}
+
