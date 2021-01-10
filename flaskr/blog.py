@@ -1,6 +1,6 @@
 #Import necessary libraries
 from flask import Flask, render_template, redirect, url_for, request
-import cv2
+# import cv2
 #Initialize the Flask app
 app = Flask(__name__, static_folder='static')
 
@@ -25,3 +25,7 @@ def camera():
 @app.route('/index')
 def index():
     return render_template('index.html')
+
+@app.route('/blacklist')
+def blacklist():
+    return render_template('blacklist.html')
