@@ -4,6 +4,7 @@ import cv2
 #Initialize the Flask app
 app = Flask(__name__, static_folder='static')
 
+
 @app.route('/login', methods=['POST', 'GET'])
 def login():
     error = None
