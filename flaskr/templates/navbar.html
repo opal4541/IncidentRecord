@@ -1,0 +1,162 @@
+<html>
+
+<head>
+    <style>
+        .navbar-custom {
+            background-color: #fff;
+            box-shadow: 0 0.0625rem 0.375rem 0 rgba(0, 0, 0, 0.1);
+            font: 600 0.875rem/0.875rem "Raleway", sans-serif;
+            transition: all 0.2s;
+        }
+
+        .navbar-custom .navbar-brand.logo-image img {
+            width: 7.4375rem;
+            height: 2rem;
+        }
+
+        .navbar-custom .navbar-brand.logo-text {
+            font: 600 2rem/1.5rem "Raleway", sans-serif;
+            color: #393939;
+            text-decoration: none;
+        }
+
+        .navbar-custom .navbar-nav {
+            margin-top: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .navbar-custom .nav-item .nav-link {
+            padding: 0.625rem 0.75rem 0.625rem 0.75rem;
+            color: #393939;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .navbar-custom .nav-item .nav-link:hover,
+        .navbar-custom .nav-item .nav-link.active {
+            color: #00bfd8;
+        }
+
+        /* Dropdown Menu */
+        .navbar-custom .dropdown:hover>.dropdown-menu {
+            display: block;
+            /* this makes the dropdown menu stay open while hovering it */
+            min-width: auto;
+            animation: fadeDropdown 0.2s;
+            /* required for the fade animation */
+        }
+
+        @keyframes fadeDropdown {
+            0% {
+                opacity: 0;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .navbar-custom .dropdown-toggle:focus {
+            /* removes dropdown outline on focus */
+            outline: 0;
+        }
+
+        .navbar-custom .dropdown-menu {
+            margin-top: 0;
+            border: none;
+            border-radius: 0.25rem;
+            background-color: #fff;
+        }
+
+        .navbar-custom .dropdown-item {
+            color: #393939;
+            text-decoration: none;
+        }
+
+        .navbar-custom .dropdown-item:hover {
+            background-color: #fff;
+        }
+
+        .navbar-custom .dropdown-item .item-text {
+            font: 600 0.875rem/0.875rem "Raleway", sans-serif;
+        }
+
+        .navbar-custom .dropdown-item:hover .item-text {
+            color: #00bfd8;
+        }
+
+        .navbar-custom .dropdown-items-divide-hr {
+            width: 100%;
+            height: 1px;
+            margin: 0.75rem auto 0.725rem auto;
+            border: none;
+            background-color: #c4d8dc;
+            opacity: 0.2;
+        }
+
+        /* end of dropdown menu */
+
+        .navbar-custom .social-icons {
+            display: none;
+        }
+
+        .navbar-custom .navbar-toggler {
+            border: none;
+            color: #393939;
+            font-size: 2rem;
+        }
+
+        .navbar-custom button[aria-expanded='false'] .navbar-toggler-awesome.fas.fa-times {
+            display: none;
+        }
+
+        .navbar-custom button[aria-expanded='false'] .navbar-toggler-awesome.fas.fa-bars {
+            display: inline-block;
+        }
+
+        .navbar-custom button[aria-expanded='true'] .navbar-toggler-awesome.fas.fa-bars {
+            display: none;
+        }
+
+        .navbar-custom button[aria-expanded='true'] .navbar-toggler-awesome.fas.fa-times {
+            display: inline-block;
+            margin-right: 0.125rem;
+        }
+    </style>
+</head>
+
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark navbar-custom fixed-top">
+    <!-- Text Logo - Use this if you don't have a graphic logo -->
+    <!-- <a class="navbar-brand logo-text page-scroll" href="index.html">Evolo</a> -->
+
+    <!-- Image Logo -->
+    <a class="navbar-brand logo-image" href="index.html">LOGO</a>
+
+    <!-- Mobile Menu Toggle Button -->
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault"
+        aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-awesome fas fa-bars"></span>
+        <span class="navbar-toggler-awesome fas fa-times"></span>
+    </button>
+    <!-- end of mobile menu toggle button -->
+
+    <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link page-scroll active" href="#header">Home <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link page-scroll" href="#services">Blacklist</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link page-scroll" href="#pricing">Camera</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link page-scroll" href="#request">Sign out</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+</body>
+</html>

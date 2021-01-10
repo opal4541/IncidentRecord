@@ -29,3 +29,7 @@ def index():
 @app.route('/blacklist')
 def blacklist():
     return render_template('blacklist.html')
+
+@app.route('/navbar')
+def navbar():
+    return render_template('navbar.html')
