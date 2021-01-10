@@ -5,15 +5,15 @@
     <link rel="stylesheet" href= "{{url_for('static', filename='style.css')}}">
   </head>
   <body>
-    <div class="container">
+    <div class="container fadeIn" style="display: flex;flex-direction: column;align-items: center;">
       <h1>Please login</h1>
       <br>
-      <form action="" method="post">
-        <input type="text" placeholder="Username" name="username" value="{{
+      <form style="display: flex;flex-direction: column;align-items: center;" action="" method="post">
+        <input style="width: 280px; height: 30px; font: 16px sans-serif; margin-bottom: 0.80rem" type="text" placeholder="Username" name="username" value="{{
           request.form.username }}">
-         <input type="password" placeholder="Password" name="password" value="{{
+        <input style="width: 280px; height: 30px; font: 16px sans-serif; margin-bottom: 0.80rem" type="password" placeholder="Password" name="password" value="{{
           request.form.password }}">
-        <input class="btn btn-default" type="submit" value="Login">
+        <input class="btn-solid-reg" type="submit" value="Login">
       </form>
       {% if error %}
         <p class="error"><strong>Error:</strong> {{ error }}
