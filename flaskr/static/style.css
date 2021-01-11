@@ -2139,32 +2139,17 @@ a:hover.back-to-top {
 
 /* Table */
 table {
-	width: 100%;
-}
+    border-collapse: collapse;
+    width: 100%;
+  }
+  
+  th, td {
+    text-align: left;
+    padding: 8px;
+  }
+  
+  tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
 
-table,
-th,
-td {
-	border: 1px solid black;
-	border-collapse: collapse;
-}
-
-th,
-td {
-	padding: 15px;
-	text-align: left;
-}
-
-#t01 tr:nth-child(even) {
-	background-color: #eee;
-}
-
-#t01 tr:nth-child(odd) {
-	background-color: #fff;
-}
-
-#t01 th {
-	background-color: black;
-	color: white;
-}
 

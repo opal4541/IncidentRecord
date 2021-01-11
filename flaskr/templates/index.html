@@ -1,18 +1,41 @@
 <html>
 
 <head>
-    <link rel="stylesheet" href="{{url_for('static', filename='style.css')}}">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Website Title -->
     <title>Index</title>
+
+    <!-- Styles -->
+    <link href="https://fonts.googleapis.com/css?family=Raleway:400,400i,600,700,700i&amp;subset=latin-ext"
+        rel="stylesheet">
+    <link href="{{url_for('static', filename='bootstrap.css')}}" rel="stylesheet">
+    <link href="{{url_for('static', filename='fontawsome-all.css')}}" rel="stylesheet">
+    <link href="{{url_for('static', filename='swiper.css')}}" rel="stylesheet">
+    <link href="{{url_for('static', filename='magnific-popup.css')}}" rel="stylesheet">
+    <link rel="stylesheet" href="{{url_for('static', filename='style.css')}}">
 </head>
 
+
 <body>
-    <h2>Car entries Record</h2>
+    <!-- Preloader -->
+    <div class="spinner-wrapper" style="display: none;">
+        <div class="spinner">
+            <div class="bounce1"></div>
+            <div class="bounce2"></div>
+            <div class="bounce3"></div>
+        </div>
+    </div>
+    <!-- end of preloader -->
+
+    <h1 style="margin-top: 2%; margin-bottom: 0.80rem">Car entries Record</h1>
     <table id="t01">
         <tr>
-            <th>LicensePlateId</th>
+            <th>LicensePlateID</th>
             <th>LicensePlate</th>
-            <th>EnterDate</th>
-            <th>EnterTime</th>
+            <th>LastEnterDate</th>
+            <th>LastEnterTime</th>
             <th>Remark</th>
         </tr>
 

@@ -1,23 +1,45 @@
 <html>
-  <head>
-    <title>Flask Intro - login page</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href= "{{url_for('static', filename='style.css')}}">
-  </head>
-  <body>
-    <div class="container fadeIn" style="display: flex;flex-direction: column;align-items: center;">
-      <h1>Please login</h1>
-      <br>
-      <form style="display: flex;flex-direction: column;align-items: center;" action="" method="post">
-        <input style="width: 280px; height: 30px; font: 16px sans-serif; margin-bottom: 0.80rem" type="text" placeholder="Username" name="username" value="{{
-          request.form.username }}">
-        <input style="width: 280px; height: 30px; font: 16px sans-serif; margin-bottom: 0.80rem" type="password" placeholder="Password" name="password" value="{{
-          request.form.password }}">
-        <input class="btn-solid-reg" type="submit" value="Login">
-      </form>
-      {% if error %}
-        <p class="error"><strong>Error:</strong> {{ error }}
-      {% endif %}
+
+<head>
+  <title>Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta charset="utf-8">
+  <link href="https://fonts.googleapis.com/css?family=Raleway:400,400i,600,700,700i&amp;subset=latin-ext"
+    rel="stylesheet">
+  <link href="{{url_for('static', filename='bootstrap.css')}}" rel="stylesheet">
+  <link href="{{url_for('static', filename='fontawsome-all.css')}}" rel="stylesheet">
+  <link href="{{url_for('static', filename='swiper.css')}}" rel="stylesheet">
+  <link href="{{url_for('static', filename='magnific-popup.css')}}" rel="stylesheet">
+  <link rel="stylesheet" href="{{url_for('static', filename='style.css')}}">
+</head>
+
+<body>
+  <!-- Preloader -->
+  <div class="spinner-wrapper" style="display: none;">
+    <div class="spinner">
+      <div class="bounce1"></div>
+      <div class="bounce2"></div>
+      <div class="bounce3"></div>
     </div>
-  </body>
+  </div>
+  <!-- end of preloader -->
+
+  <div class="container fadeIn" style="display: flex;flex-direction: column;align-items: center">
+    <h1 style="margin-top: 10%;">Please login</h1>
+    <br>
+    <form style="display: flex;flex-direction: column;align-items: center;" action="" method="post">
+      <input style="width: 280px; height: 30px; font: 16px; margin-bottom: 0.80rem" type="text" placeholder="Username"
+        name="username" value="{{
+          request.form.username }}">
+      <input style="width: 280px; height: 30px; font: 16px; margin-bottom: 0.80rem" type="password"
+        placeholder="Password" name="password" value="{{
+          request.form.password }}">
+      <input class="btn-solid-reg" type="submit" value="Login">
+    </form>
+    {% if error %}
+    <p class="error"><strong>Error:</strong> {{ error }}
+      {% endif %}
+  </div>
+</body>
+
 </html>
