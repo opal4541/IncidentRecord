@@ -22,14 +22,19 @@ def login():
 def camera():
     return render_template('camera.html')
 
-@app.route('/index')
+@app.route('/transaction')
 def index():
-    return render_template('index.html')
+    return render_template('transaction.html')
 
 @app.route('/blacklist')
 def blacklist():
     return render_template('blacklist.html')
 
-@app.route('/navbar')
+@app.route('/home')
 def navbar():
-    return render_template('navbar.html')
+    return render_template('home.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def logout():
+    
+    return render_template('login.html')

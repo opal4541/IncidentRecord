@@ -3,7 +3,15 @@
 
 <head>
   <title>Camera</title>
-  <link rel="stylesheet" href="{{url_for('static', filename='style.css')}}">
+  <!-- Styles -->
+  <link href="https://fonts.googleapis.com/css?family=Raleway:400,400i,600,700,700i&amp;subset=latin-ext"
+    rel="stylesheet">
+  <link href="{{url_for('static', filename='css/bootstrap.css')}}" rel="stylesheet">
+  <link href="{{url_for('static', filename='css/fontawsome-all.css')}}" rel="stylesheet">
+  <link href="{{url_for('static', filename='css/swiper.css')}}" rel="stylesheet">
+  <link href="{{url_for('static', filename='css/magnific-popup.css')}}" rel="stylesheet">
+  <link href="{{url_for('static', filename='css/styles.css')}}" rel="stylesheet">
+
 </head>
 
 <body>
@@ -18,7 +26,7 @@
   <!-- end of preloader -->
 
   <div class="container fadeIn" style="display: flex;flex-direction: column;align-items: center;">
-    <h1>Camera</h1>
+    <h1 style="margin-top: 1%">Camera</h1>
     <video class="vid" width="auto" height="540" controls>
       <source src={{ url_for('static', filename="opal.MP4" ) }} type="video/mp4">
       Your browser does not support the video tag.
