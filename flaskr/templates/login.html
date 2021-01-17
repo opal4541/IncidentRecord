@@ -5,40 +5,65 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
   <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet" type="text/css">
   <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet" type="text/css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
   <link href="{{url_for('static', filename='style.css')}}" rel="stylesheet">
+
+  <style>
+    body{
+    color: #303030;
+    padding: 100px 25px;
+    font-family: Montserrat, sans-serif;
+  }
+    .button {
+    background-color: white;
+    border: none;
+    color: #00bfd8;
+    padding: 16px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    transition-duration: 0.4s;
+    cursor: pointer;
+  }
+  
+  .button1 {
+    background-color: #00bfd8; 
+    color: white; 
+    border: 2px solid #00bfd8;
+  }
+  
+  .button1:hover {
+    background-color: white;
+    color:#00bfd8;
+  }
+  </style>
 </head>
 
-<body id="login">
-  <!-- Preloader -->
-  <div class="spinner-wrapper" style="display: none;">
-    <div class="spinner">
-      <div class="bounce1"></div>
-      <div class="bounce2"></div>
-      <div class="bounce3"></div>
-    </div>
-  </div>
-  <!-- end of preloader -->
+<body>
 
-  <div class="container fadeIn" style="display: flex;flex-direction: column;align-items: center">
-    <h1 style="margin-top: 10%;">Please login</h1>
+  <div class="container" style="display: flex;flex-direction: column;align-items: center">
+    <h1>Please login</h1>
     <br>
     <form style="display: flex;flex-direction: column;align-items: center;" action="" method="post">
-      <input style="width: 280px; height: 30px; font: 16px; margin-bottom: 0.80rem" type="text" placeholder="Username"
+      <input style="width: 290px; height: 30px; font: 16px; margin-bottom: 0.80rem" type="text" placeholder="Username"
         name="username" value="{{
           request.form.username }}">
-      <input style="width: 280px; height: 30px; font: 16px; margin-bottom: 0.80rem" type="password"
+      <input style="width: 290px; height: 30px; font: 16px; margin-bottom: 0.80rem" type="password"
         placeholder="Password" name="password" value="{{
           request.form.password }}">
-      <input class="btn-solid-reg" type="submit" value="Login">
+      <input class="btn btn-lg button1" type="submit" value="Login">
     </form>
     {% if error %}
     <p class="error"><strong>Error:</strong> {{ error }}
       {% endif %}
   </div>
+  
 </body>
 
 </html>
