@@ -17,12 +17,6 @@ body {
     color: #303030;
     font-weight: 400;
     margin-bottom: 30px;
-  }  
-  .jumbotron {
-    background-color: #00bfd8;
-    color: #fff;
-    padding: 100px 25px;
-    font-family: Montserrat, sans-serif;
   }
   .container-fluid {
     padding: 60px 50px;
@@ -108,7 +102,8 @@ body {
   }
   .navbar {
     margin-bottom: 0;
-    background-color: #00bfd8;
+    background-color: #2f4f4f;
+    opacity: 0.8;
     z-index: 9999;
     border: 0;
     font-size: 12px !important;
@@ -190,4 +185,53 @@ th, td {
   
 tr:nth-child(even) {
     background-color: #f2f2f2;
+}
+
+h1 {
+  color: #303030;
+  font-size: 30px;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 30px;
+  font-family: Montserrat, sans-serif;
+}
+
+.button {
+  background-color: white;
+  border: none;
+  color: #00bfd8;
+  padding: 16px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  transition-duration: 0.4s;
+  cursor: pointer;
+}
+
+.button1 {
+  background-color: #00bfd8;
+  color: white;
+  border: 2px solid #00bfd8;
+}
+
+.button1:hover {
+  background-color: white;
+  color: #00bfd8;
+}
+
+.jumbotron {
+  /* background-image: url('static/header-background.jpg'); */
+  /* background-attachment: fixed;
+  background-size: 100%;
+  background-repeat: no-repeat; */
+  background-color: #2f4f4f;
+  color: #fff;
+  padding: 0px 25px;
+  font-family: Montserrat, sans-serif;
+}
+
+.vid:hover {
+  box-shadow: 5px 0px 40px rgba(0, 0, 0, .2);
 }

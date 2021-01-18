@@ -11,8 +11,8 @@ conn = pyodbc.connect('Driver={SQL Server};'
 
 cursor = conn.cursor()
 cursor.execute('SELECT * FROM [User]')
-for row in cursor:
-    print(row)
+# for row in cursor:
+#     print(row)
 
 app = Flask(__name__, static_folder='static')
 
