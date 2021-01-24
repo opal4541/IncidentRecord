@@ -90,4 +90,8 @@ def home():
 
 @app.route('/login', methods=['GET', 'POST'])
 def logout():
+<<<<<<< HEAD
+=======
+    
+>>>>>>> df66c71b6975167ffcaf630777e2799e9cd0a669
     return render_template('login.html')
