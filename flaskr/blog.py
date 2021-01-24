@@ -4,15 +4,23 @@ import cv2
 import pyodbc
 #Initialize the Flask app
 
-conn = pyodbc.connect('Driver={SQL Server};'
+
+
+def execute_sql(query):
+    connection = pyodbc.connect('Driver={SQL Server};'
                       'Server=.;'
                       'Database=IncidentRecord;'
                       'Trusted_Connection=yes;')
 
-cursor = conn.cursor()
-cursor.execute('SELECT * FROM [User]')
+    cursor = connection.cursor()
+    cursor.execute(query)
+
+    return cursor.fetchall()
+# cursor.execute('SELECT * FROM [History]')
 # for row in cursor:
 #     print(row)
+
+
 
 app = Flask(__name__, static_folder='static')
 
@@ -47,10 +55,15 @@ def blacklist():
 
 @app.route('/')
 def home():
-    return render_template('home.html')
+    historyData = execute_sql('Select H.HistoryID, C.LicensePlate, H.EnterTimestamp, H.ExitTimestamp, H.Activity FROM History H JOIN Car C ON H.CarID = C.CarID')
+    incidentData = execute_sql('Select I.IncidentID, C.LicensePlate, CUS.FirstName, CUS.LastName, I.Type, I.StartTimestamp, I.EndTimestamp, I.Status, U.FirstName, U.LastName, I.Description FROM Incident I JOIN Car C ON I.CarID = C.CarID JOIN Customer CUS ON C.CustomerID = CUS.CustomerID JOIN [User] U ON U.UserID = I.UserID')
+    carData = execute_sql('Select C.CarID, C.LicensePlate, CUS.FirstName, CUS.LastName, CUS.Phone, H.EnterTimestamp, I.Type FROM Car C JOIN Customer CUS ON C.CustomerID = CUS.CustomerID JOIN Incident I ON C.CarID = I.CarID JOIN History H ON C.CarID = H.CarID')
+    
+    return render_template('home.html', historyData = historyData, incidentData = incidentData, carData = carData)
 
 
 @app.route('/login', methods=['GET', 'POST'])
 def logout():
-
-    return render_template('login.html')
+    userData = execute_sql('Select * from [User]')
+    
+    return render_template('login.html', userData = userData)

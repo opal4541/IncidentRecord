@@ -303,13 +303,13 @@
       </div>
       <div class="panel-body">
         <form style="display: flex;flex-direction: column;align-items: center;" action="" method="post">
-          <input class="form-control" style="width: 290px; height: 30px; font: 16px; margin-bottom: 0.80rem" type="text"
+          <input id="username" name="username" class="form-control" style="width: 290px; height: 30px; font: 16px; margin-bottom: 0.80rem" type="text"
             placeholder="Username" name="username" value="{{
           request.form.username }}">
-          <input class="form-control" style="width: 290px; height: 30px; font: 16px; margin-bottom: 0.80rem"
+          <input id="password" name="password" class="form-control" style="width: 290px; height: 30px; font: 16px; margin-bottom: 0.80rem"
             type="password" placeholder="Password" name="password" value="{{
           request.form.password }}">
-          <input class="btn btn-lg button1" type="submit" value="Login">
+          <input id="loginbutton" name="loginbutton" class="btn button1" type="submit" value="Login">
         </form>
         {% if error %}
         <p class="error"><strong>Error:</strong> {{ error }}
