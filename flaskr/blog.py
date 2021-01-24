@@ -1,10 +1,6 @@
-#Import necessary libraries
 from flask import Flask, render_template, redirect, url_for, request
 import cv2
 import pyodbc
-#Initialize the Flask app
-
-
 
 def execute_sql(query):
     connection = pyodbc.connect('Driver={SQL Server};'
@@ -16,10 +12,6 @@ def execute_sql(query):
     cursor.execute(query)
 
     return cursor.fetchall()
-# cursor.execute('SELECT * FROM [History]')
-# for row in cursor:
-#     print(row)
-
 
 
 app = Flask(__name__, static_folder='static')
@@ -36,16 +28,6 @@ def login():
     # the code below is executed if the request method
     # was GET or the credentials were invalid
     return render_template('login.html', error=error)
-
-
-@app.route('/camera')
-def camera():
-    return render_template('camera.html')
-
-
-@app.route('/transaction')
-def index():
-    return render_template('transaction.html')
 
 
 @app.route('/blacklist')
