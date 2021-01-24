@@ -46,6 +46,5 @@ def home():
 
 @app.route('/login', methods=['GET', 'POST'])
 def logout():
-    userData = execute_sql('Select * from [User]')
     
-    return render_template('login.html', userData = userData)
+    return render_template('login.html')
