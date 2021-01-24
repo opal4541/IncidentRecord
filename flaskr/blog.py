@@ -13,26 +13,70 @@ def execute_sql(query):
 
     return cursor.fetchall()
 
+def execute_sql_parameter(query, user, psw):
+    connection = pyodbc.connect('Driver={SQL Server};'
+                      'Server=.;'
+                      'Database=IncidentRecord;'
+                      'Trusted_Connection=yes;')
+
+    cursor = connection.cursor()
+    cursor.execute(query, user, psw)
+
+    return cursor.fetchall()
+
 
 app = Flask(__name__, static_folder='static')
 
 
-@app.route('/login', methods=['POST', 'GET'])
+@app.route('/login', methods=['POST'])
 def login():
     error = None
     if request.method == 'POST':
-        if valid_login(request.form['username'], request.form['password']):
-            return log_the_user_in(request.form['username'])
-        else:
-            error = 'Invalid username/password'
-    # the code below is executed if the request method
-    # was GET or the credentials were invalid
+        user = request.form['username']
+        psw = request.form['password']
+
+        userInfo = execute_sql_parameter('SELECT UserName, Password, UserType FROM [User] WHERE UserName = ? AND Password = ?' , user, psw)
+        # trysql = execute_sql('SELECT UserName, Password, UserType FROM [User] WHERE UserName = ?', user)
+
+        for i in userInfo:
+            userName = i[0]
+            userPassword = i[1]
+            userType = i[2]
+
+        if user != userName or psw != userPassword:
+            error = 'Invalid Username or password. Please try again.'
+        elif userType == 'Admin':
+            return redirect(url_for('home'))
+        else :
+            return redirect(url_for('user'))
+
     return render_template('login.html', error=error)
 
+        # user = cursor.execute('SELECT * FROM [User] WHERE UserName = %s AND Password = %s', username, password)
+        # print(user)
+
+
+
+        # # If account exists in accounts table in out database
+        # if account:
+        #     # Create session data, we can access this data in other routes
+        #     session['loggedin'] = True
+        #     session['id'] = account['id']
+        #     session['username'] = account['username']
+
+        #     # Redirect to home page
+        #     return 'Logged in successfully!'
+        # else:
+        #     # Account doesnt exist or username/password incorrect
+        #     msg = 'Incorrect username/password!'
 
 @app.route('/blacklist')
 def blacklist():
     return render_template('blacklist.html')
+
+@app.route('/user')
+def user():
+    return render_template('userHome.html')
 
 
 @app.route('/')
@@ -46,6 +90,4 @@ def home():
 
 @app.route('/login', methods=['GET', 'POST'])
 def logout():
-    userData = execute_sql('Select * from [User]')
-    
-    return render_template('login.html', userData = userData)
+    return render_template('login.html')
