@@ -319,6 +319,25 @@
     .modal {
       padding-top: 10%;
     }
+
+    .search input[type=text] {
+      width: 20px;
+      border: 2px solid #ccc;
+      border-radius: 6px;
+      font-size: 16px;
+      background-color: transparent;
+      background-image: url('static/search.png');
+      background-size: 15px;
+      background-position: 10px 10px;
+      background-repeat: no-repeat;
+      padding-left: 35px;
+      -webkit-transition: width 0.4s ease-in-out;
+      transition: width 0.4s ease-in-out;
+    }
+
+    .search input[type=text]:focus {
+      width: 100%;
+    }
   </style>
 
 </head>
@@ -392,8 +411,11 @@
   <div id="historyrecord" class="container-fluid">
     <div class="container">
       <h1>History Record</h1>
+      <div class="search">
+        <input style="float: right;" type="text" id="historysearch" onkeyup="filterHistory()" placeholder="Search">
+      </div><br><br>
       <div class="table-wrapper" style="overflow-x:auto;">
-        <table class="w3-hoverable slideanim table-fixed">
+        <table id="historytable" class="w3-hoverable slideanim table-fixed">
           <thead>
             <tr>
               <p>
@@ -430,9 +452,12 @@
   <div id="incidentrecord" class="container-fluid bg-grey">
     <div class="container">
       <h1>Incident Record</h1>
+      <div class="search">
+        <input style="float: right;" type="text" id="incidentsearch" onkeyup="filterIncident()" placeholder="Search">
+      </div><br><br>
       <div class="table-wrapper" style="overflow-x:auto;">
-        <table class="w3-hoverable slideanim">
-          <thead style="background-color: #f6f6f6;">
+        <table id="incidenttable" class="w3-hoverable slideanim">
+          <thead>
             <tr>
               <p>
                 <th>#</th>
@@ -444,6 +469,7 @@
                 <th>Status</th>
                 <th>Edit By</th>
                 <th>Details</th>
+                <th> </th>
               </p>
             </tr>
           </thead>
@@ -460,6 +486,7 @@
                 <td>{{row[7]}}</td>
                 <td>{{row[8]}}<span> </span>{{row[9]}}</td>
                 <td><button class="btn button1" data-toggle="modal" data-target="#editIncident">Edit</button></td>
+                <td><button type="button" class="btn button2">Deactivate</button></td>
               </p>
             </tr>
             {% endfor %}
@@ -477,8 +504,11 @@
   <div id="carrecord" class="container-fluid">
     <div class="container">
       <h1>Car Record</h1>
+      <div class="search">
+        <input style="float: right;" type="text" id="carsearch" onkeyup="filterCar()" placeholder="Search">
+      </div><br><br>
       <div class="table-wrapper" style="overflow-x:auto;">
-        <table class="w3-hoverable slideanim">
+        <table id="cartable" class="w3-hoverable slideanim">
           <thead>
             <tr>
               <p>
@@ -594,15 +624,15 @@
             </div>
             <div class="col-sm-2 form-group">
               <input type="radio" id="note" name="typeIncident" value="Note">
-              <label for="note" style="font-weight: 50;">Note</label>
+              <label for="note" style="font-size:14px; font-weight: 50;">Note</label>
             </div>
             <div class="col-sm-2 form-group">
               <input type="radio" id="vip" name="typeIncident" value="VIP">
-              <label for="vip" style="font-weight: 50;">VIP</label>
+              <label for="vip" style="font-size:14px; font-weight: 50;">VIP</label>
             </div>
-            <div class=" col-sm-4 form-group">
+            <div class=" col-sm-2 form-group">
               <input type="radio" id="blacklist" name="typeIncident" value="Blacklist">
-              <label for="blacklist" style="font-weight: 50;">Blacklist</label>
+              <label for="blacklist" style="font-size:14px; font-weight: 50;">Blacklist</label>
             </div>
           </div>
           <div class=" row">
@@ -662,15 +692,15 @@
             </div>
             <div class="col-sm-2 form-group">
               <input type="radio" id="note" name="typeIncident" value="Note">
-              <label for="note" style="font-weight: 50;">Note</label>
+              <label for="note" style="font-size:14px; font-weight: 50;">Note</label>
             </div>
             <div class="col-sm-2 form-group">
               <input type="radio" id="vip" name="typeIncident" value="VIP">
-              <label for="vip" style="font-weight: 50;">VIP</label>
+              <label for="vip" style="font-size:14px; font-weight: 50;">VIP</label>
             </div>
-            <div class=" col-sm-4 form-group">
+            <div class=" col-sm-2 form-group">
               <input type="radio" id="blacklist" name="typeIncident" value="Blacklist">
-              <label for="blacklist" style="font-weight: 50;">Blacklist</label>
+              <label for="blacklist" style="font-size:14px; font-weight: 50;">Blacklist</label>
             </div>
           </div>
           <div class=" row">
@@ -680,14 +710,6 @@
             <div class="col-sm-8 form-group">
               <textarea class="form-control" id="dcticd" name="Description" placeholder="Description"
                 rows="5"></textarea>
-            </div>
-          </div>
-          <div class=" row">
-            <div class="col-sm-4 form-group">
-              <label for="Activity">Status:</label>
-            </div>
-            <div class="col-sm-8 form-group">
-              <button type="button" class="btn button2">Deactivate</button>
             </div>
           </div>
           <div class="modal-footer">
@@ -794,6 +816,72 @@
         });
       });
     })
+
+    function filterHistory(event) {
+      var filter = event.target.value.toUpperCase();
+      var rows = document.querySelector("#historytable tbody").rows;
+
+      for (var i = 0; i < rows.length; i++) {
+        var firstCol = rows[i].cells[0].textContent.toUpperCase();
+        var secondCol = rows[i].cells[1].textContent.toUpperCase();
+        var thirdCol = rows[i].cells[2].textContent.toUpperCase();
+        var fourthCol = rows[i].cells[3].textContent.toUpperCase();
+        var fifthCol = rows[i].cells[4].textContent.toUpperCase();
+        if (firstCol.indexOf(filter) > -1 || secondCol.indexOf(filter) > -1 || thirdCol.indexOf(filter) > -1 || fourthCol.indexOf(filter) > -1 || fifthCol.indexOf(filter) > -1) {
+          rows[i].style.display = "";
+        } else {
+          rows[i].style.display = "none";
+        }
+      }
+    }
+
+    document.querySelector('#historysearch').addEventListener('keyup', filterHistory, false);
+
+    function filterIncident(event) {
+      var filter = event.target.value.toUpperCase();
+      var rows = document.querySelector("#incidenttable tbody").rows;
+
+      for (var i = 0; i < rows.length; i++) {
+        var firstCol = rows[i].cells[0].textContent.toUpperCase();
+        var secondCol = rows[i].cells[1].textContent.toUpperCase();
+        var thirdCol = rows[i].cells[2].textContent.toUpperCase();
+        var fourthCol = rows[i].cells[3].textContent.toUpperCase();
+        var fifthCol = rows[i].cells[4].textContent.toUpperCase();
+        var sixthCol = rows[i].cells[5].textContent.toUpperCase();
+        var seventhCol = rows[i].cells[6].textContent.toUpperCase();
+        var eigthCol = rows[i].cells[7].textContent.toUpperCase();
+        if (firstCol.indexOf(filter) > -1 || secondCol.indexOf(filter) > -1 || thirdCol.indexOf(filter) > -1 || fourthCol.indexOf(filter) > -1 || fifthCol.indexOf(filter) > -1 || sixthCol.indexOf(filter) > -1 || seventhCol.indexOf(filter) > -1 || eigthCol.indexOf(filter) > -1)  {
+          rows[i].style.display = "";
+        } else {
+          rows[i].style.display = "none";
+        }
+      }
+    }
+
+    document.querySelector('#incidentsearch').addEventListener('keyup', filterIncident, false);
+
+    function filterCar(event) {
+      var filter = event.target.value.toUpperCase();
+      var rows = document.querySelector("#cartable tbody").rows;
+
+      for (var i = 0; i < rows.length; i++) {
+        var firstCol = rows[i].cells[0].textContent.toUpperCase();
+        var secondCol = rows[i].cells[1].textContent.toUpperCase();
+        var thirdCol = rows[i].cells[2].textContent.toUpperCase();
+        var fourthCol = rows[i].cells[3].textContent.toUpperCase();
+        var fifthCol = rows[i].cells[4].textContent.toUpperCase();
+        var sixthCol = rows[i].cells[5].textContent.toUpperCase();
+        if (firstCol.indexOf(filter) > -1 || secondCol.indexOf(filter) > -1 || thirdCol.indexOf(filter) > -1 || fourthCol.indexOf(filter) > -1 || fifthCol.indexOf(filter) > -1 || sixthCol.indexOf(filter) > -1) {
+          rows[i].style.display = "";
+        } else {
+          rows[i].style.display = "none";
+        }
+      }
+    }
+
+    document.querySelector('#carsearch').addEventListener('keyup', filterCar, false);
+
+
   </script>
 
 </body>
