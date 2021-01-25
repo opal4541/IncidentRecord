@@ -437,8 +437,8 @@
                 <td>{{row[1]}}</td>
                 <td>{{row[2]}}</td>
                 <td>{{row[3]}}</td>
-                <td><button class="btn button1" data-toggle="modal" data-target="#addActivity">Add</button></td>
-                <td><button class="btn button1" data-toggle="modal" data-target="#addIncident">Add</button></td>
+                <td><button class="btn button1" data-toggle="modal" data-target="#addactivity">Add</button></td>
+                <td><button class="btn button1" data-toggle="modal" data-target="#addincident">Add</button></td>
               </p>
             </tr>
             {% endfor %}
@@ -485,8 +485,8 @@
                 <td>{{row[6]}}</td>
                 <td>{{row[7]}}</td>
                 <td>{{row[8]}}<span> </span>{{row[9]}}</td>
-                <td><button class="btn button1" data-toggle="modal" data-target="#editIncident">Edit</button></td>
-                <td><button type="button" class="btn button2">Deactivate</button></td>
+                <td><button class="btn button1" data-toggle="modal" data-target="#editincident">Edit</button></td>
+                <td><button id="deactivatebutton" type="button" class="btn button2">Deactivate</button></td>
               </p>
             </tr>
             {% endfor %}
@@ -495,7 +495,7 @@
       </div>
     </div>
     <div class="slideanim" style="text-align: center;">
-      <button class="btn button1" style="margin: 30px auto;" data-toggle="modal" data-target="#addIncident">Add
+      <button class="btn button1" style="margin: 30px auto;" data-toggle="modal" data-target="#addincident">Add
         Incident</button>
     </div>
   </div>
@@ -532,7 +532,7 @@
                 <td>{{row[4]}}</td>
                 <td>{{row[5]}}</td>
                 <td>{{row[6]}}</td>
-                <td><button class="btn button1" data-toggle="modal" data-target="#editCar">Edit</button></td>
+                <td><button class="btn button1" data-toggle="modal" data-target="#editcar">Edit</button></td>
               </p>
             </tr>
             {% endfor %}
@@ -544,7 +544,7 @@
 
 
   <!-- Add activity form -->
-  <div class="modal fade" id="addActivity" role="dialog">
+  <div class="modal fade" id="addactivity" role="dialog">
     <div class="modal-dialog">
 
       <!-- Modal content-->
@@ -556,37 +556,37 @@
         <div class="modal-body">
           <div class="row">
             <div class="col-sm-4 form-group">
-              <label for="lpact">License Plate:</label><br>
-              <input class="form-control" id="lpact" name="licensePlateAvctivity" placeholder="License Plate"
+              <label for="licenseplateaddact">License Plate:</label><br>
+              <input class="form-control" id="licenseplateaddact" name="licenseplateaddact" placeholder="License Plate"
                 type="text" required>
             </div>
             <div class="col-sm-4 form-group">
-              <label for="entim">Enter Time:</label><br>
-              <input class="form-control" id="entact" name="enterTime" placeholder="Enter Time" type="datetime"
+              <label for="entertimeaddact">Enter Time:</label><br>
+              <input class="form-control" id="entertimeaddact" name="entertimeaddact" placeholder="Enter Time" type="datetime"
                 required>
             </div>
             <div class="col-sm-4 form-group">
-              <label for="extim">Exit Time:</label><br>
-              <input class="form-control" id="extact" name="exitTime" placeholder="Exit Time" type="datetime" required>
+              <label for="exittimeaddact">Exit Time:</label><br>
+              <input class="form-control" id="exittimeaddact" name="exittimeaddact" placeholder="Exit Time" type="datetime" required>
             </div>
           </div>
           <div class="row">
             <div class="col-sm-12 form-group">
-              <label for="Activity">Activity:</label><br>
-              <textarea class="form-control" id="actact" name="active" placeholder="Activity" rows="5"></textarea>
+              <label for="activityaddact">Activity:</label><br>
+              <textarea class="form-control" id="activityaddact" name="activityaddact" placeholder="Activity" rows="5"></textarea>
             </div>
           </div>
         </div>
         <div class="modal-footer">
           <!-- <button type="button" class="btn button2" data-dismiss="modal">Cancel</button> -->
-          <button type="button" class="btn button1">Confirm</button>
+          <button type="button" class="btn button1" id="confirmaddact">Confirm</button>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Add Incident form -->
-  <div class="modal fade" id="addIncident" role="dialog">
+  <div class="modal fade" id="addincident" role="dialog">
     <div class="modal-dialog">
 
       <!-- Modal content-->
@@ -598,63 +598,63 @@
         <div class="modal-body">
           <div class="row">
             <div class="col-sm-4 form-group">
-              <label for="lpact">License Plate:</label>
+              <label for="licenseplateaddinc">License Plate:</label>
             </div>
             <div class="col-sm-8 form-group">
-              <input class="form-control" id="lpicd" name="licensePlateIncident" placeholder="License Plate" type="text"
+              <input class="form-control" id="licenseplateaddinc" name="licenseplateaddinc" placeholder="License Plate" type="text"
                 required>
             </div>
           </div>
           <div class="row">
             <div class="col-sm-4 form-group">
-              <label for="ctmname">Customer Name:</label>
+              <label for="cusnameaddinc">Customer Name:</label>
             </div>
             <div class="col-sm-4 form-group">
-              <input class="form-control" id="ctmficd" name="customerFirstname" placeholder="Customer Firstname"
+              <input class="form-control" id="cusfirstnameaddinc" name="cusfirstnameaddinc" placeholder="Customer Firstname"
                 type="text" required>
             </div>
             <div class="col-sm-4 form-group">
-              <input class="form-control" id="ctmlicd" name="customerLastname" placeholder="Customer Lastname"
+              <input class="form-control" id="cuslastnameaddinc" name="cuslastnameaddinc" placeholder="Customer Lastname"
                 type="text" required>
             </div>
           </div>
           <div class="row">
             <div class="col-sm-4 form-group">
-              <label for="typicd">Type:</label>
+              <label for="typeaddinc">Type:</label>
             </div>
             <div class="col-sm-2 form-group">
-              <input type="radio" id="note" name="typeIncident" value="Note">
-              <label for="note" style="font-size:14px; font-weight: 50;">Note</label>
+              <input type="radio" id="noteaddinc" name="typeaddinc" value="Note">
+              <label for="noteaddinc" style="font-size:14px; font-weight: 50;">Note</label>
             </div>
             <div class="col-sm-2 form-group">
-              <input type="radio" id="vip" name="typeIncident" value="VIP">
-              <label for="vip" style="font-size:14px; font-weight: 50;">VIP</label>
+              <input type="radio" id="vipaddinc" name="typeaddinc" value="VIP">
+              <label for="vipaddinc" style="font-size:14px; font-weight: 50;">VIP</label>
             </div>
             <div class=" col-sm-2 form-group">
-              <input type="radio" id="blacklist" name="typeIncident" value="Blacklist">
-              <label for="blacklist" style="font-size:14px; font-weight: 50;">Blacklist</label>
+              <input type="radio" id="blacklistaddinc" name="typeaddinc" value="Blacklist">
+              <label for="blacklistaddinc" style="font-size:14px; font-weight: 50;">Blacklist</label>
             </div>
           </div>
           <div class=" row">
             <div class="col-sm-4 form-group">
-              <label for="Activity">Description:</label>
+              <label for="descriptionaddinc">Description:</label>
             </div>
             <div class="col-sm-8 form-group">
-              <textarea class="form-control" id="dcticd" name="Description" placeholder="Description"
+              <textarea class="form-control" id="descriptionaddinc" name="descriptionaddinc" placeholder="Description"
                 rows="5"></textarea>
             </div>
           </div>
         </div>
         <div class="modal-footer">
           <!-- <button type="button" class="btn button2" data-dismiss="modal">Cancel</button> -->
-          <button type="button" class="btn button1">Confirm</button>
+          <button id="confirmaddinc" type="button" class="btn button1">Confirm</button>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Edit Incident form -->
-  <div class="modal fade" id="editIncident" role="dialog">
+  <div class="modal fade" id="editincident" role="dialog">
     <div class="modal-dialog">
 
       <!-- Modal content-->
@@ -666,55 +666,55 @@
         <div class="modal-body">
           <div class="row">
             <div class="col-sm-4 form-group">
-              <label for="lpecd">License Plate:</label>
+              <label for="licenseplateeditinc">License Plate:</label>
             </div>
             <div class="col-sm-8 form-group">
-              <input class="form-control" id="lpecd" name="licensePlateIncident" placeholder="License Plate" type="text"
+              <input class="form-control" id="licenseplateeditinc" name="licenseplateeditinc" placeholder="License Plate" type="text"
                 required>
             </div>
           </div>
           <div class="row">
             <div class="col-sm-4 form-group">
-              <label for="ctmname">Customer Name:</label>
+              <label for="cusnameeditinc">Customer Name:</label>
             </div>
             <div class="col-sm-4 form-group">
-              <input class="form-control" id="ctmficd" name="customerFirstname" placeholder="Customer Firstname"
+              <input class="form-control" id="cusfirstnameeditinc" name="cusfirstnameeditinc" placeholder="Customer Firstname"
                 type="text" required>
             </div>
             <div class="col-sm-4 form-group">
-              <input class="form-control" id="ctmlicd" name="customerLastname" placeholder="Customer Lastname"
+              <input class="form-control" id="cuslastnameeditinc" name="cuslastnameeditinc" placeholder="Customer Lastname"
                 type="text" required>
             </div>
           </div>
           <div class="row">
             <div class="col-sm-4 form-group">
-              <label for="typicd">Type:</label>
+              <label for="typeeditinc">Type:</label>
             </div>
             <div class="col-sm-2 form-group">
-              <input type="radio" id="note" name="typeIncident" value="Note">
-              <label for="note" style="font-size:14px; font-weight: 50;">Note</label>
+              <input type="radio" id="noteeditinc" name="typeeditinc" value="Note">
+              <label for="noteeditinc" style="font-size:14px; font-weight: 50;">Note</label>
             </div>
             <div class="col-sm-2 form-group">
-              <input type="radio" id="vip" name="typeIncident" value="VIP">
-              <label for="vip" style="font-size:14px; font-weight: 50;">VIP</label>
+              <input type="radio" id="vipeditinc" name="typeeditinc" value="VIP">
+              <label for="vipeditinc" style="font-size:14px; font-weight: 50;">VIP</label>
             </div>
             <div class=" col-sm-2 form-group">
-              <input type="radio" id="blacklist" name="typeIncident" value="Blacklist">
-              <label for="blacklist" style="font-size:14px; font-weight: 50;">Blacklist</label>
+              <input type="radio" id="blacklisteditinc" name="typeeditinc" value="Blacklist">
+              <label for="blacklisteditinc" style="font-size:14px; font-weight: 50;">Blacklist</label>
             </div>
           </div>
           <div class=" row">
             <div class="col-sm-4 form-group">
-              <label for="Activity">Description:</label>
+              <label for="descriptioneditinc">Description:</label>
             </div>
             <div class="col-sm-8 form-group">
-              <textarea class="form-control" id="dcticd" name="Description" placeholder="Description"
+              <textarea class="form-control" id="descriptioneditinc" name="descriptioneditinc" placeholder="Description"
                 rows="5"></textarea>
             </div>
           </div>
           <div class="modal-footer">
             <!-- <button type="button" class="btn button2" data-dismiss="modal">Cancel</button> -->
-            <button type="button" class="btn button1">Confirm</button>
+            <button id="confirmeditinc" type="button" class="btn button1">Confirm</button>
           </div>
         </div>
       </div>
@@ -722,7 +722,7 @@
   </div>
 
   <!-- Edit Car form -->
-  <div class="modal fade" id="editCar" role="dialog">
+  <div class="modal fade" id="editcar" role="dialog">
     <div class="modal-dialog">
 
       <!-- Modal content-->
@@ -734,38 +734,38 @@
         <div class="modal-body">
           <div class="row">
             <div class="col-sm-4 form-group">
-              <label for="lpact">License Plate:</label>
+              <label for="licenseplateeditcar">License Plate:</label>
             </div>
             <div class="col-sm-8 form-group">
-              <input class="form-control" id="lpicd" name="licensePlateIncident" placeholder="License Plate" type="text"
+              <input class="form-control" id="licenseplateeditcar" name="licenseplateeditcar" placeholder="License Plate" type="text"
                 required>
             </div>
           </div>
           <div class="row">
             <div class="col-sm-4 form-group">
-              <label for="ctmname">Customer Name:</label>
+              <label for="cusnameeditcar">Customer Name:</label>
             </div>
             <div class="col-sm-4 form-group">
-              <input class="form-control" id="ctmficd" name="customerFirstname" placeholder="Customer Firstname"
+              <input class="form-control" id="cusfirstnameeditcar" name="cusfirstnameeditcar" placeholder="Customer Firstname"
                 type="text" required>
             </div>
             <div class="col-sm-4 form-group">
-              <input class="form-control" id="ctmlicd" name="customerLastname" placeholder="Customer Lastname"
+              <input class="form-control" id="cuslastnameeditcar" name="cuslastnameeditcar" placeholder="Customer Lastname"
                 type="text" required>
             </div>
           </div>
           <div class="row">
             <div class="col-sm-4 form-group">
-              <label for="phone">Phone:</label>
+              <label for="phoneeditcar">Phone:</label>
             </div>
             <div class="col-sm-8 form-group">
-              <input class="form-control" id="phone" name="phone" placeholder="Phone" type="text" required>
+              <input class="form-control" id="phoneeditcar" name="phoneeditcar" placeholder="Phone" type="text" required>
             </div>
           </div>
         </div>
         <div class="modal-footer">
           <!-- <button type="button" class="btn button2" data-dismiss="modal">Cancel</button> -->
-          <button type="button" class="btn button1">Confirm</button>
+          <button type="confirmeditcar" class="btn button1">Confirm</button>
         </div>
       </div>
     </div>

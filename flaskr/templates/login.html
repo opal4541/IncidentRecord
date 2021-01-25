@@ -302,12 +302,12 @@
         <h1 style="color: white;">INCIDENT RECORD</h1>
       </div>
       <div class="panel-body">
-        <form style="display: flex;flex-direction: column;align-items: center;" action="" method="post">
-          <input id="username" name="username" class="form-control" style="width: 290px; height: 30px; font: 16px; margin-bottom: 0.80rem" type="text"
-            placeholder="Username" name="username" value="{{ request.form.username }}">
+        <form style="display: flex;flex-direction: column;align-items: center;" action="/login" method="post">
+          <input id="username" class="form-control" style="width: 290px; height: 30px; font: 16px; margin-bottom: 0.80rem" type="text"
+            placeholder="Username" name="username" value="">
 
           <input id="password" name="password" class="form-control" style="width: 290px; height: 30px; font: 16px; margin-bottom: 0.80rem"
-            type="password" placeholder="Password" name="password" value="{{ request.form.password }}">
+            type="password" placeholder="Password" name="password" value="">
 
           <input id="loginbutton" name="loginbutton" class="btn button1" type="submit" value="Login">
         </form>
