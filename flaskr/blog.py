@@ -10,7 +10,7 @@ cursor = connection.cursor()
 
 
 app = Flask(__name__, static_folder='static')
-app.secret_key = '1a2b3c4d5e'
+app.secret_key = '123456789'
 
 
 @app.route('/login', methods=['POST'])
@@ -20,50 +20,21 @@ def login():
         username = request.form['username']
         password = request.form['password']
 
-        # userInfo = execute_sql_parameter('SELECT UserName, Password, UserType FROM [User] WHERE UserName = ? AND Password = ?' , user, psw)
         account = cursor.execute('SELECT * FROM [User] WHERE userName = ? AND password = ?', (username, password))
         account = cursor.fetchone()
 
-        # for i in userInfo:
-        #     userName = i[0]
-        #     userPassword = i[1]
-        #     userType = i[2]
         if account:
-            # Create session data, we can access this data in other routes
             session['loggedin'] = True
-            session['userName'] = account['userName']
-            session['password'] = account['password']
+            session['userName'] = account[1]
+            session['password'] = account[2]
+            print(session['userName'])
             if(account[5] == 'Admin'):
-                return render_template('home.html')
+                return redirect(url_for('home'))
             else:
-                return render_template('userHome.html')
-
-        
-
-    #     elif userType == 'Admin':
-    #         return redirect(url_for('home'))
-    #     else :
-    #         return redirect(url_for('user'))
-
-    # return render_template('login.html', error=error)
-
-    #     # user = cursor.execute('SELECT * FROM [User] WHERE UserName = %s AND Password = %s', username, password)
-    #     # print(user)
-
-
-
-    #     # If account exists in accounts table in out database
-    #     # if account:
-    #         # Create session data, we can access this data in other routes
-    #         session['loggedin'] = True
-    #         session['id'] = account['id']
-    #         session['username'] = account['username']
-
-    #     #     # Redirect to home page
-    #     #     return 'Logged in successfully!'
-    #     # else:
-    #     #     # Account doesnt exist or username/password incorrect
-    #     #     msg = 'Incorrect username/password!'
+                return redirect(url_for('user'))
+        else:
+            error = 'Incorrect username or password!'
+        return render_template('login.html', error=error)
 
 @app.route('/blacklist')
 def blacklist():
