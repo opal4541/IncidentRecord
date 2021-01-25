@@ -1,1 +1,889 @@
-Hi Admin
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- Theme Made By www.w3schools.com -->
+  <title>Incident Record</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+  <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet" type="text/css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+  <link href="{{url_for('static', filename='css/style.css')}}" rel="stylesheet">
+
+  <style>
+    body {
+      font: 400 15px Lato, sans-serif;
+      line-height: 1.8;
+      color: #2d2d2b;
+
+    }
+
+    h2 {
+      font-size: 24px;
+      text-transform: uppercase;
+      color: #303030;
+      font-weight: 600;
+      margin-bottom: 30px;
+    }
+
+    h4 {
+      font-size: 19px;
+      line-height: 1.375em;
+      color: #303030;
+      font-weight: 400;
+      margin-bottom: 30px;
+    }
+
+    .container-fluid {
+      padding: 60px 50px;
+    }
+
+    .bg-grey {
+      background-color: #f6f6f6;
+    }
+
+    .logo-small {
+      color: #2f4f4f;
+      font-size: 50px;
+    }
+
+    .logo {
+      color: #2f4f4f;
+      font-size: 200px;
+    }
+
+    .thumbnail {
+      padding: 0 0 15px 0;
+      border: none;
+      border-radius: 0;
+    }
+
+    .thumbnail img {
+      width: 100%;
+      height: 100%;
+      margin-bottom: 10px;
+    }
+
+    .carousel-control.right,
+    .carousel-control.left {
+      background-image: none;
+      color: #2f4f4f;
+    }
+
+    .carousel-indicators li {
+      border-color: #2f4f4f;
+    }
+
+    .carousel-indicators li.active {
+      background-color: #2f4f4f;
+    }
+
+    .item h4 {
+      font-size: 19px;
+      line-height: 1.375em;
+      font-weight: 400;
+      font-style: italic;
+      margin: 70px 0;
+    }
+
+    .item span {
+      font-style: normal;
+    }
+
+    .panel {
+      border: 1px solid #2f4f4f;
+      border-radius: 0 !important;
+      transition: box-shadow 0.5s;
+    }
+
+    .panel:hover {
+      box-shadow: 5px 0px 40px rgba(0, 0, 0, .2);
+    }
+
+    .panel-footer .btn:hover {
+      border: 1px solid #2f4f4f;
+      background-color: #fff !important;
+      color: #2f4f4f;
+    }
+
+    .panel-heading {
+      color: #fff !important;
+      background-color: #2f4f4f !important;
+      padding: 25px;
+      border-bottom: 1px solid transparent;
+      border-top-left-radius: 0px;
+      border-top-right-radius: 0px;
+      border-bottom-left-radius: 0px;
+      border-bottom-right-radius: 0px;
+    }
+
+    .panel-footer {
+      background-color: white !important;
+    }
+
+    .panel-footer h3 {
+      font-size: 32px;
+    }
+
+    .panel-footer h4 {
+      color: #aaa;
+      font-size: 14px;
+    }
+
+    .panel-footer .btn {
+      margin: 15px 0;
+      background-color: #2f4f4f;
+      color: #fff;
+    }
+
+    .navbar {
+      margin-bottom: 0;
+      background-color: #2f4f4f;
+      opacity: 0.8;
+      z-index: 9999;
+      border: 0;
+      font-size: 12px !important;
+      line-height: 1.42857143 !important;
+      letter-spacing: 4px;
+      border-radius: 0;
+      font-family: Montserrat, sans-serif;
+    }
+
+    .navbar li a,
+    .navbar .navbar-brand {
+      color: #fff !important;
+    }
+
+    .navbar-nav li a:hover,
+    .navbar-nav li.active a {
+      color: #2f4f4f !important;
+      background-color: #fff !important;
+    }
+
+    .navbar-default .navbar-toggle {
+      border-color: transparent;
+      color: #fff !important;
+    }
+
+    footer .glyphicon {
+      font-size: 20px;
+      margin-bottom: 20px;
+      color: #2f4f4f;
+    }
+
+    .slideanim {
+      visibility: hidden;
+    }
+
+    .slide {
+      animation-name: slide;
+      -webkit-animation-name: slide;
+      animation-duration: 1s;
+      -webkit-animation-duration: 1s;
+      visibility: visible;
+    }
+
+    @keyframes slide {
+      0% {
+        opacity: 0;
+        transform: translateY(70%);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateY(0%);
+      }
+    }
+
+    @-webkit-keyframes slide {
+      0% {
+        opacity: 0;
+        -webkit-transform: translateY(70%);
+      }
+
+      100% {
+        opacity: 1;
+        -webkit-transform: translateY(0%);
+      }
+    }
+
+    @media screen and (max-width: 768px) {
+      .col-sm-4 {
+        text-align: center;
+        margin: 25px 0;
+      }
+
+      .btn-lg {
+        width: 100%;
+        margin-bottom: 35px;
+      }
+    }
+
+    @media screen and (max-width: 480px) {
+      .logo {
+        font-size: 150px;
+      }
+    }
+
+    /* Table */
+    .table-wrapper {
+      overflow-y: scroll;
+      height: 200px;
+    }
+
+    .table-wrapper th {
+      position: sticky;
+      top: 0;
+      background-color: #fff;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 8px;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+
+    h1 {
+      color: #303030;
+      font-size: 30px;
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 30px;
+      font-family: Montserrat, sans-serif;
+    }
+
+    .button {
+      background-color: white;
+      border: none;
+      color: #2f4f4f;
+      padding: 16px 32px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 4px 2px;
+      transition-duration: 0.4s;
+      cursor: pointer;
+    }
+
+    .button1 {
+      background-color: #2f4f4f;
+      color: white;
+      border: 2px solid #2f4f4f;
+    }
+
+    .button1:hover {
+      background-color: white;
+      color: #2f4f4f;
+    }
+
+    .button2 {
+      background-color: darkred;
+      color: white;
+      border: 2px solid darkred;
+    }
+
+    .button2:hover {
+      background-color: white;
+      color: darkred;
+    }
+
+    .jumbotron {
+      /* background-image: url('static/header-background.jpg'); */
+      /* background-attachment: fixed;
+      background-size: 100%;
+      background-repeat: no-repeat; */
+      background-color: #2f4f4f;
+      color: #fff;
+      padding: 0px 25px;
+      font-family: Montserrat, sans-serif;
+    }
+
+    .vid:hover {
+      box-shadow: 5px 0px 40px rgba(0, 0, 0, .2);
+    }
+
+    .modal {
+      padding-top: 10%;
+    }
+
+    .search input[type=text] {
+      width: 20px;
+      border: 2px solid #ccc;
+      border-radius: 6px;
+      font-size: 16px;
+      background-color: transparent;
+      background-image: url('static/search.png');
+      background-size: 15px;
+      background-position: 10px 10px;
+      background-repeat: no-repeat;
+      padding-left: 35px;
+      -webkit-transition: width 0.4s ease-in-out;
+      transition: width 0.4s ease-in-out;
+    }
+
+    .search input[type=text]:focus {
+      width: 100%;
+    }
+  </style>
+
+</head>
+
+<body id="myPage" data-spy="scroll" data-target=".navbar" data-offset="60">
+
+  <nav class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="#myPage">INCIDENT RECORD</a>
+      </div>
+      <div class="collapse navbar-collapse" id="myNavbar">
+        <ul class="nav navbar-nav navbar-right">
+          <li><a href="#historyrecord">HISTORY</a></li>
+          <li><a href="#incidentrecord">INCIDENT</a></li>
+          <li><a href="#carrecord">CAR</a></li>
+          <li><a href="{{ url_for('logout') }}">LOGOUT</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="jumbotron text-center">
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-6">
+          <video class="vid" style="width:80%; margin-top: 50px;" controls>
+            <source src={{ url_for('static', filename="sidevid.mp4" ) }} type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        <h2 style="color:white; margin-top: 8%">
+          <div class="col-sm-6" style="text-align: center;">Entrance<br><br>
+        </h2>
+        <h4 style="color:white; font-family: Montserrat, sans-serif">
+          <div class="col-sm-6" style="text-align: center;">License Plate:<span style="color: #f9c802">
+              5กศ8444</span><br><br></div>
+          <div class="col-sm-6" style="text-align: center;">Enter Time:<span style="color: #f9c802"> 2021-01-10
+              18:25:55</span></div>
+      </div>
+      </h4>
+
+      <div class="row">
+        <div class="col-sm-6">
+          <video class="vid" style="width:80%; margin-top: 50px;" controls>
+            <source src={{ url_for('static', filename="testvid.mp4" ) }} type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        <h2 style="color:white; margin-top: 8%">
+          <div class="col-sm-6" style="text-align: center;">Exit<br><br>
+        </h2>
+        <h4 style="color:white; font-family: Montserrat, sans-serif">
+          <div class="col-sm-6" style="text-align: center;">License Plate:<span style="color: #f9c802">
+              ขอ5025</span><br><br></div>
+          <div class="col-sm-6" style="text-align: center;">Exit Time:<span style="color: #f9c802"> 2021-01-10
+              18:25:55</span></div>
+      </div>
+      </h4>
+    </div>
+  </div>
+  </div>
+  </div>
+
+  <!-- Container (About Section) -->
+  <div id="historyrecord" class="container-fluid">
+    <div class="container">
+      <h1>History Record</h1>
+      <div class="search">
+        <input style="float: right;" type="text" id="historysearch" onkeyup="filterHistory()" placeholder="Search">
+      </div><br><br>
+      <div class="table-wrapper" style="overflow-x:auto;">
+        <table id="historytable" class="w3-hoverable slideanim table-fixed">
+          <thead>
+            <tr>
+              <p>
+                <th>#</th>
+                <th>License Plate</th>
+                <th>Enter Time</th>
+                <th>Exit Time</th>
+                <th>Activity</th>
+                <th>Incident</th>
+              </p>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for row in historyData %}
+            <tr>
+              <p>
+                <td>{{row[0]}}</td>
+                <td>{{row[1]}}</td>
+                <td>{{row[2]}}</td>
+                <td>{{row[3]}}</td>
+                <td><button class="btn button1" data-toggle="modal" data-target="#addactivity">View</button></td>
+                <td><button class="btn button1" data-toggle="modal" data-target="#addincident">View</button></td>
+              </p>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Container (Services Section) -->
+  <div id="incidentrecord" class="container-fluid bg-grey">
+    <div class="container">
+      <h1>Incident Record</h1>
+      <div class="search">
+        <input style="float: right;" type="text" id="incidentsearch" onkeyup="filterIncident()" placeholder="Search">
+      </div><br><br>
+      <div class="table-wrapper" style="overflow-x:auto;">
+        <table id="incidenttable" class="w3-hoverable slideanim">
+          <thead>
+            <tr>
+              <p>
+                <th>#</th>
+                <th>License Plate</th>
+                <th>Customer Name</th>
+                <th>Type</th>
+                <th>Start Time</th>
+                <th>End Time</th>
+                <th>Status</th>
+                <th>Edit By</th>
+                <th>Details</th>
+                <th> </th>
+              </p>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in incidentData %}
+            <tr>
+              <p>
+                <td>{{row[0]}}</td>
+                <td>{{row[1]}}</td>
+                <td>{{row[2]}}<span> </span>{{row[3]}}</td>
+                <td>{{row[4]}}</td>
+                <td>{{row[5]}}</td>
+                <td>{{row[6]}}</td>
+                <td>{{row[7]}}</td>
+                <td>{{row[8]}}<span> </span>{{row[9]}}</td>
+                <td><button class="btn button1" data-toggle="modal" data-target="#editincident">Edit</button></td>
+                <td><button id="deactivatebutton" type="button" class="btn button2">Deactivate</button></td>
+              </p>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="slideanim" style="text-align: center;">
+      <button class="btn button1" style="margin: 30px auto;" data-toggle="modal" data-target="#addincident">Add
+        Incident</button>
+    </div>
+  </div>
+
+  <!-- Container (Portfolio Section) -->
+  <div id="carrecord" class="container-fluid">
+    <div class="container">
+      <h1>Car Record</h1>
+      <div class="search">
+        <input style="float: right;" type="text" id="carsearch" onkeyup="filterCar()" placeholder="Search">
+      </div><br><br>
+      <div class="table-wrapper" style="overflow-x:auto;">
+        <table id="cartable" class="w3-hoverable slideanim">
+          <thead>
+            <tr>
+              <p>
+                <th>#</th>
+                <th>License Plate</th>
+                <th>Customer Name</th>
+                <th>Phone</th>
+                <th>Last Visited</th>
+                <th>Incident Type</th>
+                <th> </th>
+              </p>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in carData %}
+            <tr>
+              <p>
+                <td>{{row[0]}}</td>
+                <td>{{row[1]}}</td>
+                <td>{{row[2]}}<span> </span>{{row[3]}}</td>
+                <td>{{row[4]}}</td>
+                <td>{{row[5]}}</td>
+                <td>{{row[6]}}</td>
+                <td><button class="btn button1" data-toggle="modal" data-target="#editcar">Edit</button></td>
+              </p>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Add activity form -->
+  <div class="modal fade" id="addactivity" role="dialog">
+    <div class="modal-dialog">
+
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h2 class="modal-title">Add Activity</h2>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-sm-4 form-group">
+              <label for="licenseplateaddact">License Plate:</label><br>
+              <input class="form-control" id="licenseplateaddact" name="licenseplateaddact" placeholder="License Plate"
+                type="text" required>
+            </div>
+            <div class="col-sm-4 form-group">
+              <label for="entertimeaddact">Enter Time:</label><br>
+              <input class="form-control" id="entertimeaddact" name="entertimeaddact" placeholder="Enter Time" type="datetime"
+                required>
+            </div>
+            <div class="col-sm-4 form-group">
+              <label for="exittimeaddact">Exit Time:</label><br>
+              <input class="form-control" id="exittimeaddact" name="exittimeaddact" placeholder="Exit Time" type="datetime" required>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-12 form-group">
+              <label for="activityaddact">Activity:</label><br>
+              <textarea class="form-control" id="activityaddact" name="activityaddact" placeholder="Activity" rows="5"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <!-- <button type="button" class="btn button2" data-dismiss="modal">Cancel</button> -->
+          <button type="button" class="btn button1" id="confirmaddact">Confirm</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Incident form -->
+  <div class="modal fade" id="addincident" role="dialog">
+    <div class="modal-dialog">
+
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h2 class="modal-title">Add Incident</h2>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-sm-4 form-group">
+              <label for="licenseplateaddinc">License Plate:</label>
+            </div>
+            <div class="col-sm-8 form-group">
+              <input class="form-control" id="licenseplateaddinc" name="licenseplateaddinc" placeholder="License Plate" type="text"
+                required>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-4 form-group">
+              <label for="cusnameaddinc">Customer Name:</label>
+            </div>
+            <div class="col-sm-4 form-group">
+              <input class="form-control" id="cusfirstnameaddinc" name="cusfirstnameaddinc" placeholder="Customer Firstname"
+                type="text" required>
+            </div>
+            <div class="col-sm-4 form-group">
+              <input class="form-control" id="cuslastnameaddinc" name="cuslastnameaddinc" placeholder="Customer Lastname"
+                type="text" required>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-4 form-group">
+              <label for="typeaddinc">Type:</label>
+            </div>
+            <div class="col-sm-2 form-group">
+              <input type="radio" id="noteaddinc" name="typeaddinc" value="Note">
+              <label for="noteaddinc" style="font-size:14px; font-weight: 50;">Note</label>
+            </div>
+            <div class="col-sm-2 form-group">
+              <input type="radio" id="vipaddinc" name="typeaddinc" value="VIP">
+              <label for="vipaddinc" style="font-size:14px; font-weight: 50;">VIP</label>
+            </div>
+            <div class=" col-sm-2 form-group">
+              <input type="radio" id="blacklistaddinc" name="typeaddinc" value="Blacklist">
+              <label for="blacklistaddinc" style="font-size:14px; font-weight: 50;">Blacklist</label>
+            </div>
+          </div>
+          <div class=" row">
+            <div class="col-sm-4 form-group">
+              <label for="descriptionaddinc">Description:</label>
+            </div>
+            <div class="col-sm-8 form-group">
+              <textarea class="form-control" id="descriptionaddinc" name="descriptionaddinc" placeholder="Description"
+                rows="5"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <!-- <button type="button" class="btn button2" data-dismiss="modal">Cancel</button> -->
+          <button id="confirmaddinc" type="button" class="btn button1">Confirm</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Incident form -->
+  <div class="modal fade" id="editincident" role="dialog">
+    <div class="modal-dialog">
+
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h2 class="modal-title">Edit Incident</h2>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-sm-4 form-group">
+              <label for="licenseplateeditinc">License Plate:</label>
+            </div>
+            <div class="col-sm-8 form-group">
+              <input class="form-control" id="licenseplateeditinc" name="licenseplateeditinc" placeholder="License Plate" type="text"
+                required>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-4 form-group">
+              <label for="cusnameeditinc">Customer Name:</label>
+            </div>
+            <div class="col-sm-4 form-group">
+              <input class="form-control" id="cusfirstnameeditinc" name="cusfirstnameeditinc" placeholder="Customer Firstname"
+                type="text" required>
+            </div>
+            <div class="col-sm-4 form-group">
+              <input class="form-control" id="cuslastnameeditinc" name="cuslastnameeditinc" placeholder="Customer Lastname"
+                type="text" required>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-4 form-group">
+              <label for="typeeditinc">Type:</label>
+            </div>
+            <div class="col-sm-2 form-group">
+              <input type="radio" id="noteeditinc" name="typeeditinc" value="Note">
+              <label for="noteeditinc" style="font-size:14px; font-weight: 50;">Note</label>
+            </div>
+            <div class="col-sm-2 form-group">
+              <input type="radio" id="vipeditinc" name="typeeditinc" value="VIP">
+              <label for="vipeditinc" style="font-size:14px; font-weight: 50;">VIP</label>
+            </div>
+            <div class=" col-sm-2 form-group">
+              <input type="radio" id="blacklisteditinc" name="typeeditinc" value="Blacklist">
+              <label for="blacklisteditinc" style="font-size:14px; font-weight: 50;">Blacklist</label>
+            </div>
+          </div>
+          <div class=" row">
+            <div class="col-sm-4 form-group">
+              <label for="descriptioneditinc">Description:</label>
+            </div>
+            <div class="col-sm-8 form-group">
+              <textarea class="form-control" id="descriptioneditinc" name="descriptioneditinc" placeholder="Description"
+                rows="5"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <!-- <button type="button" class="btn button2" data-dismiss="modal">Cancel</button> -->
+            <button id="confirmeditinc" type="button" class="btn button1">Confirm</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Car form -->
+  <div class="modal fade" id="editcar" role="dialog">
+    <div class="modal-dialog">
+
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h2 class="modal-title">Edit Car</h2>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-sm-4 form-group">
+              <label for="licenseplateeditcar">License Plate:</label>
+            </div>
+            <div class="col-sm-8 form-group">
+              <input class="form-control" id="licenseplateeditcar" name="licenseplateeditcar" placeholder="License Plate" type="text"
+                required>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-4 form-group">
+              <label for="cusnameeditcar">Customer Name:</label>
+            </div>
+            <div class="col-sm-4 form-group">
+              <input class="form-control" id="cusfirstnameeditcar" name="cusfirstnameeditcar" placeholder="Customer Firstname"
+                type="text" required>
+            </div>
+            <div class="col-sm-4 form-group">
+              <input class="form-control" id="cuslastnameeditcar" name="cuslastnameeditcar" placeholder="Customer Lastname"
+                type="text" required>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-4 form-group">
+              <label for="phoneeditcar">Phone:</label>
+            </div>
+            <div class="col-sm-8 form-group">
+              <input class="form-control" id="phoneeditcar" name="phoneeditcar" placeholder="Phone" type="text" required>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <!-- <button type="button" class="btn button2" data-dismiss="modal">Cancel</button> -->
+          <button type="confirmeditcar" class="btn button1">Confirm</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Image of location/map -->
+  <!-- <img src="/w3images/map.jpg" class="w3-image w3-greyscale-min" style="width:100%"> -->
+
+  <footer class="container-fluid text-center">
+    <a href="#myPage" title="To Top">
+      <span class="glyphicon glyphicon-chevron-up"></span>
+    </a>
+    <!-- <p>Bootstrap Theme Made By <a href="https://www.w3schools.com" title="Visit w3schools">www.w3schools.com</a></p> -->
+  </footer>
+
+  <script>
+    $(document).ready(function () {
+      // Add smooth scrolling to all links in navbar + footer link
+      $(".navbar a, footer a[href='#myPage']").on('click', function (event) {
+        // Make sure this.hash has a value before overriding default behavior
+        if (this.hash !== "") {
+          // Prevent default anchor click behavior
+          event.preventDefault();
+
+          // Store hash
+          var hash = this.hash;
+
+          // Using jQuery's animate() method to add smooth page scroll
+          // The optional number (900) specifies the number of milliseconds it takes to scroll to the specified area
+          $('html, body').animate({
+            scrollTop: $(hash).offset().top
+          }, 900, function () {
+
+            // Add hash (#) to URL when done scrolling (default click behavior)
+            window.location.hash = hash;
+          });
+        } // End if
+      });
+
+      $(window).scroll(function () {
+        $(".slideanim").each(function () {
+          var pos = $(this).offset().top;
+
+          var winTop = $(window).scrollTop();
+          if (pos < winTop + 600) {
+            $(this).addClass("slide");
+          }
+        });
+      });
+    })
+
+    function filterHistory(event) {
+      var filter = event.target.value.toUpperCase();
+      var rows = document.querySelector("#historytable tbody").rows;
+
+      for (var i = 0; i < rows.length; i++) {
+        var firstCol = rows[i].cells[0].textContent.toUpperCase();
+        var secondCol = rows[i].cells[1].textContent.toUpperCase();
+        var thirdCol = rows[i].cells[2].textContent.toUpperCase();
+        var fourthCol = rows[i].cells[3].textContent.toUpperCase();
+        var fifthCol = rows[i].cells[4].textContent.toUpperCase();
+        if (firstCol.indexOf(filter) > -1 || secondCol.indexOf(filter) > -1 || thirdCol.indexOf(filter) > -1 || fourthCol.indexOf(filter) > -1 || fifthCol.indexOf(filter) > -1) {
+          rows[i].style.display = "";
+        } else {
+          rows[i].style.display = "none";
+        }
+      }
+    }
+
+    document.querySelector('#historysearch').addEventListener('keyup', filterHistory, false);
+
+    function filterIncident(event) {
+      var filter = event.target.value.toUpperCase();
+      var rows = document.querySelector("#incidenttable tbody").rows;
+
+      for (var i = 0; i < rows.length; i++) {
+        var firstCol = rows[i].cells[0].textContent.toUpperCase();
+        var secondCol = rows[i].cells[1].textContent.toUpperCase();
+        var thirdCol = rows[i].cells[2].textContent.toUpperCase();
+        var fourthCol = rows[i].cells[3].textContent.toUpperCase();
+        var fifthCol = rows[i].cells[4].textContent.toUpperCase();
+        var sixthCol = rows[i].cells[5].textContent.toUpperCase();
+        var seventhCol = rows[i].cells[6].textContent.toUpperCase();
+        var eigthCol = rows[i].cells[7].textContent.toUpperCase();
+        if (firstCol.indexOf(filter) > -1 || secondCol.indexOf(filter) > -1 || thirdCol.indexOf(filter) > -1 || fourthCol.indexOf(filter) > -1 || fifthCol.indexOf(filter) > -1 || sixthCol.indexOf(filter) > -1 || seventhCol.indexOf(filter) > -1 || eigthCol.indexOf(filter) > -1)  {
+          rows[i].style.display = "";
+        } else {
+          rows[i].style.display = "none";
+        }
+      }
+    }
+
+    document.querySelector('#incidentsearch').addEventListener('keyup', filterIncident, false);
+
+    function filterCar(event) {
+      var filter = event.target.value.toUpperCase();
+      var rows = document.querySelector("#cartable tbody").rows;
+
+      for (var i = 0; i < rows.length; i++) {
+        var firstCol = rows[i].cells[0].textContent.toUpperCase();
+        var secondCol = rows[i].cells[1].textContent.toUpperCase();
+        var thirdCol = rows[i].cells[2].textContent.toUpperCase();
+        var fourthCol = rows[i].cells[3].textContent.toUpperCase();
+        var fifthCol = rows[i].cells[4].textContent.toUpperCase();
+        var sixthCol = rows[i].cells[5].textContent.toUpperCase();
+        if (firstCol.indexOf(filter) > -1 || secondCol.indexOf(filter) > -1 || thirdCol.indexOf(filter) > -1 || fourthCol.indexOf(filter) > -1 || fifthCol.indexOf(filter) > -1 || sixthCol.indexOf(filter) > -1) {
+          rows[i].style.display = "";
+        } else {
+          rows[i].style.display = "none";
+        }
+      }
+    }
+
+    document.querySelector('#carsearch').addEventListener('keyup', filterCar, false);
+
+
+  </script>
+
+</body>
+
+</html>
