@@ -232,7 +232,7 @@
     /* Table */
     .table-wrapper {
       overflow-y: scroll;
-      height: 200px;
+      height: 300px;
     }
 
     .table-wrapper th {
@@ -481,8 +481,8 @@
                 <td class="endtime">{{row[6]}}</td>
                 <td class="status">{{row[7]}}</td>
                 <td class="editby">{{row[8]}}<span> </span>{{row[9]}}</td>
-                <td><button class="viewbutton btn button1" data-id="{{row[0]}}" 
-                    data-target="#viewincident">View</button></td>
+                <td class="description" style="display:none;">{{row[10]}}</td>
+                <td><button class="viewbutton btn button1" data-target="#viewincident">View</button></td>
               </p>
             </tr>
             {% endfor %}
@@ -720,13 +720,14 @@
     $(function () {
       $(".viewbutton").click(function () {
         //get data from table row
+
         var lice = $(this).parents("tr").find(".licenseplate").text();
         var cust = $(this).parents("tr").find(".customername").text();
         var type = $(this).parents("tr").find(".type").text();
         var star = $(this).parents("tr").find(".starttime").text();
         var end = $(this).parents("tr").find(".endtime").text();
         var stat = $(this).parents("tr").find(".status").text();
-        // var desc = $(this).parents("tr").find(".").text();
+        var desc = $(this).parents("tr").find(".description").text();
 
 
         //assign to value for input box inside modal
@@ -736,6 +737,7 @@
         $("#star").val(star);
         $("#end").val(end);
         $("#stat").val(stat);
+        $("#desc").val(desc);
 
         //open modal
         $("#viewincident").modal();
