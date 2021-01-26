@@ -34,7 +34,6 @@ def do_login():
         session['lastname'] = account[4]
         session['type'] = account[5].lower()
         
-        # return render_template('home.html')
         return redirect(url_for('home'))
     else:
         error = "Incorrect username or password!"
