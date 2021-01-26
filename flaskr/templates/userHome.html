@@ -366,15 +366,15 @@
   </nav>
 
   <div class="jumbotron text-center">
-    <div class="container">
+    <div class="container" style="padding-bottom: 50px; padding-top: 40px;">
       <div class="row">
         <div class="col-sm-6">
-          <video class="vid" style="width:80%; margin-top: 50px;" controls>
+          <video class="vid" style="width:80%; margin-top: 10px;" controls>
             <source src={{ url_for('static', filename="sidevid.mp4" ) }} type="video/mp4">
             Your browser does not support the video tag.
           </video>
         </div>
-        <h2 style="color:white; margin-top: 8%">
+        <h2 style="color:white; margin-top: 5%">
           <div class="col-sm-6" style="text-align: center;">Entrance<br><br>
         </h2>
         <h4 style="color:white; font-family: Montserrat, sans-serif">
@@ -384,15 +384,16 @@
               18:25:55</span></div>
       </div>
       </h4>
+      <hr style="color: #fff;">
 
       <div class="row">
         <div class="col-sm-6">
-          <video class="vid" style="width:80%; margin-top: 50px;" controls>
+          <video class="vid" style="width:80%; margin-top: 10px;" controls>
             <source src={{ url_for('static', filename="testvid.mp4" ) }} type="video/mp4">
             Your browser does not support the video tag.
           </video>
         </div>
-        <h2 style="color:white; margin-top: 8%">
+        <h2 style="color:white; margin-top: 5%">
           <div class="col-sm-6" style="text-align: center;">Exit<br><br>
         </h2>
         <h4 style="color:white; font-family: Montserrat, sans-serif">
@@ -403,8 +404,6 @@
       </div>
       </h4>
     </div>
-  </div>
-  </div>
   </div>
 
   <!-- Container (About Section) -->
@@ -554,18 +553,20 @@
             </div>
             <div class="col-sm-4 form-group">
               <label for="entertimeaddact">Enter Time:</label><br>
-              <input class="form-control" id="entertimeaddact" name="entertimeaddact" placeholder="Enter Time" type="datetime"
-                required>
+              <input class="form-control" id="entertimeaddact" name="entertimeaddact" placeholder="Enter Time"
+                type="datetime" required>
             </div>
             <div class="col-sm-4 form-group">
               <label for="exittimeaddact">Exit Time:</label><br>
-              <input class="form-control" id="exittimeaddact" name="exittimeaddact" placeholder="Exit Time" type="datetime" required>
+              <input class="form-control" id="exittimeaddact" name="exittimeaddact" placeholder="Exit Time"
+                type="datetime" required>
             </div>
           </div>
           <div class="row">
             <div class="col-sm-12 form-group">
               <label for="activityaddact">Activity:</label><br>
-              <textarea class="form-control" id="activityaddact" name="activityaddact" placeholder="Activity" rows="5"></textarea>
+              <textarea class="form-control" id="activityaddact" name="activityaddact" placeholder="Activity"
+                rows="5"></textarea>
             </div>
           </div>
         </div>
@@ -593,8 +594,8 @@
               <label for="licenseplateaddinc">License Plate:</label>
             </div>
             <div class="col-sm-8 form-group">
-              <input class="form-control" id="licenseplateaddinc" name="licenseplateaddinc" placeholder="License Plate" type="text"
-                required>
+              <input class="form-control" id="licenseplateaddinc" name="licenseplateaddinc" placeholder="License Plate"
+                type="text" required>
             </div>
           </div>
           <div class="row">
@@ -602,12 +603,12 @@
               <label for="cusnameaddinc">Customer Name:</label>
             </div>
             <div class="col-sm-4 form-group">
-              <input class="form-control" id="cusfirstnameaddinc" name="cusfirstnameaddinc" placeholder="Customer Firstname"
-                type="text" required>
+              <input class="form-control" id="cusfirstnameaddinc" name="cusfirstnameaddinc"
+                placeholder="Customer Firstname" type="text" required>
             </div>
             <div class="col-sm-4 form-group">
-              <input class="form-control" id="cuslastnameaddinc" name="cuslastnameaddinc" placeholder="Customer Lastname"
-                type="text" required>
+              <input class="form-control" id="cuslastnameaddinc" name="cuslastnameaddinc"
+                placeholder="Customer Lastname" type="text" required>
             </div>
           </div>
           <div class="row">
@@ -661,8 +662,8 @@
               <label for="licenseplateeditinc">License Plate:</label>
             </div>
             <div class="col-sm-8 form-group">
-              <input class="form-control" id="licenseplateeditinc" name="licenseplateeditinc" placeholder="License Plate" type="text"
-                required>
+              <input class="form-control" id="licenseplateeditinc" name="licenseplateeditinc"
+                placeholder="License Plate" type="text" required>
             </div>
           </div>
           <div class="row">
@@ -670,12 +671,12 @@
               <label for="cusnameeditinc">Customer Name:</label>
             </div>
             <div class="col-sm-4 form-group">
-              <input class="form-control" id="cusfirstnameeditinc" name="cusfirstnameeditinc" placeholder="Customer Firstname"
-                type="text" required>
+              <input class="form-control" id="cusfirstnameeditinc" name="cusfirstnameeditinc"
+                placeholder="Customer Firstname" type="text" required>
             </div>
             <div class="col-sm-4 form-group">
-              <input class="form-control" id="cuslastnameeditinc" name="cuslastnameeditinc" placeholder="Customer Lastname"
-                type="text" required>
+              <input class="form-control" id="cuslastnameeditinc" name="cuslastnameeditinc"
+                placeholder="Customer Lastname" type="text" required>
             </div>
           </div>
           <div class="row">
@@ -729,8 +730,8 @@
               <label for="licenseplateeditcar">License Plate:</label>
             </div>
             <div class="col-sm-8 form-group">
-              <input class="form-control" id="licenseplateeditcar" name="licenseplateeditcar" placeholder="License Plate" type="text"
-                required>
+              <input class="form-control" id="licenseplateeditcar" name="licenseplateeditcar"
+                placeholder="License Plate" type="text" required>
             </div>
           </div>
           <div class="row">
@@ -738,12 +739,12 @@
               <label for="cusnameeditcar">Customer Name:</label>
             </div>
             <div class="col-sm-4 form-group">
-              <input class="form-control" id="cusfirstnameeditcar" name="cusfirstnameeditcar" placeholder="Customer Firstname"
-                type="text" required>
+              <input class="form-control" id="cusfirstnameeditcar" name="cusfirstnameeditcar"
+                placeholder="Customer Firstname" type="text" required>
             </div>
             <div class="col-sm-4 form-group">
-              <input class="form-control" id="cuslastnameeditcar" name="cuslastnameeditcar" placeholder="Customer Lastname"
-                type="text" required>
+              <input class="form-control" id="cuslastnameeditcar" name="cuslastnameeditcar"
+                placeholder="Customer Lastname" type="text" required>
             </div>
           </div>
           <div class="row">
@@ -751,7 +752,8 @@
               <label for="phoneeditcar">Phone:</label>
             </div>
             <div class="col-sm-8 form-group">
-              <input class="form-control" id="phoneeditcar" name="phoneeditcar" placeholder="Phone" type="text" required>
+              <input class="form-control" id="phoneeditcar" name="phoneeditcar" placeholder="Phone" type="text"
+                required>
             </div>
           </div>
         </div>
@@ -770,7 +772,7 @@
     <a href="#myPage" title="To Top">
       <span class="glyphicon glyphicon-chevron-up"></span>
     </a>
-    <!-- <p>Bootstrap Theme Made By <a href="https://www.w3schools.com" title="Visit w3schools">www.w3schools.com</a></p> -->
+    <p>&copy; 2021 incidentrecord.com<p>
   </footer>
 
   <script>
@@ -842,7 +844,7 @@
         var sixthCol = rows[i].cells[5].textContent.toUpperCase();
         var seventhCol = rows[i].cells[6].textContent.toUpperCase();
         var eigthCol = rows[i].cells[7].textContent.toUpperCase();
-        if (firstCol.indexOf(filter) > -1 || secondCol.indexOf(filter) > -1 || thirdCol.indexOf(filter) > -1 || fourthCol.indexOf(filter) > -1 || fifthCol.indexOf(filter) > -1 || sixthCol.indexOf(filter) > -1 || seventhCol.indexOf(filter) > -1 || eigthCol.indexOf(filter) > -1)  {
+        if (firstCol.indexOf(filter) > -1 || secondCol.indexOf(filter) > -1 || thirdCol.indexOf(filter) > -1 || fourthCol.indexOf(filter) > -1 || fifthCol.indexOf(filter) > -1 || sixthCol.indexOf(filter) > -1 || seventhCol.indexOf(filter) > -1 || eigthCol.indexOf(filter) > -1) {
           rows[i].style.display = "";
         } else {
           rows[i].style.display = "none";
