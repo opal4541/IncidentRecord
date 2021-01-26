@@ -317,7 +317,7 @@
     }
 
     .modal {
-      padding-top: 10%;
+      padding-top: 2%;
     }
 
     .search input[type=text] {
@@ -473,15 +473,16 @@
             {% for row in incidentData %}
             <tr>
               <p>
-                <td>{{row[0]}}</td>
-                <td>{{row[1]}}</td>
-                <td>{{row[2]}}<span> </span>{{row[3]}}</td>
-                <td>{{row[4]}}</td>
-                <td>{{row[5]}}</td>
-                <td>{{row[6]}}</td>
-                <td>{{row[7]}}</td>
-                <td>{{row[8]}}<span> </span>{{row[9]}}</td>
-                <td><button class="btn button1" data-toggle="modal" data-target="#viewincident">View</button></td>
+                <td class="incidentid">{{row[0]}}</td>
+                <td class="licenseplate">{{row[1]}}</td>
+                <td class="customername">{{row[2]}}<span> </span>{{row[3]}}</td>
+                <td class="type">{{row[4]}}</td>
+                <td class="starttime">{{row[5]}}</td>
+                <td class="endtime">{{row[6]}}</td>
+                <td class="status">{{row[7]}}</td>
+                <td class="editby">{{row[8]}}<span> </span>{{row[9]}}</td>
+                <td><button class="viewbutton btn button1" data-id="{{row[0]}}" 
+                    data-target="#viewincident">View</button></td>
               </p>
             </tr>
             {% endfor %}
@@ -544,56 +545,63 @@
         <div class="modal-body">
           <div class="row">
             <div class="col-sm-4 form-group">
-              <label for="licenseplateaddinc">License Plate:</label>
+              <label for="licenseplateviewinc">License Plate:</label>
             </div>
             <div class="col-sm-8 form-group">
-              <input class="form-control" id="licenseplateaddinc" name="licenseplateaddinc" placeholder="License Plate"
-                type="text" required>
+              <input id="lice" class="form-control" type="text" readonly>
             </div>
           </div>
           <div class="row">
             <div class="col-sm-4 form-group">
-              <label for="cusnameaddinc">Customer Name:</label>
+              <label for="cusnameviewinc">Customer Name:</label>
             </div>
-            <div class="col-sm-4 form-group">
-              <input class="form-control" id="cusfirstnameaddinc" name="cusfirstnameaddinc"
-                placeholder="Customer Firstname" type="text" required>
-            </div>
-            <div class="col-sm-4 form-group">
-              <input class="form-control" id="cuslastnameaddinc" name="cuslastnameaddinc"
-                placeholder="Customer Lastname" type="text" required>
+            <div class="col-sm-8 form-group">
+              <input id="cust" class="form-control" type="text" readonly>
             </div>
           </div>
           <div class="row">
             <div class="col-sm-4 form-group">
-              <label for="typeaddinc">Type:</label>
+              <label for="typeviewinc">Type:</label>
             </div>
-            <div class="col-sm-2 form-group">
-              <input type="radio" id="noteaddinc" name="typeaddinc" value="Note">
-              <label for="noteaddinc" style="font-size:14px; font-weight: 50;">Note</label>
+            <div class="col-sm-8 form-group">
+              <input id="type" class="form-control" type="text" readonly>
             </div>
-            <div class="col-sm-2 form-group">
-              <input type="radio" id="vipaddinc" name="typeaddinc" value="VIP">
-              <label for="vipaddinc" style="font-size:14px; font-weight: 50;">VIP</label>
+          </div>
+          <div class="row">
+            <div class="col-sm-4 form-group">
+              <label for="starttimeviewinc">Start Time:</label>
             </div>
-            <div class=" col-sm-2 form-group">
-              <input type="radio" id="blacklistaddinc" name="typeaddinc" value="Blacklist">
-              <label for="blacklistaddinc" style="font-size:14px; font-weight: 50;">Blacklist</label>
+            <div class="col-sm-8 form-group">
+              <input id="star" class="form-control" type="text" readonly>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-4 form-group">
+              <label for="endtimeviewinc">End Time:</label>
+            </div>
+            <div class="col-sm-8 form-group">
+              <input id="end" class="form-control" type="text" readonly>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-4 form-group">
+              <label for="statusviewinc">Status:</label>
+            </div>
+            <div class="col-sm-8 form-group">
+              <input id="stat" class="form-control" type="text" readonly>
             </div>
           </div>
           <div class=" row">
             <div class="col-sm-4 form-group">
-              <label for="descriptionaddinc">Description:</label>
+              <label for="descriptionviewinc">Description:</label>
             </div>
             <div class="col-sm-8 form-group">
-              <textarea class="form-control" id="descriptionaddinc" name="descriptionaddinc" placeholder="Description"
-                rows="5"></textarea>
+              <textarea class="form-control" id="desc" rows="5" readonly></textarea>
             </div>
           </div>
-        </div>
-        <div class="modal-footer">
-          <!-- <button type="button" class="btn button2" data-dismiss="modal">Cancel</button> -->
-          <button id="confirmaddinc" type="button" class="btn button1">Confirm</button>
+          <div class="modal-footer">
+            <button type="button" class="btn button2" data-dismiss="modal">Close</button>
+          </div>
         </div>
       </div>
     </div>
@@ -606,7 +614,7 @@
     <a href="#myPage" title="To Top">
       <span class="glyphicon glyphicon-chevron-up"></span>
     </a>
-    <p>&copy; 2021 incidentrecord.com<p>
+    <p>&copy; 2021 incidentrecord.com</p>
   </footer>
 
   <script>
@@ -708,6 +716,31 @@
     }
 
     document.querySelector('#carsearch').addEventListener('keyup', filterCar, false);
+
+    $(function () {
+      $(".viewbutton").click(function () {
+        //get data from table row
+        var lice = $(this).parents("tr").find(".licenseplate").text();
+        var cust = $(this).parents("tr").find(".customername").text();
+        var type = $(this).parents("tr").find(".type").text();
+        var star = $(this).parents("tr").find(".starttime").text();
+        var end = $(this).parents("tr").find(".endtime").text();
+        var stat = $(this).parents("tr").find(".status").text();
+        // var desc = $(this).parents("tr").find(".").text();
+
+
+        //assign to value for input box inside modal
+        $("#lice").val(lice);
+        $("#cust").val(cust);
+        $("#type").val(type);
+        $("#star").val(star);
+        $("#end").val(end);
+        $("#stat").val(stat);
+
+        //open modal
+        $("#viewincident").modal();
+      })
+    })
 
 
   </script>
