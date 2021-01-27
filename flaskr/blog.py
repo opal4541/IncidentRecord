@@ -126,8 +126,7 @@ def detectLicensePlate(video):
                 # warped = cv2.cvtColor(warped, cv2.COLOR_BGR2GRAY)
                 warped = imutils.resize(warped, height=100)
                 license_img = warped
-                time = datetime.datetime.now()
-			    time = time.strftime("%Y-%m-%d %H:%M:%S")
+               
                 cv2.imshow("License Detected : ", license_img)
 
                 custom_config = r'-l tha -c tessedit_char_whitelist= 0123456789กขฃคฅฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรลวศษสหฬอฮ --psm 6'
@@ -143,6 +142,8 @@ def detectLicensePlate(video):
                     temp=freq
 
         cv2.imshow('IP Camera stream', img)
+        time = datetime.now()
+        time = time.strftime("%Y-%m-%d %H:%M:%S")
         if licenseText != temp:
             licenseText=temp
             print("License Plate is " + licenseText)
