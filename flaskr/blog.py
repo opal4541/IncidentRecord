@@ -49,6 +49,10 @@ def do_login():
 def blacklist():
     return render_template('blacklist.html')
 
+@app.route('/test')
+def test():
+    return render_template('test.html')
+
 
 @app.route('/')
 def home():
@@ -59,8 +63,10 @@ def home():
     historyData = cursor.fetchall()
     incidentData = cursor.execute('Select I.IncidentID, C.LicensePlate, CUS.FirstName, CUS.LastName, I.Type, I.StartTimestamp, I.EndTimestamp, I.Status, U.FirstName, U.LastName, I.Description FROM Incident I JOIN Car C ON I.CarID = C.CarID JOIN Customer CUS ON C.CustomerID = CUS.CustomerID JOIN [User] U ON U.UserID = I.UserID')
     incidentData = cursor.fetchall()
-    carData = cursor.execute('Select C.CarID, C.LicensePlate, CUS.FirstName, CUS.LastName, CUS.Phone, H.EnterTimestamp, I.Type FROM Car C JOIN Customer CUS ON C.CustomerID = CUS.CustomerID JOIN Incident I ON C.CarID = I.CarID JOIN History H ON C.CarID = H.CarID')
+    carData = cursor.execute('Select C.CarID, C.LicensePlate, CUS.FirstName, CUS.LastName, CUS.Phone, H.EnterTimestamp FROM Car C JOIN Customer CUS ON C.CustomerID = CUS.CustomerID JOIN History H ON C.CarID = H.CarID')
     carData = cursor.fetchall()
+
+    print(carData)
 
     if(session.get('type') != "admin"):
         return render_template('userHome.html', historyData=historyData, incidentData=incidentData, carData=carData)
@@ -73,14 +79,24 @@ def logout():
     session['loggedin'] = False
     return home()
 
-@app.route('/detect', methods=['POST'])
+
 def addCar(licensePlate):
-    cursor.execute('INSERT INTO Car VALUES ?', licensePlate)
+    enterTime = datetime.datetime.now()
+    enterTime = enterTime.strftime("%Y-%m-%d %H:%M:%S")
+    cursor.execute('INSERT INTO Customer(FirstName) VALUES (?)', (""))
+    cursor.commit()
+    customerID = cursor.execute('SELECT TOP 1 CustomerID FROM Customer ORDER BY CustomerID DESC')
+    customerID = cursor.fetchone()
+    cursor.execute('INSERT INTO Car(CustomerID, LicensePlate) VALUES (?,?)', (customerID[0], licensePlate))
+    cursor.commit()
+    carID = cursor.execute('SELECT C.CarID FROM Car C WHERE C.LicensePlate = ?', licensePlate)
+    carID = cursor.fetchone()
+    cursor.execute('INSERT INTO History (CarID, EnterTimestamp) VALUES (?,?)', (carID[0], enterTime))
     cursor.commit()
 
 def detectLicensePlate(video):
     # Using array instead of connect to the database
-    licensePlateData = cursor.execute('Select C.LicensePlate From Car C')
+    licensePlateData = cursor.execute('SELECT C.LicensePlate FROM Car C')
     licensePlateData = cursor.fetchall()
 
     # step1 arduino side send video stream on rtsp
@@ -142,8 +158,7 @@ def detectLicensePlate(video):
                     temp=freq
 
         cv2.imshow('IP Camera stream', img)
-        time = datetime.now()
-        time = time.strftime("%Y-%m-%d %H:%M:%S")
+        
         if licenseText != temp:
             licenseText=temp
             print("License Plate is " + licenseText)
@@ -156,6 +171,7 @@ def detectLicensePlate(video):
 
             if found == 0 and licenseText != '-':
                 print("New customer")
+                addCar(licenseText)
                 
             else:
                 found=0
@@ -202,3 +218,5 @@ def most_frequent(List):
         return max(set(List), key=List.count)
     else:
         return "None"
+
+# detectLicensePlate('static/sidevid.mp4')

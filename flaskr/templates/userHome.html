@@ -320,6 +320,11 @@
       padding-top: 2%;
     }
 
+    /* .modal-backdrop {
+      opacity: 0.5 !important;
+    } */
+    
+
     .search input[type=text] {
       width: 20px;
       border: 2px solid #ccc;
@@ -509,7 +514,6 @@
                 <th>Customer Name</th>
                 <th>Phone</th>
                 <th>Last Visited</th>
-                <th>Incident Type</th>
               </p>
             </tr>
           </thead>
@@ -522,7 +526,6 @@
                 <td>{{row[2]}}<span> </span>{{row[3]}}</td>
                 <td>{{row[4]}}</td>
                 <td>{{row[5]}}</td>
-                <td>{{row[6]}}</td>
               </p>
             </tr>
             {% endfor %}
@@ -601,6 +604,45 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn button2" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="iewincident" role="dialog">
+    <div class="modal-dialog">
+
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header alert-success">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h2 class="modal-title"><strong>NOTE!</strong></h2>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-sm-4 form-group">
+              <label for="licenseplateviewinc">License Plate:</label>
+            </div>
+            <div class="col-sm-8 form-group">
+              <p>พษ2556</p>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-4 form-group">
+              <label for="cusnameviewinc">Customer Name:</label>
+            </div>
+            <div class="col-sm-8 form-group">
+              <p>ลลิษา มโนบา</p>
+            </div>
+          </div>
+          <div class=" row">
+            <div class="col-sm-4 form-group">
+              <label for="descriptionviewinc">Description:</label>
+            </div>
+            <div class="col-sm-8 form-group">
+              <p>หักค่าน้ำมันจาก YG Entertainment</p>
+            </div>
           </div>
         </div>
       </div>
