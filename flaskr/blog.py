@@ -80,7 +80,7 @@ def logout():
     return home()
 
 
-def addCar(licensePlate):
+def add(licensePlate):
     enterTime = datetime.datetime.now()
     enterTime = enterTime.strftime("%Y-%m-%d %H:%M:%S")
     cursor.execute('INSERT INTO Customer(FirstName) VALUES (?)', (""))
@@ -171,7 +171,7 @@ def detectLicensePlate(video):
 
             if found == 0 and licenseText != '-':
                 print("New customer")
-                addCar(licenseText)
+                add(licenseText)
                 
             else:
                 found=0
