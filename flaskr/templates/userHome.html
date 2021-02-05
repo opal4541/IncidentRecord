@@ -12,7 +12,7 @@
   <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet" type="text/css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
-  <link href="{{url_for('static', filename='css/style.css')}}" rel="stylesheet">
+  <link href="{{url_for('static',filename='style.css')}}" rel="stylesheet">
 
   <style>
     body {
@@ -323,7 +323,7 @@
     /* .modal-backdrop {
       opacity: 0.5 !important;
     } */
-    
+
 
     .search input[type=text] {
       width: 20px;
@@ -374,6 +374,8 @@
     <div class="container" style="padding-bottom: 50px; padding-top: 40px;">
       <div class="row">
         <div class="col-sm-6">
+          <!-- <video id="video" width="640" height="480" autoplay></video>
+          <canvas id="canvas" width="640" height="480"></canvas> -->
           <video class="vid" style="width:80%; margin-top: 10px;" controls>
             <source src={{ url_for('static', filename="sidevid.mp4" ) }} type="video/mp4">
             Your browser does not support the video tag.
@@ -384,9 +386,9 @@
         </h2>
         <h4 style="color:white; font-family: Montserrat, sans-serif">
           <div class="col-sm-6" style="text-align: center;">License Plate:<span style="color: #f9c802">
-              5กศ8444</span><br><br></div>
-          <div class="col-sm-6" style="text-align: center;">Enter Time:<span style="color: #f9c802"> 2021-01-10
-              18:25:55</span></div>
+              {{EnterLicensePlate}}</span><br><br></div>
+          <div class="col-sm-6" style="text-align: center;">Enter Time:<span style="color: #f9c802">
+              {{EnterTime}}</span></div>
       </div>
       </h4>
       <hr style="color: #fff;">
@@ -403,9 +405,9 @@
         </h2>
         <h4 style="color:white; font-family: Montserrat, sans-serif">
           <div class="col-sm-6" style="text-align: center;">License Plate:<span style="color: #f9c802">
-              ขอ5025</span><br><br></div>
-          <div class="col-sm-6" style="text-align: center;">Exit Time:<span style="color: #f9c802"> 2021-01-10
-              18:25:55</span></div>
+              {{ExitLicensePlate}}</span><br><br></div>
+          <div class="col-sm-6" style="text-align: center;">Exit Time:<span style="color: #f9c802"> {{ExitTime}}</span>
+          </div>
       </div>
       </h4>
     </div>
@@ -786,7 +788,14 @@
       })
     })
 
-
+    // var video = document.getElementById('video');
+    // if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    //     navigator.mediaDevices.getUserMedia({ video: true }).then(function(stream) {
+    //         //video.src = window.URL.createObjectURL(stream);
+    //         video.srcObject = stream;
+    //         video.play();
+    //     });
+    // }
   </script>
 
 </body>

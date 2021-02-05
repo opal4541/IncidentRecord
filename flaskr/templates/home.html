@@ -12,7 +12,7 @@
   <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet" type="text/css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
-  <link href="{{url_for('static', filename='css/style.css')}}" rel="stylesheet">
+  <link href="{{url_for('static', filename='style.css')}}" rel="stylesheet">
 
   <style>
     body {
@@ -379,9 +379,9 @@
         </h2>
         <h4 style="color:white; font-family: Montserrat, sans-serif">
           <div class="col-sm-6" style="text-align: center;">License Plate:<span style="color: #f9c802">
-              5กศ8444</span><br><br></div>
-          <div class="col-sm-6" style="text-align: center;">Enter Time:<span style="color: #f9c802"> 2021-01-10
-              18:25:55</span></div>
+              {{EnterLicensePlate}}</span><br><br></div>
+          <div class="col-sm-6" style="text-align: center;">Enter Time:<span style="color: #f9c802">
+              {{EnterTime}}</span></div>
       </div>
       </h4>
       <hr style="color: #fff;">
@@ -398,9 +398,9 @@
         </h2>
         <h4 style="color:white; font-family: Montserrat, sans-serif">
           <div class="col-sm-6" style="text-align: center;">License Plate:<span style="color: #f9c802">
-              ขอ5025</span><br><br></div>
-          <div class="col-sm-6" style="text-align: center;">Exit Time:<span style="color: #f9c802"> 2021-01-10
-              18:25:55</span></div>
+              {{ExitLicensePlate}}</span><br><br></div>
+          <div class="col-sm-6" style="text-align: center;">Exit Time:<span style="color: #f9c802"> {{ExitTime}}</span>
+          </div>
       </div>
       </h4>
     </div>
@@ -559,18 +559,20 @@
             </div>
             <div class="col-sm-4 form-group">
               <label for="entertimeaddact">Enter Time:</label><br>
-              <input class="form-control" id="entertimeaddact" name="entertimeaddact" placeholder="Enter Time" type="datetime"
-                required>
+              <input class="form-control" id="entertimeaddact" name="entertimeaddact" placeholder="Enter Time"
+                type="datetime" required>
             </div>
             <div class="col-sm-4 form-group">
               <label for="exittimeaddact">Exit Time:</label><br>
-              <input class="form-control" id="exittimeaddact" name="exittimeaddact" placeholder="Exit Time" type="datetime" required>
+              <input class="form-control" id="exittimeaddact" name="exittimeaddact" placeholder="Exit Time"
+                type="datetime" required>
             </div>
           </div>
           <div class="row">
             <div class="col-sm-12 form-group">
               <label for="activityaddact">Activity:</label><br>
-              <textarea class="form-control" id="activityaddact" name="activityaddact" placeholder="Activity" rows="5"></textarea>
+              <textarea class="form-control" id="activityaddact" name="activityaddact" placeholder="Activity"
+                rows="5"></textarea>
             </div>
           </div>
         </div>
@@ -598,8 +600,8 @@
               <label for="licenseplateaddinc">License Plate:</label>
             </div>
             <div class="col-sm-8 form-group">
-              <input class="form-control" id="licenseplateaddinc" name="licenseplateaddinc" placeholder="License Plate" type="text"
-                required>
+              <input class="form-control" id="licenseplateaddinc" name="licenseplateaddinc" placeholder="License Plate"
+                type="text" required>
             </div>
           </div>
           <div class="row">
@@ -607,12 +609,12 @@
               <label for="cusnameaddinc">Customer Name:</label>
             </div>
             <div class="col-sm-4 form-group">
-              <input class="form-control" id="cusfirstnameaddinc" name="cusfirstnameaddinc" placeholder="Customer Firstname"
-                type="text" required>
+              <input class="form-control" id="cusfirstnameaddinc" name="cusfirstnameaddinc"
+                placeholder="Customer Firstname" type="text" required>
             </div>
             <div class="col-sm-4 form-group">
-              <input class="form-control" id="cuslastnameaddinc" name="cuslastnameaddinc" placeholder="Customer Lastname"
-                type="text" required>
+              <input class="form-control" id="cuslastnameaddinc" name="cuslastnameaddinc"
+                placeholder="Customer Lastname" type="text" required>
             </div>
           </div>
           <div class="row">
@@ -666,8 +668,8 @@
               <label for="licenseplateeditinc">License Plate:</label>
             </div>
             <div class="col-sm-8 form-group">
-              <input class="form-control" id="licenseplateeditinc" name="licenseplateeditinc" placeholder="License Plate" type="text"
-                required>
+              <input class="form-control" id="licenseplateeditinc" name="licenseplateeditinc"
+                placeholder="License Plate" type="text" required>
             </div>
           </div>
           <div class="row">
@@ -675,12 +677,12 @@
               <label for="cusnameeditinc">Customer Name:</label>
             </div>
             <div class="col-sm-4 form-group">
-              <input class="form-control" id="cusfirstnameeditinc" name="cusfirstnameeditinc" placeholder="Customer Firstname"
-                type="text" required>
+              <input class="form-control" id="cusfirstnameeditinc" name="cusfirstnameeditinc"
+                placeholder="Customer Firstname" type="text" required>
             </div>
             <div class="col-sm-4 form-group">
-              <input class="form-control" id="cuslastnameeditinc" name="cuslastnameeditinc" placeholder="Customer Lastname"
-                type="text" required>
+              <input class="form-control" id="cuslastnameeditinc" name="cuslastnameeditinc"
+                placeholder="Customer Lastname" type="text" required>
             </div>
           </div>
           <div class="row">
@@ -734,8 +736,8 @@
               <label for="licenseplateeditcar">License Plate:</label>
             </div>
             <div class="col-sm-8 form-group">
-              <input class="form-control" id="licenseplateeditcar" name="licenseplateeditcar" placeholder="License Plate" type="text"
-                required>
+              <input class="form-control" id="licenseplateeditcar" name="licenseplateeditcar"
+                placeholder="License Plate" type="text" required>
             </div>
           </div>
           <div class="row">
@@ -743,12 +745,12 @@
               <label for="cusnameeditcar">Customer Name:</label>
             </div>
             <div class="col-sm-4 form-group">
-              <input class="form-control" id="cusfirstnameeditcar" name="cusfirstnameeditcar" placeholder="Customer Firstname"
-                type="text" required>
+              <input class="form-control" id="cusfirstnameeditcar" name="cusfirstnameeditcar"
+                placeholder="Customer Firstname" type="text" required>
             </div>
             <div class="col-sm-4 form-group">
-              <input class="form-control" id="cuslastnameeditcar" name="cuslastnameeditcar" placeholder="Customer Lastname"
-                type="text" required>
+              <input class="form-control" id="cuslastnameeditcar" name="cuslastnameeditcar"
+                placeholder="Customer Lastname" type="text" required>
             </div>
           </div>
           <div class="row">
@@ -756,7 +758,8 @@
               <label for="phoneeditcar">Phone:</label>
             </div>
             <div class="col-sm-8 form-group">
-              <input class="form-control" id="phoneeditcar" name="phoneeditcar" placeholder="Phone" type="text" required>
+              <input class="form-control" id="phoneeditcar" name="phoneeditcar" placeholder="Phone" type="text"
+                required>
             </div>
           </div>
         </div>
@@ -847,7 +850,7 @@
         var sixthCol = rows[i].cells[5].textContent.toUpperCase();
         var seventhCol = rows[i].cells[6].textContent.toUpperCase();
         var eigthCol = rows[i].cells[7].textContent.toUpperCase();
-        if (firstCol.indexOf(filter) > -1 || secondCol.indexOf(filter) > -1 || thirdCol.indexOf(filter) > -1 || fourthCol.indexOf(filter) > -1 || fifthCol.indexOf(filter) > -1 || sixthCol.indexOf(filter) > -1 || seventhCol.indexOf(filter) > -1 || eigthCol.indexOf(filter) > -1)  {
+        if (firstCol.indexOf(filter) > -1 || secondCol.indexOf(filter) > -1 || thirdCol.indexOf(filter) > -1 || fourthCol.indexOf(filter) > -1 || fifthCol.indexOf(filter) > -1 || sixthCol.indexOf(filter) > -1 || seventhCol.indexOf(filter) > -1 || eigthCol.indexOf(filter) > -1) {
           rows[i].style.display = "";
         } else {
           rows[i].style.display = "none";

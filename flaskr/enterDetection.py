@@ -1,13 +1,10 @@
-from flask import Flask, render_template, redirect, url_for, request, session, Response
+from flask import Flask, render_template, redirect, url_for, request, session
 import cv2
 import pyodbc
 import numpy as np
 import imutils
 import pytesseract
 import datetime
-import threading
-from imutils.video import VideoStream
-
 
 connection = pyodbc.connect('Driver={SQL Server};'
                             'Server=.;'
@@ -16,79 +13,6 @@ connection = pyodbc.connect('Driver={SQL Server};'
 cursor = connection.cursor()
 
 app = Flask(__name__, static_folder='static')
-
-app.secret_key = '123456789'
-
-EnterTime = '2021-01-10 18:25:55'
-ExitTime = '2021-01-10 18:25:55'
-EnterLicensePlate = '5กศ8444'
-ExitLicensePlate = 'ขอ5025'
-
-outputFrame = None
-lock = threading.Lock()
-stream = VideoStream('static/sidevid.mp4').start()
-
-@app.route('/login', methods=['GET'])
-def login():
-    
-    return render_template('login.html')
-
-
-@app.route('/login', methods=['POST'])
-def do_login():
-    error = ""
-    username = request.form['username']
-    password = request.form['password']
-
-    account = cursor.execute(
-        'SELECT * FROM [User] WHERE userName = ? AND password = ?', (username, password))
-    account = cursor.fetchone()
-    if account:
-        session['loggedin'] = True
-        session['firstname'] = account[3]
-        session['lastname'] = account[4]
-        session['type'] = account[5].lower()
-        
-        return redirect(url_for('home'))
-    else:
-        error = "Incorrect username or password!"
-    return render_template('login.html', error=error)
-
-
-@app.route('/blacklist')
-def blacklist():
-    return render_template('blacklist.html')
-
-@app.route('/test')
-def test():
-    return render_template('test.html')
-
-
-@app.route('/')
-def home():
-    if not session.get('loggedin'):
-        return render_template('login.html')
-
-    historyData = cursor.execute('SELECT H.HistoryID, C.LicensePlate, H.EnterTimestamp, H.ExitTimestamp, H.Activity FROM History H JOIN Car C ON H.CarID = C.CarID')
-    historyData = cursor.fetchall()
-    incidentData = cursor.execute('SELECT I.IncidentID, C.LicensePlate, CUS.FirstName, CUS.LastName, I.Type, I.StartTimestamp, I.EndTimestamp, I.Status, U.FirstName, U.LastName, I.Description FROM Incident I JOIN Car C ON I.CarID = C.CarID JOIN Customer CUS ON C.CustomerID = CUS.CustomerID JOIN [User] U ON U.UserID = I.UserID')
-    incidentData = cursor.fetchall()
-    carDate = cursor.execute('SELECT C.CarID, C.LicensePlate, Customer.FirstName, Customer.LastName, Customer.Phone, MAX(H.EnterTimestamp) FROM History H JOIN Car C ON H.CarID = C.CarID JOIN Customer ON C.CustomerID = Customer.CustomerID Group By C.LicensePlate, C.CarID, C.CustomerID, Customer.FirstName, Customer.LastName, Customer.Phone')
-    carData = cursor.fetchall()
-    
-   
-
-    if(session.get('type') != "admin"):
-        return render_template('userHome.html', historyData=historyData, incidentData=incidentData, carData=carData, EnterLicensePlate=EnterLicensePlate, EnterTime=EnterTime, ExitLicensePlate=ExitLicensePlate, ExitTime=ExitTime)
-    
-    return render_template('home.html', historyData=historyData, incidentData=incidentData, carData=carData, EnterLicensePlate=EnterLicensePlate, EnterTime=EnterTime, ExitLicensePlate=ExitLicensePlate, ExitTime=ExitTime)
-
-
-@app.route('/logout', methods=['GET','POST'])
-def logout():
-    session['loggedin'] = False
-    return home()
-
 
 def order_points(pts):
 	rect = np.zeros((4, 2), dtype="float32")
@@ -127,15 +51,18 @@ def most_frequent(List):
     else:
         return "None"
 
-def detectEnterLicensePlate():
+
+def detectEnterLicensePlate(video):
     # Using array instead of connect to the database
     licensePlateData = getLicensePlates()
 
     # step1 arduino side send video stream on rtsp
     # step2 read video strean from arduino rtsp
-    
+    stream = cv2.VideoCapture(video, cv2.CAP_FFMPEG)
     # stream = cv2.VideoCapture('carGate.mp4')
-    global stream, outputFrame, lock
+
+    passed = 0
+    count = 0
     licenseText = '-'
     time = ''
     temp = '-'
@@ -184,11 +111,8 @@ def detectEnterLicensePlate():
                     digitsocr.append(res)
                     freq=most_frequent(digitsocr)
                     temp=freq
-        
-        with lock:
-            outputFrame = img.copy
 
-    #     cv2.imshow('IP Camera stream', img)
+        cv2.imshow('IP Camera stream', img)
         
         if licenseText != temp:
             licenseText=temp
@@ -196,10 +120,10 @@ def detectEnterLicensePlate():
             # Step5 use for loop to compare value in the array licensePlateData
             addEnterHistory(licenseText)
            
-    #     if cv2.waitKey(1) & 0xFF == ord('q'):
-    #         break
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
 
-    # cv2.destroyAllWindows()
+    cv2.destroyAllWindows()
 
 
 def getLicensePlates():
@@ -219,10 +143,6 @@ def addEnterHistory(licensePlate):
     enterTime = datetime.datetime.now()
     enterTime = enterTime.strftime("%Y-%m-%d %H:%M:%S")
     licensePlates = getLicensePlates()
-
-    global EnterLicensePlate, EnterTime
-    EnterLicensePlate = licensePlate
-    EnterTime = enterTime
     
 
     for i in licensePlates:
@@ -249,32 +169,4 @@ def addEnterHistory(licensePlate):
     cursor.commit()
     return True
 
-
-def generate():
-	# grab global references to the output frame and lock variables
-	global outputFrame, lock
-	# loop over frames from the output stream
-	while True:
-		# wait until the lock is acquired
-		with lock:
-			# check if the output frame is available, otherwise skip
-			# the iteration of the loop
-			if outputFrame is None:
-				continue
-			# encode the frame in JPEG format
-			(flag, encodedImage) = cv2.imencode(".jpg", outputFrame)
-			# ensure the frame was successfully encoded
-			if not flag:
-				continue
-		# yield the output frame in the byte format
-		yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + bytearray(encodedImage) + b'\r\n')
-
-@app.route("/video_feed")
-def video_feed():
-	# return the response generated along with the specific media
-	# type (mime type)
-	return Response(generate(),mimetype = "multipart/x-mixed-replace; boundary=frame")
-
-
-
-stream.stop()
+detectEnterLicensePlate('static/sidevid.mp4')
