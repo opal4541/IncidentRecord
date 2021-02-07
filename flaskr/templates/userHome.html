@@ -376,10 +376,11 @@
         <div class="col-sm-6">
           <!-- <video id="video" width="640" height="480" autoplay></video>
           <canvas id="canvas" width="640" height="480"></canvas> -->
-          <video class="vid" style="width:80%; margin-top: 10px;" controls>
+          <img class="vid" src="{{url_for('enterVideo_feed')}}" style="width:80%; margin-top:10px">
+          <!-- <video class="vid" style="width:80%; margin-top: 10px;" controls>
             <source src={{ url_for('static', filename="sidevid.mp4" ) }} type="video/mp4">
             Your browser does not support the video tag.
-          </video>
+          </video> -->
         </div>
         <h2 style="color:white; margin-top: 5%">
           <div class="col-sm-6" style="text-align: center;">Entrance<br><br>
@@ -395,10 +396,11 @@
 
       <div class="row">
         <div class="col-sm-6">
-          <video class="vid" style="width:80%; margin-top: 10px;" controls>
+          <img class="vid" src="{{url_for('exitVideo_feed')}}" style="width:80%; margin-top:10px">
+          <!-- <video class="vid" style="width:80%; margin-top: 10px;" controls>
             <source src={{ url_for('static', filename="testvid.mp4" ) }} type="video/mp4">
             Your browser does not support the video tag.
-          </video>
+          </video> -->
         </div>
         <h2 style="color:white; margin-top: 5%">
           <div class="col-sm-6" style="text-align: center;">Exit<br><br>
@@ -788,14 +790,6 @@
       })
     })
 
-    // var video = document.getElementById('video');
-    // if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-    //     navigator.mediaDevices.getUserMedia({ video: true }).then(function(stream) {
-    //         //video.src = window.URL.createObjectURL(stream);
-    //         video.srcObject = stream;
-    //         video.play();
-    //     });
-    // }
   </script>
 
 </body>

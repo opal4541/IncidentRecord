@@ -53,23 +53,13 @@ def most_frequent(List):
 
 
 def detectExitLicensePlate(video):
-    # Using array instead of connect to the database
     licensePlateData = getLicensePlates()
-
-    # step1 arduino side send video stream on rtsp
-    # step2 read video strean from arduino rtsp
     stream = cv2.VideoCapture(video, cv2.CAP_FFMPEG)
-    # stream = cv2.VideoCapture('carGate.mp4')
-
-    passed = 0
-    count = 0
     licenseText = '-'
-    time = ''
     temp = '-'
     digitsocr = []
 
     while True:
-        # step3 capture image when detect license plate
         r, img = stream.read()
         ratio = img.shape[0] / 600.0
         orig = img.copy()
@@ -91,14 +81,10 @@ def detectExitLicensePlate(video):
             if len(approx) == 4:
                 screenCnt = approx
 
-                # cv2.imshow("License Detected : ", license_img)
                 cv2.drawContours(img, [screenCnt], -1, (0, 255, 255), 3)
                 warped = four_point_transform(orig, screenCnt.reshape(4, 2) * ratio)
-                # warped = cv2.cvtColor(warped, cv2.COLOR_BGR2GRAY)
                 warped = imutils.resize(warped, height=100)
                 license_img = warped
-               
-                # cv2.imshow("License Detected : ", license_img)
 
                 custom_config = r'-l tha -c tessedit_char_whitelist= 0123456789กขฃคฅฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรลวศษสหฬอฮ --psm 6'
 
@@ -112,19 +98,12 @@ def detectExitLicensePlate(video):
                     freq=most_frequent(digitsocr)
                     temp=freq
 
-        cv2.imshow('IP Camera stream', img)
+        cv2.imwrite('static/exitVideo/exit.jpg', img)
         
         if licenseText != temp:
             licenseText=temp
             print("License Plate is " + licenseText)
-            # Step5 use for loop to compare value in the array licensePlateData
-           
-            addExitHistory(licenseText)
-
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-
-    cv2.destroyAllWindows()
+            addExitHistory(licenseText, orig)
 
 
 def getLicensePlates():
@@ -139,8 +118,7 @@ def getCarID(licensePlate):
     return carID[0]
 
 
-def addExitHistory(licensePlate):
-    found = False
+def addExitHistory(licensePlate, carImg):
     exitTime = datetime.datetime.now()
     exitTime = exitTime.strftime("%Y-%m-%d %H:%M:%S")
     carID = getCarID(licensePlate)
@@ -150,5 +128,6 @@ def addExitHistory(licensePlate):
     cursor.execute('UPDATE History SET ExitTimestamp = ? WHERE HistoryID = ?', exitTime, history[0])
     cursor.commit()
     return True
+
 
 detectExitLicensePlate('static/sidevid.mp4')

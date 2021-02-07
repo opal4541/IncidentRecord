@@ -53,23 +53,13 @@ def most_frequent(List):
 
 
 def detectEnterLicensePlate(video):
-    # Using array instead of connect to the database
     licensePlateData = getLicensePlates()
-
-    # step1 arduino side send video stream on rtsp
-    # step2 read video strean from arduino rtsp
     stream = cv2.VideoCapture(video, cv2.CAP_FFMPEG)
-    # stream = cv2.VideoCapture('carGate.mp4')
-
-    passed = 0
-    count = 0
     licenseText = '-'
-    time = ''
     temp = '-'
     digitsocr = []
 
     while True:
-        # step3 capture image when detect license plate
         r, img = stream.read()
         ratio = img.shape[0] / 600.0
         orig = img.copy()
@@ -91,15 +81,11 @@ def detectEnterLicensePlate(video):
             if len(approx) == 4:
                 screenCnt = approx
 
-                # cv2.imshow("License Detected : ", license_img)
                 cv2.drawContours(img, [screenCnt], -1, (0, 255, 255), 3)
                 warped = four_point_transform(orig, screenCnt.reshape(4, 2) * ratio)
-                # warped = cv2.cvtColor(warped, cv2.COLOR_BGR2GRAY)
                 warped = imutils.resize(warped, height=100)
                 license_img = warped
                
-                # cv2.imshow("License Detected : ", license_img)
-
                 custom_config = r'-l tha -c tessedit_char_whitelist= 0123456789กขฃคฅฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรลวศษสหฬอฮ --psm 6'
 
                 ocr_result=pytesseract.image_to_string(license_img, config=custom_config + 'Thai' + 'Thaiitalic'+'tha.psl.bold.italic'+'psl-bold')
@@ -112,18 +98,12 @@ def detectEnterLicensePlate(video):
                     freq=most_frequent(digitsocr)
                     temp=freq
 
-        cv2.imshow('IP Camera stream', img)
+        cv2.imwrite('static/enterVideo/enter.jpg', img)
         
         if licenseText != temp:
             licenseText=temp
             print("License Plate is " + licenseText)
-            # Step5 use for loop to compare value in the array licensePlateData
-            addEnterHistory(licenseText)
-           
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-
-    cv2.destroyAllWindows()
+            addEnterHistory(licenseText, orig)
 
 
 def getLicensePlates():
@@ -138,7 +118,7 @@ def getCarID(licensePlate):
     return carID[0]
 
 
-def addEnterHistory(licensePlate):
+def addEnterHistory(licensePlate, carImg):
     found = False
     enterTime = datetime.datetime.now()
     enterTime = enterTime.strftime("%Y-%m-%d %H:%M:%S")
@@ -168,5 +148,6 @@ def addEnterHistory(licensePlate):
     cursor.execute('INSERT INTO History (CarID, EnterTimestamp) VALUES (?,?)', (carID[0], enterTime))
     cursor.commit()
     return True
+
 
 detectEnterLicensePlate('static/sidevid.mp4')
