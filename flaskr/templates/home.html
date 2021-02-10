@@ -338,6 +338,10 @@
     .search input[type=text]:focus {
       width: 100%;
     }
+
+    textarea {
+      resize: none;
+    }
   </style>
 
 </head>
@@ -371,7 +375,7 @@
         <div class="col-sm-6">
           <!-- <video id="video" width="640" height="480" autoplay></video>
           <canvas id="canvas" width="640" height="480"></canvas> -->
-          <img class="vid" src="{{url_for('enterVideo_feed')}}" style="width:80%; margin-top:10px">
+          <img class="vid" src="{{url_for('entervideo_feed')}}" style="width:80%; margin-top:10px">
           <!-- <video class="vid" style="width:80%; margin-top: 10px;" controls>
             <source src={{ url_for('static', filename="sidevid.mp4" ) }} type="video/mp4">
             Your browser does not support the video tag.
@@ -381,15 +385,17 @@
           <div class="col-sm-6" style="text-align: center;">Entrance<br><br>
         </h2>
         <h4 style="color:white; font-family: Montserrat, sans-serif">
-          <div class="col-sm-6" style="text-align: center;">License Plate: <span style="color: #f9c802">{{EnterLicensePlate}}</span><br><br></div>
-          <div class="col-sm-6" style="text-align: center;">Enter Time: <span style="color: #f9c802">{{EnterTime}}</span></div>
+          <div class="col-sm-6" style="text-align: center;">License Plate: <span
+              style="color: #f9c802">{{EnterLicensePlate}}</span><br><br></div>
+          <div class="col-sm-6" style="text-align: center;">Enter Time: <span
+              style="color: #f9c802">{{EnterTime}}</span></div>
       </div>
       </h4>
       <hr style="color: #fff;">
 
       <div class="row">
         <div class="col-sm-6">
-          <img class="vid" src="{{url_for('exitVideo_feed')}}" style="width:80%; margin-top:10px">
+          <img class="vid" src="{{url_for('exitvideo_feed')}}" style="width:80%; margin-top:10px">
           <!-- <video class="vid" style="width:80%; margin-top: 10px;" controls>
             <source src={{ url_for('static', filename="testvid.mp4" ) }} type="video/mp4">
             Your browser does not support the video tag.
@@ -399,7 +405,8 @@
           <div class="col-sm-6" style="text-align: center;">Exit<br><br>
         </h2>
         <h4 style="color:white; font-family: Montserrat, sans-serif">
-          <div class="col-sm-6" style="text-align: center;">License Plate: <span style="color: #f9c802">{{ExitLicensePlate}}</span><br><br></div>
+          <div class="col-sm-6" style="text-align: center;">License Plate: <span
+              style="color: #f9c802">{{ExitLicensePlate}}</span><br><br></div>
           <div class="col-sm-6" style="text-align: center;">Exit Time: <span style="color: #f9c802">{{ExitTime}}</span>
           </div>
       </div>
@@ -439,7 +446,8 @@
                 <td>{{row[3]}}</td>
                 <td><button class="btn button1" data-toggle="modal" data-target="#addactivity{{row.0}}">Add</button>
                 </td>
-                <td><button class="btn button1" data-toggle="modal" data-target="#addincidentfromhis{{row.0}}">Add</button></td>
+                <td><button class="btn button1" data-toggle="modal"
+                    data-target="#addincidentfromhis{{row.0}}">Add</button></td>
               </p>
             </tr>
             {% endfor %}
@@ -486,12 +494,13 @@
                 <td>{{row[6]}}</td>
                 <td>{{row[7]}}</td>
                 <td>{{row[8]}}<span> </span>{{row[9]}}</td>
-                <td><button class="btn button1" data-toggle="modal" data-target="#editincident{{row.0}}" onclick="checkButton('{{row.4}}')">Edit</button>
+                <td><button class="btn button1" data-toggle="modal" data-target="#editincident{{row.0}}"
+                    onclick="checkButton('{{row.4}}')">Edit</button>
                 </td>
-                <form action="{{url_for('deactivate')}}" method="post">
-                  <input type="hidden" id="incid" name="incid" value="{{row.0}}">
-                  <td><button id="deactivatebutton" type="submit" class="btn button2">Deactivate</button></td>
-                </form>
+              <form action="{{url_for('deactivate')}}" method="post">
+                <input type="hidden" id="incid" name="incid" value="{{row.0}}">
+                <td><button id="deactivatebutton" type="submit" class="btn button2">Deactivate</button></td>
+              </form>
               </p>
             </tr>
             {% endfor %}
@@ -556,37 +565,40 @@
           <button type="button" class="close" data-dismiss="modal">&times;</button>
           <h2 class="modal-title">Add Activity</h2>
         </div>
-        <div class="modal-body">
-          <div class="row">
-            <div class="col-sm-4 form-group">
-              <label for="licenseplateaddact">License Plate:</label><br>
-              <input class="form-control" id="licenseplateaddact" name="licenseplateaddact" placeholder="License Plate"
-                type="text" value={{row.1}} readonly>
+        <form action="{{url_for('addActivity')}}" method="post">
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-sm-4 form-group">
+                <input type="hidden" id="hisid" name="hisid" value="{{row.0}}">
+                <label for="licenseplateaddact">License Plate:</label><br>
+                <input class="form-control" id="licenseplateaddact" name="licenseplateaddact"
+                  placeholder="License Plate" type="text" value={{row.1}} readonly>
+              </div>
+              <div class="col-sm-4 form-group">
+                <label for="entertimeaddact">Enter Time:</label><br>
+                <textarea class="form-control" id="entertimeaddact" name="entertimeaddact" placeholder="Enter Time"
+                type="datetime" rows="1" readonly>{{row.2}}</textarea>
+              </div>
+              <div class="col-sm-4 form-group">
+                <label for="exittimeaddact">Exit Time:</label><br>
+                <textarea class="form-control" id="exittimeaddact" name="exittimeaddact" placeholder="Exit Time"
+                type="datetime" rows="1" readonly>{{row.3}}</textarea>
+              </div>
             </div>
-            <div class="col-sm-4 form-group">
-              <label for="entertimeaddact">Enter Time:</label><br>
-              <input class="form-control" id="entertimeaddact" name="entertimeaddact" placeholder="Enter Time"
-                type="datetime" value={{row.2}} readonly>
-            </div>
-            <div class="col-sm-4 form-group">
-              <label for="exittimeaddact">Exit Time:</label><br>
-              <input class="form-control" id="exittimeaddact" name="exittimeaddact" placeholder="Exit Time"
-                type="datetime" value={{row.3}} readonly>
+            <div class="row">
+              <div class="col-sm-12 form-group">
+                <label for="activityaddact">Activity:</label><br>
+                <textarea class="form-control" id="activityaddact" name="activityaddact" placeholder="Activity" rows="5"
+                  type="text">{{row.4}}</textarea>
+              </div>
             </div>
           </div>
-          <div class="row">
-            <div class="col-sm-12 form-group">
-              <label for="activityaddact">Activity:</label><br>
-              <textarea class="form-control" id="activityaddact" name="activityaddact" placeholder="Activity" rows="5"
-                type="text">{{row.4}}</textarea>
-            </div>
+          <div class="modal-footer">
+            <!-- <button type="button" class="btn button2" data-dismiss="modal">Cancel</button> -->
+            <button type="submit" class="btn button1" id="confirmaddact">Confirm</button>
           </div>
-        </div>
-        <div class="modal-footer">
-          <!-- <button type="button" class="btn button2" data-dismiss="modal">Cancel</button> -->
-          <button type="button" class="btn button1" id="confirmaddact">Confirm</button>
-        </div>
       </div>
+      </form>
     </div>
   </div>
   {% endfor %}
@@ -649,8 +661,8 @@
                 <label for="descriptionaddincfromhis">Description:</label>
               </div>
               <div class="col-sm-8 form-group">
-                <textarea class="form-control" id="descriptionaddincfromhis" name="descriptionaddincfromhis" placeholder="Description"
-                  rows="5"></textarea>
+                <textarea class="form-control" id="descriptionaddincfromhis" name="descriptionaddincfromhis"
+                  placeholder="Description" rows="5"></textarea>
               </div>
             </div>
           </div>
@@ -746,7 +758,7 @@
           <button type="button" class="close" data-dismiss="modal">&times;</button>
           <h2 class="modal-title">Edit Incident</h2>
         </div>
-        <form action="{{url_for('updateIncident')}}" method="post">
+        <form action="{{url_for('editIncident')}}" method="post">
           <div class="modal-body">
             <div class="row">
               <div class="col-sm-4 form-group">
@@ -820,7 +832,7 @@
           <button type="button" class="close" data-dismiss="modal">&times;</button>
           <h2 class="modal-title">Edit Car</h2>
         </div>
-        <form action="{{url_for('updateCar')}}" method="post">
+        <form action="{{url_for('editCar')}}" method="post">
           <div class="modal-body">
             <div class="row">
               <div class="col-sm-4 form-group">

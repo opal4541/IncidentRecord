@@ -22,6 +22,7 @@ app = Flask(__name__, static_folder='static')
 app.secret_key = '123456789'
 socketio = SocketIO(app)
 
+
 @app.route('/')
 def home():
     if not session.get('loggedin'):
@@ -69,6 +70,7 @@ def do_login():
         error = "Incorrect username or password!"
     return render_template('login.html', error=error)
 
+
 @app.route('/logout', methods=['GET','POST'])
 def logout():
     session['loggedin'] = False
@@ -78,6 +80,7 @@ def logout():
 @app.route('/blacklist')
 def blacklist():
     return render_template('blacklist.html')
+
 
 @app.route('/test')
 def test():
@@ -114,61 +117,115 @@ def exitvideo_feed():
     return Response(genExitVid(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
-tempEnterTime = ''
-def getEnterTime():
-    global tempEnterTime
-    enterTime = cursor.execute('SELECT TOP 1 H.EnterTimestamp FROM History H ORDER BY H.HistoryID DESC')
-    enterTime = cursor.fetchone()
+# tempEnterTime = ''
+# def getEnterTime():
+#     global tempEnterTime
+#     enterTime = cursor.execute('SELECT TOP 1 H.EnterTimestamp FROM History H ORDER BY H.HistoryID DESC')
+#     enterTime = cursor.fetchone()
     
-    if tempEnterTime != enterTime:
-        tempEnterTime = str(enterTime[0])
+#     if tempEnterTime != enterTime:
+#         tempEnterTime = str(enterTime[0])
 
-    return tempEnterTime
+#     return tempEnterTime
 
-def genEnterTime():
-    yield getEnterTime()
+# def genEnterTime():
+#     yield getEnterTime()
 
-@app.route('/entertime_feed')
-def entertime_feed():
-    return Response(genEnterTime(), mimetype='text') 
+# @app.route('/entertime_feed')
+# def entertime_feed():
+#     return Response(genEnterTime(), mimetype='text') 
 
-tempEnterLicense = ''
-def getEnterLicense():
-    global tempEnterLicense
-    enterLicense = cursor.execute('SELECT TOP 1 C.LicensePlate FROM History H JOIN Car C ON H.CarID = C.CarID ORDER BY H.HistoryID DESC')
-    enterLicense = cursor.fetchone()
+# tempEnterLicense = ''
+# def getEnterLicense():
+#     global tempEnterLicense
+#     enterLicense = cursor.execute('SELECT TOP 1 C.LicensePlate FROM History H JOIN Car C ON H.CarID = C.CarID ORDER BY H.HistoryID DESC')
+#     enterLicense = cursor.fetchone()
 
-    if tempEnterLicense != enterLicense:
-        tempEnterLicense = enterLicense[0]
+#     if tempEnterLicense != enterLicense:
+#         tempEnterLicense = enterLicense[0]
 
-    return str(tempEnterLicense)
+#     return str(tempEnterLicense)
 
-def genEnterLicense():
-    yield getEnterLicense()
+# def genEnterLicense():
+#     yield getEnterLicense()
 
-@app.route('/enterlicense_feed')
-def enterlicense_feed():
-    return Response(genEnterLicense(), mimetype='text') 
+# @app.route('/enterlicense_feed')
+# def enterlicense_feed():
+#     return Response(genEnterLicense(), mimetype='text') 
 
-def genEnter():
-    enter = []
-    enterLicense = cursor.execute('SELECT TOP 1 C.LicensePlate, H.EnterTimestamp FROM History H JOIN Car C ON H.CarID = C.CarID ORDER BY H.HistoryID DESC')
-    enterLicense = cursor.fetchone()
-    for e in enterLicense:
-        enter.append(str(e))
+# def genEnter():
+#     enter = []
+#     enterLicense = cursor.execute('SELECT TOP 1 C.LicensePlate, H.EnterTimestamp FROM History H JOIN Car C ON H.CarID = C.CarID ORDER BY H.HistoryID DESC')
+#     enterLicense = cursor.fetchone()
+#     for e in enterLicense:
+#         enter.append(str(e))
     
-    enter_json = json.dumps(enter)
-    print(enter_json)
-    return enter_json
+#     enter_json = json.dumps(enter)
+#     print(enter_json)
+#     return enter_json
 
-genEnter()
-@app.route('/enter_feeed')
-def enter_feed():
-    return Response(genEnter(), mimetype='applicant/json')     
+# genEnter()
+# @app.route('/enter_feeed')
+# def enter_feed():
+#     return Response(genEnter(), mimetype='applicant/json')
 
 
-@app.route('/updateinc',methods=['POST','GET'])
-def updateIncident():
+@app.route('/addactivity', methods=['POST','GET'])
+def addActivity():
+    if request.method == 'POST':
+        historyID = request.form['hisid']
+        licenseplate = request.form['licenseplateaddact']
+        EnterTime = request.form['entertimeaddact']
+        ExitTime = request.form['exittimeaddact']
+        activity = request.form['activityaddact']
+
+        cursor.execute('UPDATE History SET Activity = ? WHERE HistoryID = ?', (activity,historyID))
+        connection.commit()
+        return redirect(url_for('home'))
+
+
+@app.route('/addincidentfromhistory',methods=['POST','GET'])
+def addIncidentFromHistory():
+    if request.method == 'POST': 
+        licenseplate = request.form['licenseplateaddincfromhis']
+        fname = request.form['cusfirstnameaddincfromhis']
+        lname = request.form['cuslastnameaddincfromhis']
+        typeinc = request.form['typeaddincfromhis']
+        description = request.form['descriptionaddincfromhis']
+        
+        carid = cursor.execute('SELECT CarID FROM Car WHERE LicensePlate = ? ', (licenseplate))
+        carid = cursor.fetchone()
+        userid = cursor.execute("SELECT UserID From [User] WHERE [User].FirstName = ? AND [User].LastName = ?", (session['firstname'], session['lastname']))
+        userid = cursor.fetchone()
+        cusid = cursor.execute('SELECT CustomerID From Customer WHERE FirstName = ? AND LastName = ?', (fname, lname))
+        cusid = cursor.fetchone()
+        incid = cursor.execute('SELECT IncidentID From Incident WHERE CarID = ? AND Status = ?', (carid[0], 'Active'))
+        incid = cursor.fetchone()
+        time = datetime.datetime.now()
+        time = time.strftime("%Y-%m-%d %H:%M:%S")
+
+        if incid:
+            cursor.execute('UPDATE Incident SET EndTimeStamp = ?, Status = ? WHERE IncidentID = ?', (time, 'Inactive', incid[0]))
+            connection.commit()
+            return redirect(url_for('home'))
+
+        if cusid:
+            cursor.execute('INSERT INTO Incident(CarID, UserID, Description, Type, StartTimestamp, Status) VALUES (?, ?, ?, ?, ?, ?)', (carid[0], userid[0], description, typeinc, time, "Active"))
+            connection.commit()
+            return redirect(url_for('home'))
+        else:
+            # ถ้าไม่มี customer name อยู่ใน customer db ให้เอา cus id ที่เชื่อมกับ car id มาอัพเดทชื่อเอา
+            cusidnew = cursor.execute('SELECT CustomerID From Car WHERE CarID = ?', (carid[0]))
+            cusidnew = cursor.fetchone()
+            cursor.execute('UPDATE Customer SET FirstName = ?, LastName = ? WHERE CustomerID = ?', (fname, lname, cusidnew[0]))
+            cursor.execute('INSERT INTO Incident(CarID, UserID, Description, Type, StartTimestamp, Status) VALUES (?, ?, ?, ?, ?, ?)', (carid[0], userid[0], description, typeinc, time, "Active"))
+                
+        connection.commit()
+        return redirect(url_for('home'))
+
+
+@app.route('/editincident',methods=['POST','GET'])
+def editIncident():
     if request.method == 'POST':
         incidentID = request.form['incid']
         licenseplate = request.form['licenseplateeditinc']
@@ -249,63 +306,18 @@ def updateIncident():
         return redirect(url_for('home'))
     
 
-# มีทะเบียนมาให้อยู่แล้ว ถ้าคนนี้มีอยู่ใน inc แล้วจะไปอัพเดทอันเก่าแทนหรือจะแอดไปใหม่แล้วทำให้อันเก่า
-@app.route('/addincfromhistory',methods=['POST','GET'])
-def addIncidentFromHistory():
-    if request.method == 'POST': 
-        licenseplate = request.form['licenseplateaddincfromhis']
-        fname = request.form['cusfirstnameaddincfromhis']
-        lname = request.form['cuslastnameaddincfromhis']
-        typeinc = request.form['typeaddincfromhis']
-        description = request.form['descriptionaddincfromhis']
-        
-        carid = cursor.execute('SELECT CarID FROM Car WHERE LicensePlate = ? ', (licenseplate))
-        carid = cursor.fetchone()
-        userid = cursor.execute("SELECT UserID From [User] WHERE [User].FirstName = ? AND [User].LastName = ?", (session['firstname'], session['lastname']))
-        userid = cursor.fetchone()
-        cusid = cursor.execute('SELECT CustomerID From Customer WHERE FirstName = ? AND LastName = ?', (fname, lname))
-        cusid = cursor.fetchone()
-        incid = cursor.execute('SELECT IncidentID From Incident WHERE CarID = ? AND Status = ?', (carid[0], 'Active'))
-        incid = cursor.fetchone()
+@app.route('/deactivate', methods=['POST'])
+def deactivate():
+    if request.method == 'POST':
+        incidentID = request.form['incid']
         time = datetime.datetime.now()
         time = time.strftime("%Y-%m-%d %H:%M:%S")
-
-        if incid:
-            cursor.execute('UPDATE Incident SET EndTimeStamp = ?, Status = ? WHERE IncidentID = ?', (time, 'Inactive', incid[0]))
-            connection.commit()
-            return redirect(url_for('home'))
-
-        if cusid:
-            cursor.execute('INSERT INTO Incident(CarID, UserID, Description, Type, StartTimestamp, Status) VALUES (?, ?, ?, ?, ?, ?)', (carid[0], userid[0], description, typeinc, time, "Active"))
-            connection.commit()
-            return redirect(url_for('home'))
-        else:
-            # ถ้าไม่มี customer name อยู่ใน customer db ให้เอา cus id ที่เชื่อมกับ car id มาอัพเดทชื่อเอา
-            cusidnew = cursor.execute('SELECT CustomerID From Car WHERE CarID = ?', (carid[0]))
-            cusidnew = cursor.fetchone()
-            cursor.execute('UPDATE Customer SET FirstName = ?, LastName = ? WHERE CustomerID = ?', (fname, lname, cusidnew[0]))
-            cursor.execute('INSERT INTO Incident(CarID, UserID, Description, Type, StartTimestamp, Status) VALUES (?, ?, ?, ?, ?, ?)', (carid[0], userid[0], description, typeinc, time, "Active"))
-                
+        cursor.execute("UPDATE Incident SET EndTimeStamp = ?, Status = ? WHERE IncidentID = ?", (time, "Inactive", incidentID))
         connection.commit()
-        return redirect(url_for('home'))
+        return home()
 
-@app.route('/updatecar',methods=['POST','GET'])
-def updateCar():
-    if request.method == 'POST':
-        carID = request.form['carid']
-        licenseplate = request.form['licenseplateeditcar']
-        fname = request.form['cusfirstnameeditcar']
-        lname = request.form['cuslastnameeditcar']
-        phone = request.form['phoneeditcar']
-        
-        cusid = cursor.execute('SELECT Car.CustomerID From Car WHERE CarID = ?', (carID))
-        cusid = cursor.fetchone()
-        cursor.execute('UPDATE Customer SET FirstName = ?, LastName = ?, Phone = ? WHERE CustomerID = ?', (fname, lname, phone, cusid[0]))
-        cursor.execute('UPDATE Car SET LicensePlate = ? WHERE CarID = ?', (licenseplate, carID))
-        connection.commit()
-        return redirect(url_for('home'))
 
-@app.route('/insertinc', methods = ['POST'])
+@app.route('/addincident', methods = ['POST'])
 def addIncident():
     if request.method == "POST":
         licenseplate = request.form['licenseplateaddinc']
@@ -391,13 +403,25 @@ def addIncident():
         connection.commit()
         return redirect(url_for('home'))
 
-@app.route('/deactivate', methods=['POST'])
-def deactivate():
+
+@app.route('/editcar',methods=['POST','GET'])
+def editCar():
     if request.method == 'POST':
-        incidentID = request.form['incid']
-        time = datetime.datetime.now()
-        time = time.strftime("%Y-%m-%d %H:%M:%S")
-        cursor.execute("UPDATE Incident SET EndTimeStamp = ?, Status = ? WHERE IncidentID = ?", (time, "Inactive", incidentID))
+        carID = request.form['carid']
+        licenseplate = request.form['licenseplateeditcar']
+        fname = request.form['cusfirstnameeditcar']
+        lname = request.form['cuslastnameeditcar']
+        phone = request.form['phoneeditcar']
+        
+        cusid = cursor.execute('SELECT Car.CustomerID From Car WHERE CarID = ?', (carID))
+        cusid = cursor.fetchone()
+        cursor.execute('UPDATE Customer SET FirstName = ?, LastName = ?, Phone = ? WHERE CustomerID = ?', (fname, lname, phone, cusid[0]))
+        cursor.execute('UPDATE Car SET LicensePlate = ? WHERE CarID = ?', (licenseplate, carID))
         connection.commit()
-        return home()
+        return redirect(url_for('home'))
+
+
+
+
+
 

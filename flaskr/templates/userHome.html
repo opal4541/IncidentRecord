@@ -787,27 +787,8 @@
 
         //open modal
         $("#viewincident").modal();
-      })
-    })
-
-
-    var enterlicense = document.getElementById("enterlicense");
-    var entertime = document.getElementById("entertime");
-
-    
-    setInterval(() => {
-      fetch("{{ url_for('enterlicense_feed') }}")
-        .then(response => {
-          response.text().then(t => { enterlicense.innerHTML = t })
-        });
-    }, 1000);
-
-    setInterval(() => {
-      fetch("{{ url_for('entertime_feed') }}")
-        .then(response => {
-          response.text().then(t => { entertime.innerHTML = t })
-        });
-    }, 1000);
+      });
+    });
 
   </script>
 
