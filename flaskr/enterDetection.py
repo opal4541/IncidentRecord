@@ -103,7 +103,7 @@ def detectEnterLicensePlate(video):
         if licenseText != temp:
             licenseText=temp
             print("License Plate is " + licenseText)
-            addEnterHistory(licenseText, orig)
+            addEnterHistory(licenseText)
 
 
 def getLicensePlates():
@@ -118,7 +118,7 @@ def getCarID(licensePlate):
     return carID[0]
 
 
-def addEnterHistory(licensePlate, carImg):
+def addEnterHistory(licensePlate):
     found = False
     enterTime = datetime.datetime.now()
     enterTime = enterTime.strftime("%Y-%m-%d %H:%M:%S")

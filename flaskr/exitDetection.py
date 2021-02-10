@@ -103,7 +103,7 @@ def detectExitLicensePlate(video):
         if licenseText != temp:
             licenseText=temp
             print("License Plate is " + licenseText)
-            addExitHistory(licenseText, orig)
+            addExitHistory(licenseText)
 
 
 def getLicensePlates():
@@ -118,7 +118,7 @@ def getCarID(licensePlate):
     return carID[0]
 
 
-def addExitHistory(licensePlate, carImg):
+def addExitHistory(licensePlate):
     exitTime = datetime.datetime.now()
     exitTime = exitTime.strftime("%Y-%m-%d %H:%M:%S")
     carID = getCarID(licensePlate)
