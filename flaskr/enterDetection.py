@@ -149,5 +149,4 @@ def addEnterHistory(licensePlate):
     cursor.commit()
     return True
 
-
 detectEnterLicensePlate('static/sidevid.mp4')

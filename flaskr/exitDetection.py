@@ -129,5 +129,4 @@ def addExitHistory(licensePlate):
     cursor.commit()
     return True
 
-
 detectExitLicensePlate('static/sidevid.mp4')
