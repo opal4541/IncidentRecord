@@ -98,12 +98,12 @@ def detectExitLicensePlate(video):
                     freq=most_frequent(digitsocr)
                     temp=freq
 
-        cv2.imwrite('static/exitVideo/exit.jpg', img)
         
         if licenseText != temp:
             licenseText=temp
             print("License Plate is " + licenseText)
             addExitHistory(licenseText)
+            cv2.imwrite('static/exitVideo/exit.jpg', img)
 
 
 def getLicensePlates():

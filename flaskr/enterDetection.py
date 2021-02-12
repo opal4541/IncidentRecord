@@ -14,6 +14,7 @@ cursor = connection.cursor()
 
 app = Flask(__name__, static_folder='static')
 
+
 def order_points(pts):
 	rect = np.zeros((4, 2), dtype="float32")
 	s = pts.sum(axis=1)
@@ -98,12 +99,13 @@ def detectEnterLicensePlate(video):
                     freq=most_frequent(digitsocr)
                     temp=freq
 
-        cv2.imwrite('static/enterVideo/enter.jpg', img)
+        
         
         if licenseText != temp:
             licenseText=temp
             print("License Plate is " + licenseText)
             addEnterHistory(licenseText)
+            cv2.imwrite('static/enterVideo/enter.jpg', img)
 
 
 def getLicensePlates():

@@ -406,9 +406,9 @@
           <div class="col-sm-6" style="text-align: center;">Exit<br><br>
         </h2>
         <h4 style="color:white; font-family: Montserrat, sans-serif">
-          <div class="col-sm-6" style="text-align: center;">License Plate: <span
-              style="color: #f9c802">{{ExitLicensePlate}}</span><br><br></div>
-          <div class="col-sm-6" style="text-align: center;">Exit Time: <span style="color: #f9c802">{{ExitTime}}</span>
+          <div class="col-sm-6" style="text-align: center;">License Plate: <span id="exitlicense"
+              style="color: #f9c802"></span><br><br></div>
+          <div class="col-sm-6" style="text-align: center;">Exit Time: <span id="exittime" style="color: #f9c802"></span>
           </div>
       </div>
       </h4>
@@ -788,6 +788,27 @@
         //open modal
         $("#viewincident").modal();
       });
+    });
+
+
+    setInterval(() => {
+      fetch("{{ url_for('data_feed') }}")
+        .then(response => {
+          response.json()
+            .then(data => {
+              Object.keys(data).forEach((key) => {
+                var enterlicense = document.getElementById("enterlicense");
+                enterlicense.innerHTML = data[0]
+                var entertime = document.getElementById("entertime")
+                entertime.innerHTML = data[1]
+                var exitlicense = document.getElementById("exitlicense")
+                exitlicense.innerHTML = data[2]
+                var exittime = document.getElementById("exittime")
+                exittime.innerHTML = data[3]
+
+              });
+            }, 20000);
+        });
     });
 
   </script>

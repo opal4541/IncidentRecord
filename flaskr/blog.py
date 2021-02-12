@@ -117,6 +117,9 @@ def exitvideo_feed():
     return Response(genExitVid(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
+
+
+
 # tempEnterTime = ''
 # def getEnterTime():
 #     global tempEnterTime
@@ -153,21 +156,24 @@ def exitvideo_feed():
 # def enterlicense_feed():
 #     return Response(genEnterLicense(), mimetype='text') 
 
-# def genEnter():
-#     enter = []
-#     enterLicense = cursor.execute('SELECT TOP 1 C.LicensePlate, H.EnterTimestamp FROM History H JOIN Car C ON H.CarID = C.CarID ORDER BY H.HistoryID DESC')
-#     enterLicense = cursor.fetchone()
-#     for e in enterLicense:
-#         enter.append(str(e))
+def genData():
+    data = []
+    enterData = cursor.execute('SELECT TOP 1 C.LicensePlate, H.EnterTimestamp FROM History H JOIN Car C ON H.CarID = C.CarID ORDER BY H.HistoryID DESC')
+    enterData = cursor.fetchone()
+    exitData = cursor.execute('SELECT TOP 1 C.LicensePlate, H.ExitTimestamp FROM History H JOIN Car C ON H.CarID = C.CarID WHERE H.ExitTimestamp IS NOT NULL ORDER BY H.HistoryID DESC')
+    exitData = cursor.fetchone()
+    for en in enterData:
+        data.append(str(en))
+    for ex in exitData:
+        data.append(str(ex))
     
-#     enter_json = json.dumps(enter)
-#     print(enter_json)
-#     return enter_json
+    data_json = json.dumps(data)
+    print(data_json)
+    return data_json
 
-# genEnter()
-# @app.route('/enter_feeed')
-# def enter_feed():
-#     return Response(genEnter(), mimetype='applicant/json')
+@app.route('/data_feed')
+def data_feed():
+    return Response(genData(), mimetype='applicant/json')
 
 
 @app.route('/addactivity', methods=['POST','GET'])
