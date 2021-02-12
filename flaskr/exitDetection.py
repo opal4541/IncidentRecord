@@ -128,5 +128,6 @@ def addExitHistory(licensePlate):
     cursor.execute('UPDATE History SET ExitTimestamp = ? WHERE HistoryID = ?', exitTime, history[0])
     cursor.commit()
     return True
+    
 
 detectExitLicensePlate('static/sidevid.mp4')
