@@ -15,7 +15,7 @@ from contextlib import contextmanager
 import errno
 from io import BytesIO
 import json
-import mimetypes
+import os
 from pathlib import Path
 import random
 import sys
@@ -25,14 +25,14 @@ import threading
 
 try:
     import tornado
-except ImportError as err:
-    raise RuntimeError("The WebAgg backend requires Tornado.") from err
+except ImportError:
+    raise RuntimeError("The WebAgg backend requires Tornado.")
 
 import tornado.web
 import tornado.ioloop
 import tornado.websocket
 
-import matplotlib as mpl
+from matplotlib import rcParams
 from matplotlib.backend_bases import _Backend
 from matplotlib._pylab_helpers import Gcf
 from . import backend_webagg_core as core
@@ -48,12 +48,13 @@ webagg_server_thread = ServerThread()
 
 
 class FigureCanvasWebAgg(core.FigureCanvasWebAggCore):
-    _timer_cls = TimerTornado
-
     def show(self):
         # show the figure window
         global show  # placates pyflakes: created by @_Backend.export below
         show()
+
+    def new_timer(self, *args, **kwargs):
+        return TimerTornado(*args, **kwargs)
 
 
 class WebAggApplication(tornado.web.Application):
@@ -63,8 +64,8 @@ class WebAggApplication(tornado.web.Application):
     class FavIcon(tornado.web.RequestHandler):
         def get(self):
             self.set_header('Content-Type', 'image/png')
-            self.write(Path(mpl.get_data_path(),
-                            'images/matplotlib.png').read_bytes())
+            image_path = Path(rcParams["datapath"], "images", "matplotlib.png")
+            self.write(image_path.read_bytes())
 
     class SingleFigurePage(tornado.web.RequestHandler):
         def __init__(self, application, request, *, url_prefix='', **kwargs):
@@ -112,8 +113,21 @@ class WebAggApplication(tornado.web.Application):
         def get(self, fignum, fmt):
             fignum = int(fignum)
             manager = Gcf.get_fig_manager(fignum)
-            self.set_header(
-                'Content-Type', mimetypes.types_map.get(fmt, 'binary'))
+
+            # TODO: Move this to a central location
+            mimetypes = {
+                'ps': 'application/postscript',
+                'eps': 'application/postscript',
+                'pdf': 'application/pdf',
+                'svg': 'image/svg+xml',
+                'png': 'image/png',
+                'jpeg': 'image/jpeg',
+                'tif': 'image/tiff',
+                'emf': 'application/emf'
+            }
+
+            self.set_header('Content-Type', mimetypes.get(fmt, 'binary'))
+
             buff = BytesIO()
             manager.canvas.figure.savefig(buff, format=fmt)
             self.write(buff.getvalue())
@@ -169,12 +183,7 @@ class WebAggApplication(tornado.web.Application):
                  tornado.web.StaticFileHandler,
                  {'path': core.FigureManagerWebAgg.get_static_file_path()}),
 
-                # Static images for the toolbar
-                (url_prefix + r'/_images/(.*)',
-                 tornado.web.StaticFileHandler,
-                 {'path': Path(mpl.get_data_path(), 'images')}),
-
-                # A Matplotlib favicon
+                # An MPL favicon
                 (url_prefix + r'/favicon.ico', self.FavIcon),
 
                 # The page that contains all of the pieces
@@ -222,12 +231,11 @@ class WebAggApplication(tornado.web.Application):
                 yield port + random.randint(-2 * n, 2 * n)
 
         if address is None:
-            cls.address = mpl.rcParams['webagg.address']
+            cls.address = rcParams['webagg.address']
         else:
             cls.address = address
-        cls.port = mpl.rcParams['webagg.port']
-        for port in random_ports(cls.port,
-                                 mpl.rcParams['webagg.port_retries']):
+        cls.port = rcParams['webagg.port']
+        for port in random_ports(cls.port, rcParams['webagg.port_retries']):
             try:
                 app.listen(port, cls.address)
             except socket.error as e:
@@ -314,15 +322,13 @@ class _BackendWebAgg(_Backend):
     def show():
         WebAggApplication.initialize()
 
-        url = "http://{address}:{port}{prefix}".format(
-            address=WebAggApplication.address,
+        url = "http://127.0.0.1:{port}{prefix}".format(
             port=WebAggApplication.port,
             prefix=WebAggApplication.url_prefix)
 
-        if mpl.rcParams['webagg.open_in_browser']:
+        if rcParams['webagg.open_in_browser']:
             import webbrowser
-            if not webbrowser.open(url):
-                print("To view figure, visit {0}".format(url))
+            webbrowser.open(url)
         else:
             print("To view figure, visit {0}".format(url))
 

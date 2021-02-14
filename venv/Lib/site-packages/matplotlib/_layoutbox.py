@@ -19,7 +19,9 @@ import itertools
 import kiwisolver as kiwi
 import logging
 import numpy as np
+import warnings
 
+import matplotlib
 
 _log = logging.getLogger(__name__)
 
@@ -43,7 +45,7 @@ def get_renderer(fig):
     return renderer
 
 
-class LayoutBox:
+class LayoutBox(object):
     """
     Basic rectangle representation using kiwi solver variables
     """
@@ -72,31 +74,32 @@ class LayoutBox:
         # keep track of whether we need to match this subplot up with others.
         self.subplot = subplot
 
-        self.top = Variable(sn + 'top')
-        self.bottom = Variable(sn + 'bottom')
-        self.left = Variable(sn + 'left')
-        self.right = Variable(sn + 'right')
+        # we need the str below for Py 2 which complains the string is unicode
+        self.top = Variable(str(sn + 'top'))
+        self.bottom = Variable(str(sn + 'bottom'))
+        self.left = Variable(str(sn + 'left'))
+        self.right = Variable(str(sn + 'right'))
 
-        self.width = Variable(sn + 'width')
-        self.height = Variable(sn + 'height')
-        self.h_center = Variable(sn + 'h_center')
-        self.v_center = Variable(sn + 'v_center')
+        self.width = Variable(str(sn + 'width'))
+        self.height = Variable(str(sn + 'height'))
+        self.h_center = Variable(str(sn + 'h_center'))
+        self.v_center = Variable(str(sn + 'v_center'))
 
-        self.min_width = Variable(sn + 'min_width')
-        self.min_height = Variable(sn + 'min_height')
-        self.pref_width = Variable(sn + 'pref_width')
-        self.pref_height = Variable(sn + 'pref_height')
-        # margins are only used for axes-position layout boxes.  maybe should
+        self.min_width = Variable(str(sn + 'min_width'))
+        self.min_height = Variable(str(sn + 'min_height'))
+        self.pref_width = Variable(str(sn + 'pref_width'))
+        self.pref_height = Variable(str(sn + 'pref_height'))
+        # margis are only used for axes-position layout boxes.  maybe should
         # be a separate subclass:
-        self.left_margin = Variable(sn + 'left_margin')
-        self.right_margin = Variable(sn + 'right_margin')
-        self.bottom_margin = Variable(sn + 'bottom_margin')
-        self.top_margin = Variable(sn + 'top_margin')
+        self.left_margin = Variable(str(sn + 'left_margin'))
+        self.right_margin = Variable(str(sn + 'right_margin'))
+        self.bottom_margin = Variable(str(sn + 'bottom_margin'))
+        self.top_margin = Variable(str(sn + 'top_margin'))
         # mins
-        self.left_margin_min = Variable(sn + 'left_margin_min')
-        self.right_margin_min = Variable(sn + 'right_margin_min')
-        self.bottom_margin_min = Variable(sn + 'bottom_margin_min')
-        self.top_margin_min = Variable(sn + 'top_margin_min')
+        self.left_margin_min = Variable(str(sn + 'left_margin_min'))
+        self.right_margin_min = Variable(str(sn + 'right_margin_min'))
+        self.bottom_margin_min = Variable(str(sn + 'bottom_margin_min'))
+        self.top_margin_min = Variable(str(sn + 'top_margin_min'))
 
         right, top = upper_right
         left, bottom = lower_left
@@ -116,11 +119,11 @@ class LayoutBox:
         margin between the position of the axes and the outer edge of
         the axes.
 
-        Margins are variable because they change with the figure size.
+        Margins are variable because they change with the fogure size.
 
         Margin minimums are set to make room for axes decorations.  However,
         the margins can be larger if we are mathicng the position size to
-        other axes.
+        otehr axes.
         """
         sol = self.solver
 
@@ -222,7 +225,8 @@ class LayoutBox:
             sol.addConstraint(i | 150000)
 
     def set_parent(self, parent):
-        """Replace the parent of this with the new parent."""
+        ''' replace the parent of this with the new parent
+        '''
         self.parent = parent
         self.parent_constrain()
 
@@ -232,7 +236,7 @@ class LayoutBox:
               self.bottom == bottom,
               self.top == top]
         for c in hc:
-            self.solver.addConstraint(c | strength)
+            self.solver.addConstraint((c | strength))
         # self.solver.updateVariables()
 
     def constrain_same(self, other, strength='strong'):
@@ -244,7 +248,7 @@ class LayoutBox:
               self.bottom == other.bottom,
               self.top == other.top]
         for c in hc:
-            self.solver.addConstraint(c | strength)
+            self.solver.addConstraint((c | strength))
 
     def constrain_left_margin(self, margin, strength='strong'):
         c = (self.left == self.parent.left + margin)
@@ -279,19 +283,19 @@ class LayoutBox:
                 self.width.value(), self.height.value())
 
     def update_variables(self):
-        """
+        '''
         Update *all* the variables that are part of the solver this LayoutBox
-        is created with.
-        """
+        is created with
+        '''
         self.solver.updateVariables()
 
     def edit_height(self, height, strength='strong'):
-        """
+        '''
         Set the height of the layout box.
 
         This is done as an editable variable so that the value can change
         due to resizing.
-        """
+        '''
         sol = self.solver
         for i in [self.height]:
             if not sol.hasEditVariable(i):
@@ -299,10 +303,10 @@ class LayoutBox:
         sol.suggestValue(self.height, height)
 
     def constrain_height(self, height, strength='strong'):
-        """
+        '''
         Constrain the height of the layout box.  height is
         either a float or a layoutbox.height.
-        """
+        '''
         c = (self.height == height)
         self.solver.addConstraint(c | strength)
 
@@ -318,10 +322,10 @@ class LayoutBox:
         sol.suggestValue(self.width, width)
 
     def constrain_width(self, width, strength='strong'):
-        """
-        Constrain the width of the layout box.  *width* is
+        '''
+        Constrain the width of the layout box.  `width` is
         either a float or a layoutbox.width.
-        """
+        '''
         c = (self.width == width)
         self.solver.addConstraint(c | strength)
 
@@ -346,24 +350,26 @@ class LayoutBox:
         self.solver.addConstraint(c | strength)
 
     def _is_subplotspec_layoutbox(self):
-        """
-        Helper to check if this layoutbox is the layoutbox of a subplotspec.
-        """
-        name = self.name.split('.')[-1]
+        '''
+        Helper to check if this layoutbox is the layoutbox of a
+        subplotspec
+        '''
+        name = (self.name).split('.')[-1]
         return name[:2] == 'ss'
 
     def _is_gridspec_layoutbox(self):
-        """
-        Helper to check if this layoutbox is the layoutbox of a gridspec.
-        """
-        name = self.name.split('.')[-1]
+        '''
+        Helper to check if this layoutbox is the layoutbox of a
+        gridspec
+        '''
+        name = (self.name).split('.')[-1]
         return name[:8] == 'gridspec'
 
     def find_child_subplots(self):
-        """
+        '''
         Find children of this layout box that are subplots.  We want to line
         poss up, and this is an easy way to find them all.
-        """
+        '''
         if self.subplot:
             subplots = [self]
         else:
@@ -374,22 +380,22 @@ class LayoutBox:
 
     def layout_from_subplotspec(self, subspec,
                                 name='', artist=None, pos=False):
-        """
-        Make a layout box from a subplotspec. The layout box is
+        '''  Make a layout box from a subplotspec. The layout box is
         constrained to be a fraction of the width/height of the parent,
         and be a fraction of the parent width/height from the left/bottom
         of the parent.  Therefore the parent can move around and the
         layout for the subplot spec should move with it.
 
         The parent is *usually* the gridspec that made the subplotspec.??
-        """
+        '''
         lb = LayoutBox(parent=self, name=name, artist=artist, pos=pos)
         gs = subspec.get_gridspec()
         nrows, ncols = gs.get_geometry()
         parent = self.parent
 
         # OK, now, we want to set the position of this subplotspec
-        # based on its subplotspec parameters.  The new gridspec will inherit
+        # based on its subplotspec parameters.  The new gridspec will inherit.
+
         # from gridspec.  prob should be new method in gridspec
         left = 0.0
         right = 1.0
@@ -402,45 +408,57 @@ class LayoutBox:
 
         # calculate accumulated heights of columns
         cellH = totHeight / (nrows + hspace * (nrows - 1))
-        sepH = hspace * cellH
+        sepH = hspace*cellH
 
         if gs._row_height_ratios is not None:
             netHeight = cellH * nrows
-            tr = sum(gs._row_height_ratios)
-            cellHeights = [netHeight * r / tr for r in gs._row_height_ratios]
+            tr = float(sum(gs._row_height_ratios))
+            cellHeights = [netHeight*r/tr for r in gs._row_height_ratios]
         else:
             cellHeights = [cellH] * nrows
 
         sepHeights = [0] + ([sepH] * (nrows - 1))
-        cellHs = np.cumsum(np.column_stack([sepHeights, cellHeights]).flat)
+        cellHs = np.add.accumulate(np.ravel(
+                list(zip(sepHeights, cellHeights))))
 
         # calculate accumulated widths of rows
-        cellW = totWidth / (ncols + wspace * (ncols - 1))
-        sepW = wspace * cellW
+        cellW = totWidth/(ncols + wspace * (ncols - 1))
+        sepW = wspace*cellW
 
         if gs._col_width_ratios is not None:
             netWidth = cellW * ncols
-            tr = sum(gs._col_width_ratios)
+            tr = float(sum(gs._col_width_ratios))
             cellWidths = [netWidth * r / tr for r in gs._col_width_ratios]
         else:
             cellWidths = [cellW] * ncols
 
         sepWidths = [0] + ([sepW] * (ncols - 1))
-        cellWs = np.cumsum(np.column_stack([sepWidths, cellWidths]).flat)
+        cellWs = np.add.accumulate(np.ravel(list(zip(sepWidths, cellWidths))))
 
         figTops = [top - cellHs[2 * rowNum] for rowNum in range(nrows)]
         figBottoms = [top - cellHs[2 * rowNum + 1] for rowNum in range(nrows)]
         figLefts = [left + cellWs[2 * colNum] for colNum in range(ncols)]
         figRights = [left + cellWs[2 * colNum + 1] for colNum in range(ncols)]
 
-        rowNum1, colNum1 = divmod(subspec.num1, ncols)
-        rowNum2, colNum2 = divmod(subspec.num2, ncols)
-        figBottom = min(figBottoms[rowNum1], figBottoms[rowNum2])
-        figTop = max(figTops[rowNum1], figTops[rowNum2])
-        figLeft = min(figLefts[colNum1], figLefts[colNum2])
-        figRight = max(figRights[colNum1], figRights[colNum2])
+        rowNum, colNum = divmod(subspec.num1, ncols)
+        figBottom = figBottoms[rowNum]
+        figTop = figTops[rowNum]
+        figLeft = figLefts[colNum]
+        figRight = figRights[colNum]
 
-        # These are numbers relative to (0, 0, 1, 1).  Need to constrain
+        if subspec.num2 is not None:
+
+            rowNum2, colNum2 = divmod(subspec.num2, ncols)
+            figBottom2 = figBottoms[rowNum2]
+            figTop2 = figTops[rowNum2]
+            figLeft2 = figLefts[colNum2]
+            figRight2 = figRights[colNum2]
+
+            figBottom = min(figBottom, figBottom2)
+            figLeft = min(figLeft, figLeft2)
+            figTop = max(figTop, figTop2)
+            figRight = max(figRight, figRight2)
+        # These are numbers relative to 0,0,1,1.  Need to constrain
         # relative to parent.
 
         width = figRight - figLeft
@@ -451,24 +469,23 @@ class LayoutBox:
               self.width == parent.width * width,
               self.height == parent.height * height]
         for c in cs:
-            self.solver.addConstraint(c | 'required')
+            self.solver.addConstraint((c | 'required'))
 
         return lb
 
     def __repr__(self):
-        return (f'LayoutBox: {self.name:25s}, '
-                f'(left: {self.left.value():1.3f}) '
-                f'(bot: {self.bottom.value():1.3f}) '
-                f'(right: {self.right.value():1.3f}) '
-                f'(top: {self.top.value():1.3f})')
+        args = (self.name, self.left.value(), self.bottom.value(),
+                self.right.value(), self.top.value())
+        return ('LayoutBox: %25s, (left: %1.3f) (bot: %1.3f) '
+               '(right: %1.3f)  (top: %1.3f) ') % args
 
 
 # Utility functions that act on layoutboxes...
 def hstack(boxes, padding=0, strength='strong'):
-    """
+    '''
     Stack LayoutBox instances from left to right.
-    *padding* is in figure-relative units.
-    """
+    `padding` is in figure-relative units.
+    '''
 
     for i in range(1, len(boxes)):
         c = (boxes[i-1].right + padding <= boxes[i].left)
@@ -476,7 +493,9 @@ def hstack(boxes, padding=0, strength='strong'):
 
 
 def hpack(boxes, padding=0, strength='strong'):
-    """Stack LayoutBox instances from left to right."""
+    '''
+    Stack LayoutBox instances from left to right.
+    '''
 
     for i in range(1, len(boxes)):
         c = (boxes[i-1].right + padding == boxes[i].left)
@@ -484,7 +503,9 @@ def hpack(boxes, padding=0, strength='strong'):
 
 
 def vstack(boxes, padding=0, strength='strong'):
-    """Stack LayoutBox instances from top to bottom."""
+    '''
+    Stack LayoutBox instances from top to bottom
+    '''
 
     for i in range(1, len(boxes)):
         c = (boxes[i-1].bottom - padding >= boxes[i].top)
@@ -492,7 +513,9 @@ def vstack(boxes, padding=0, strength='strong'):
 
 
 def vpack(boxes, padding=0, strength='strong'):
-    """Stack LayoutBox instances from top to bottom."""
+    '''
+    Stack LayoutBox instances from top to bottom
+    '''
 
     for i in range(1, len(boxes)):
         c = (boxes[i-1].bottom - padding >= boxes[i].top)
@@ -500,7 +523,9 @@ def vpack(boxes, padding=0, strength='strong'):
 
 
 def match_heights(boxes, height_ratios=None, strength='medium'):
-    """Stack LayoutBox instances from top to bottom."""
+    '''
+    Stack LayoutBox instances from top to bottom
+    '''
 
     if height_ratios is None:
         height_ratios = np.ones(len(boxes))
@@ -511,7 +536,9 @@ def match_heights(boxes, height_ratios=None, strength='medium'):
 
 
 def match_widths(boxes, width_ratios=None, strength='medium'):
-    """Stack LayoutBox instances from top to bottom."""
+    '''
+    Stack LayoutBox instances from top to bottom
+    '''
 
     if width_ratios is None:
         width_ratios = np.ones(len(boxes))
@@ -609,21 +636,29 @@ _layoutboxobjnum = itertools.count()
 
 
 def seq_id():
-    """Generate a short sequential id for layoutbox objects."""
-    return '%06d' % next(_layoutboxobjnum)
+    '''
+    Generate a short sequential id for layoutbox objects...
+    '''
+
+    global _layoutboxobjnum
+
+    return ('%06d' % (next(_layoutboxobjnum)))
 
 
 def print_children(lb):
-    """Print the children of the layoutbox."""
+    '''
+    Print the children of the layoutbox
+    '''
     print(lb)
     for child in lb.children:
         print_children(child)
 
 
 def nonetree(lb):
-    """
-    Make all elements in this tree None, signalling not to do any more layout.
-    """
+    '''
+    Make all elements in this tree none...  This signals not to do any more
+    layout.
+    '''
     if lb is not None:
         if lb.parent is None:
             # Clear the solver.  Hopefully this garbage collects.
@@ -641,7 +676,9 @@ def nonechildren(lb):
 
 
 def print_tree(lb):
-    """Print the tree of layoutboxes."""
+    '''
+    Print the tree of layoutboxes
+    '''
 
     if lb.parent is None:
         print('LayoutBox Tree\n')
@@ -653,7 +690,9 @@ def print_tree(lb):
 
 
 def plot_children(fig, box, level=0, printit=True):
-    """Simple plotting to show where boxes are."""
+    '''
+    Simple plotting to show where boxes are
+    '''
     import matplotlib
     import matplotlib.pyplot as plt
 
@@ -670,13 +709,14 @@ def plot_children(fig, box, level=0, printit=True):
     if printit:
         print("Level:", level)
     for child in box.children:
+        rect = child.get_rect()
         if printit:
             print(child)
         ax.add_patch(
             patches.Rectangle(
-                (child.left.value(), child.bottom.value()),  # (x, y)
-                child.width.value(),  # width
-                child.height.value(),  # height
+                (child.left.value(), child.bottom.value()),   # (x,y)
+                child.width.value(),          # width
+                child.height.value(),          # height
                 fc='none',
                 alpha=0.8,
                 ec=colors[level]

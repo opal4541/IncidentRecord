@@ -1,11 +1,10 @@
+import sys
+
 import numpy as np
 
 from .. import cbook
-try:
-    from . import backend_cairo
-except ImportError as e:
-    raise ImportError('backend Gtk3Agg requires cairo') from e
-from . import backend_agg, backend_gtk3
+from . import backend_agg, backend_cairo, backend_gtk3
+from ._gtk3_compat import gi
 from .backend_cairo import cairo
 from .backend_gtk3 import Gtk, _BackendGTK3
 from matplotlib import transforms
@@ -17,12 +16,20 @@ class FigureCanvasGTK3Agg(backend_gtk3.FigureCanvasGTK3,
         backend_gtk3.FigureCanvasGTK3.__init__(self, figure)
         self._bbox_queue = []
 
+    def _renderer_init(self):
+        pass
+
+    def _render_figure(self, width, height):
+        backend_agg.FigureCanvasAgg.draw(self)
+
     def on_draw_event(self, widget, ctx):
-        """GtkDrawable draw event, like expose_event in GTK 2.X."""
+        """GtkDrawable draw event, like expose_event in GTK 2.X.
+        """
         allocation = self.get_allocation()
         w, h = allocation.width, allocation.height
 
         if not len(self._bbox_queue):
+            self._render_figure(w, h)
             Gtk.render_background(
                 self.get_style_context(), ctx,
                 allocation.x, allocation.y,
@@ -58,17 +65,14 @@ class FigureCanvasGTK3Agg(backend_gtk3.FigureCanvasGTK3,
             bbox = self.figure.bbox
 
         allocation = self.get_allocation()
+        w, h = allocation.width, allocation.height
         x = int(bbox.x0)
-        y = allocation.height - int(bbox.y1)
+        y = h - int(bbox.y1)
         width = int(bbox.x1) - int(bbox.x0)
         height = int(bbox.y1) - int(bbox.y0)
 
         self._bbox_queue.append(bbox)
         self.queue_draw_area(x, y, width, height)
-
-    def draw(self):
-        backend_agg.FigureCanvasAgg.draw(self)
-        super().draw()
 
     def print_png(self, filename, *args, **kwargs):
         # Do this so we can save the resolution of figure in the PNG file

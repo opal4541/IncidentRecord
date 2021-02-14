@@ -13,6 +13,8 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
   <link href="{{url_for('static', filename='style.css')}}" rel="stylesheet">
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.1/socket.io.js">
+  </script>
 
   <style>
     body {
@@ -375,7 +377,7 @@
         <div class="col-sm-6">
           <!-- <video id="video" width="640" height="480" autoplay></video>
           <canvas id="canvas" width="640" height="480"></canvas> -->
-          <img class="vid" src="{{url_for('entervideo_feed')}}" style="width:80%; margin-top:10px">
+          <img class="vid" id="entervid" src="{{EnterImage}}" style="width:80%; margin-top:10px">
           <!-- <video class="vid" style="width:80%; margin-top: 10px;" controls>
             <source src={{ url_for('static', filename="sidevid.mp4" ) }} type="video/mp4">
             Your browser does not support the video tag.
@@ -385,9 +387,9 @@
           <div class="col-sm-6" style="text-align: center;">Entrance<br><br>
         </h2>
         <h4 style="color:white; font-family: Montserrat, sans-serif">
-          <div class="col-sm-6" style="text-align: center;">License Plate: <span
+          <div class="col-sm-6" style="text-align: center;">License Plate: <span id="enterlicense"
               style="color: #f9c802">{{EnterLicensePlate}}</span><br><br></div>
-          <div class="col-sm-6" style="text-align: center;">Enter Time: <span
+          <div class="col-sm-6" style="text-align: center;">Enter Time: <span id="entertime"
               style="color: #f9c802">{{EnterTime}}</span></div>
       </div>
       </h4>
@@ -395,7 +397,7 @@
 
       <div class="row">
         <div class="col-sm-6">
-          <img class="vid" src="{{url_for('exitvideo_feed')}}" style="width:80%; margin-top:10px">
+          <img class="vid" id="exitvid" src="{{ExitImage}}" style="width:80%; margin-top:10px">
           <!-- <video class="vid" style="width:80%; margin-top: 10px;" controls>
             <source src={{ url_for('static', filename="testvid.mp4" ) }} type="video/mp4">
             Your browser does not support the video tag.
@@ -405,9 +407,10 @@
           <div class="col-sm-6" style="text-align: center;">Exit<br><br>
         </h2>
         <h4 style="color:white; font-family: Montserrat, sans-serif">
-          <div class="col-sm-6" style="text-align: center;">License Plate: <span
+          <div class="col-sm-6" style="text-align: center;">License Plate: <span id="exitlicense"
               style="color: #f9c802">{{ExitLicensePlate}}</span><br><br></div>
-          <div class="col-sm-6" style="text-align: center;">Exit Time: <span style="color: #f9c802">{{ExitTime}}</span>
+          <div class="col-sm-6" style="text-align: center;">Exit Time: <span id="exittime"
+              style="color: #f9c802">{{ExitTime}}</span>
           </div>
       </div>
       </h4>
@@ -577,12 +580,12 @@
               <div class="col-sm-4 form-group">
                 <label for="entertimeaddact">Enter Time:</label><br>
                 <textarea class="form-control" id="entertimeaddact" name="entertimeaddact" placeholder="Enter Time"
-                type="datetime" rows="1" readonly>{{row.2}}</textarea>
+                  type="datetime" rows="1" readonly>{{row.2}}</textarea>
               </div>
               <div class="col-sm-4 form-group">
                 <label for="exittimeaddact">Exit Time:</label><br>
                 <textarea class="form-control" id="exittimeaddact" name="exittimeaddact" placeholder="Exit Time"
-                type="datetime" rows="1" readonly>{{row.3}}</textarea>
+                  type="datetime" rows="1" readonly>{{row.3}}</textarea>
               </div>
             </div>
             <div class="row">
@@ -991,7 +994,50 @@
 
     document.querySelector('#carsearch').addEventListener('keyup', filterCar, false);
 
+    document.addEventListener("DOMContentLoaded", function (event) {
+      var enterimage = document.getElementById("entervid");
+      var enterlicense = document.getElementById("enterlicense");
+      var entertime = document.getElementById("entertime");
+      var exitimage = document.getElementById("exitvid");
+      var exitlicense = document.getElementById("exitlicense");
+      var exittime = document.getElementById("exittime");
 
+      var socket = io.connect('http://127.0.0.1:5000/home', {
+        reconnection: false
+      });
+
+      socket.on('connect', () => {
+        console.log('Connected');
+      });
+
+      socket.on('disconnect', () => {
+        console.log('Disconnected');
+      });
+
+      socket.on('connect_error', (error) => {
+        console.log('Connect error! ' + error);
+      });
+
+      socket.on('connect_timeout', (error) => {
+        console.log('Connect timeout! ' + error);
+      });
+
+      socket.on('error', (error) => {
+        console.log('Error! ' + error);
+      });
+
+      socket.on('server2web_home_enter', (msg) => {
+        enterimage.src = msg.enterimage;
+        enterlicense.innerHTML = msg.enterlicense;
+        entertime.innerHTML = msg.entertime;
+      });
+
+      socket.on('server2web_home_exit', (msg) => {
+        exitimage.src = msg.exitimage;
+        exitlicense.innerHTML = msg.exitlicense;
+        exittime.innerHTML = msg.exittime;
+      });
+    });
   </script>
 
 </body>

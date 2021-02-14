@@ -1,7 +1,10 @@
 import numpy as np
 
+import matplotlib._tri as _tri
+import matplotlib._qhull as _qhull
 
-class Triangulation:
+
+class Triangulation(object):
     """
     An unstructured triangular grid consisting of npoints points and
     ntri triangles.  The triangles can either be specified by the user
@@ -11,11 +14,11 @@ class Triangulation:
     ----------
     x, y : array-like of shape (npoints)
         Coordinates of grid points.
-    triangles : int array-like of shape (ntri, 3), optional
+    triangles : integer array_like of shape (ntri, 3), optional
         For each triangle, the indices of the three points that make
         up the triangle, ordered in an anticlockwise manner.  If not
         specified, the Delaunay triangulation is calculated.
-    mask : bool array-like of shape (ntri), optional
+    mask : boolean array-like of shape (ntri), optional
         Which triangles are masked out.
 
     Attributes
@@ -28,7 +31,7 @@ class Triangulation:
         Masked out triangles.
     is_delaunay : bool
         Whether the Triangulation is a calculated Delaunay
-        triangulation (where *triangles* was not specified) or not.
+        triangulation (where `triangles` was not specified) or not.
 
     Notes
     -----
@@ -36,8 +39,6 @@ class Triangulation:
     triangles formed from colinear points, or overlapping triangles.
     """
     def __init__(self, x, y, triangles=None, mask=None):
-        from matplotlib import _qhull
-
         self.x = np.asarray(x, dtype=np.float64)
         self.y = np.asarray(y, dtype=np.float64)
         if self.x.shape != self.y.shape or self.x.ndim != 1:
@@ -58,7 +59,7 @@ class Triangulation:
             # orientation.
             self.triangles = np.array(triangles, dtype=np.int32, order='C')
             if self.triangles.ndim != 2 or self.triangles.shape[1] != 3:
-                raise ValueError('triangles must be a (?, 3) array')
+                raise ValueError('triangles must be a (?,3) array')
             if self.triangles.max() >= len(self.x):
                 raise ValueError('triangles max element is out of bounds')
             if self.triangles.min() < 0:
@@ -105,7 +106,6 @@ class Triangulation:
         Return the underlying C++ Triangulation object, creating it
         if necessary.
         """
-        from matplotlib import _tri
         if self._cpp_triangulation is None:
             self._cpp_triangulation = _tri.Triangulation(
                 self.x, self.y, self.triangles, self.mask, self._edges,
@@ -117,7 +117,7 @@ class Triangulation:
         Return an array of triangles that are not masked.
         """
         if self.mask is not None:
-            return self.triangles[~self.mask]
+            return self.triangles.compress(1 - self.mask, axis=0)
         else:
             return self.triangles
 
@@ -134,9 +134,12 @@ class Triangulation:
         the possible args and kwargs.
         """
         if isinstance(args[0], Triangulation):
-            triangulation, *args = args
+            triangulation = args[0]
+            args = args[1:]
         else:
-            x, y, *args = args
+            x = args[0]
+            y = args[1]
+            args = args[2:]  # Consumed first two args.
 
             # Check triangles in kwargs then args.
             triangles = kwargs.pop('triangles', None)
@@ -166,7 +169,7 @@ class Triangulation:
 
     def get_trifinder(self):
         """
-        Return the default `matplotlib.tri.TriFinder` of this
+        Return the default :class:`matplotlib.tri.TriFinder` of this
         triangulation, creating it if necessary.  This allows the same
         TriFinder object to be easily shared.
         """
@@ -179,13 +182,14 @@ class Triangulation:
     @property
     def neighbors(self):
         """
-        Return integer array of shape (ntri, 3) containing neighbor triangles.
+        Return integer array of shape (ntri, 3) containing neighbor
+        triangles.
 
         For each triangle, the indices of the three triangles that
         share the same edges, or -1 if there is no such neighboring
-        triangle.  ``neighbors[i, j]`` is the triangle that is the neighbor
-        to the edge from point index ``triangles[i, j]`` to point index
-        ``triangles[i, (j+1)%3]``.
+        triangle.  neighbors[i,j] is the triangle that is the neighbor
+        to the edge from point index triangles[i,j] to point index
+        triangles[i,(j+1)%3].
         """
         if self._neighbors is None:
             self._neighbors = self.get_cpp_triangulation().get_neighbors()
@@ -193,11 +197,8 @@ class Triangulation:
 
     def set_mask(self, mask):
         """
-        Set or clear the mask array.
-
-        Parameters
-        ----------
-        mask : None or bool array of length ntri
+        Set or clear the mask array.  This is either None, or a boolean
+        array of shape (ntri).
         """
         if mask is None:
             self.mask = None

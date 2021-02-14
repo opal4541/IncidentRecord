@@ -12,16 +12,14 @@ Core functions and attributes for the matplotlib style library:
 """
 
 import contextlib
-import logging
 import os
-from pathlib import Path
 import re
 import warnings
 
 import matplotlib as mpl
-from matplotlib import cbook, rc_params_from_file, rcParamsDefault
+from matplotlib import rc_params_from_file, rcParamsDefault
+from matplotlib.cbook import MatplotlibDeprecationWarning
 
-_log = logging.getLogger(__name__)
 
 __all__ = ['use', 'context', 'available', 'library', 'reload_library']
 
@@ -38,24 +36,22 @@ STYLE_BLACKLIST = {
     'interactive', 'backend', 'backend.qt4', 'webagg.port', 'webagg.address',
     'webagg.port_retries', 'webagg.open_in_browser', 'backend_fallback',
     'toolbar', 'timezone', 'datapath', 'figure.max_open_warning',
-    'figure.raise_window', 'savefig.directory', 'tk.window_focus',
-    'docstring.hardcopy', 'date.epoch'}
+    'savefig.directory', 'tk.window_focus', 'docstring.hardcopy'}
 
 
 def _remove_blacklisted_style_params(d, warn=True):
     o = {}
-    for key in d:  # prevent triggering RcParams.__getitem__('backend')
+    for key, val in d.items():
         if key in STYLE_BLACKLIST:
             if warn:
-                cbook._warn_external(
+                warnings.warn(
                     "Style includes a parameter, '{0}', that is not related "
-                    "to style.  Ignoring".format(key))
+                    "to style.  Ignoring".format(key), stacklevel=3)
         else:
-            o[key] = d[key]
+            o[key] = val
     return o
 
 
-@cbook.deprecated("3.2")
 def is_style_file(filename):
     """Return True if the filename looks like a style file."""
     return STYLE_FILE_PATTERN.match(filename) is not None
@@ -66,20 +62,14 @@ def _apply_style(d, warn=True):
 
 
 def use(style):
-    """
-    Use Matplotlib style settings from a style specification.
+    """Use matplotlib style settings from a style specification.
 
     The style name of 'default' is reserved for reverting back to
     the default style settings.
 
-    .. note::
-
-       This updates the `.rcParams` with the settings from the style.
-       `.rcParams` not defined in the style are kept.
-
     Parameters
     ----------
-    style : str, dict, Path or list
+    style : str, dict, or list
         A style specification. Valid options are:
 
         +------+-------------------------------------------------------------+
@@ -89,17 +79,16 @@ def use(style):
         | dict | Dictionary with valid key/value pairs for                   |
         |      | `matplotlib.rcParams`.                                      |
         +------+-------------------------------------------------------------+
-        | Path | A path-like object which is a path to a style file.         |
+        | list | A list of style specifiers (str or dict) applied from first |
+        |      | to last in the list.                                        |
         +------+-------------------------------------------------------------+
-        | list | A list of style specifiers (str, Path or dict) applied from |
-        |      | first to last in the list.                                  |
-        +------+-------------------------------------------------------------+
+
 
     """
     style_alias = {'mpl20': 'default',
                    'mpl15': 'classic'}
-    if isinstance(style, (str, Path)) or hasattr(style, 'keys'):
-        # If name is a single str, Path or dict, make it a single element list.
+    if isinstance(style, str) or hasattr(style, 'keys'):
+        # If name is a single str or dict, make it a single element list.
         styles = [style]
     else:
         styles = style
@@ -107,12 +96,13 @@ def use(style):
     styles = (style_alias.get(s, s) if isinstance(s, str) else s
               for s in styles)
     for style in styles:
-        if not isinstance(style, (str, Path)):
+        if not isinstance(style, str):
             _apply_style(style)
         elif style == 'default':
             # Deprecation warnings were already handled when creating
             # rcParamsDefault, no need to reemit them here.
-            with cbook._suppress_matplotlib_deprecation_warning():
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", MatplotlibDeprecationWarning)
                 _apply_style(rcParamsDefault, warn=False)
         elif style in library:
             _apply_style(library[style])
@@ -120,21 +110,20 @@ def use(style):
             try:
                 rc = rc_params_from_file(style, use_default_template=False)
                 _apply_style(rc)
-            except IOError as err:
+            except IOError:
                 raise IOError(
                     "{!r} not found in the style library and input is not a "
                     "valid URL or path; see `style.available` for list of "
-                    "available styles".format(style)) from err
+                    "available styles".format(style))
 
 
 @contextlib.contextmanager
 def context(style, after_reset=False):
-    """
-    Context manager for using style settings temporarily.
+    """Context manager for using style settings temporarily.
 
     Parameters
     ----------
-    style : str, dict, Path or list
+    style : str, dict, or list
         A style specification. Valid options are:
 
         +------+-------------------------------------------------------------+
@@ -144,10 +133,8 @@ def context(style, after_reset=False):
         | dict | Dictionary with valid key/value pairs for                   |
         |      | `matplotlib.rcParams`.                                      |
         +------+-------------------------------------------------------------+
-        | Path | A path-like object which is a path to a style file.         |
-        +------+-------------------------------------------------------------+
-        | list | A list of style specifiers (str, Path or dict) applied from |
-        |      | first to last in the list.                                  |
+        | list | A list of style specifiers (str or dict) applied from first |
+        |      | to last in the list.                                        |
         +------+-------------------------------------------------------------+
 
     after_reset : bool
@@ -175,14 +162,13 @@ def iter_user_libraries():
 
 
 def update_user_library(library):
-    """Update style library with user-defined rc files."""
+    """Update style library with user-defined rc files"""
     for stylelib_path in iter_user_libraries():
         styles = read_style_directory(stylelib_path)
         update_nested_dict(library, styles)
     return library
 
 
-@cbook.deprecated("3.2")
 def iter_style_files(style_dir):
     """Yield file path and name of styles in the given directory."""
     for path in os.listdir(style_dir):
@@ -190,26 +176,28 @@ def iter_style_files(style_dir):
         if is_style_file(filename):
             match = STYLE_FILE_PATTERN.match(filename)
             path = os.path.abspath(os.path.join(style_dir, path))
-            yield path, match.group(1)
+            yield path, match.groups()[0]
 
 
 def read_style_directory(style_dir):
-    """Return dictionary of styles defined in *style_dir*."""
+    """Return dictionary of styles defined in `style_dir`."""
     styles = dict()
-    for path in Path(style_dir).glob(f"*.{STYLE_EXTENSION}"):
+    for path, name in iter_style_files(style_dir):
         with warnings.catch_warnings(record=True) as warns:
-            styles[path.stem] = rc_params_from_file(
-                path, use_default_template=False)
+            styles[name] = rc_params_from_file(path,
+                                               use_default_template=False)
+
         for w in warns:
-            _log.warning('In %s: %s', path, w.message)
+            message = 'In %s: %s' % (path, w.message)
+            warnings.warn(message, stacklevel=2)
+
     return styles
 
 
 def update_nested_dict(main_dict, new_dict):
-    """
-    Update nested dict (only level of nesting) with new values.
+    """Update nested dict (only level of nesting) with new values.
 
-    Unlike `dict.update`, this assumes that the values of the parent dict are
+    Unlike dict.update, this assumes that the values of the parent dict are
     dicts (or dict-like), so you shouldn't replace the nested dict if it
     already exists. Instead you should update the sub-dict.
     """
@@ -224,15 +212,11 @@ def update_nested_dict(main_dict, new_dict):
 _base_library = load_base_library()
 
 library = None
-
 available = []
 
 
 def reload_library():
-    """Reload the style library."""
+    """Reload style library."""
     global library
-    library = update_user_library(_base_library)
-    available[:] = sorted(library.keys())
-
-
+    available[:] = library = update_user_library(_base_library)
 reload_library()

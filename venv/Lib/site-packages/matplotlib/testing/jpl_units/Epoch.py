@@ -1,14 +1,26 @@
+# ===========================================================================
+#
+# Epoch
+#
+# ===========================================================================
+
+
 """Epoch module."""
 
+# ===========================================================================
+# Place all imports after here.
+#
 import operator
 import math
 import datetime as DT
-
-from matplotlib import cbook
 from matplotlib.dates import date2num
+#
+# Place all imports before here.
+# ===========================================================================
 
 
-class Epoch:
+# ===========================================================================
+class Epoch(object):
     # Frame conversion offsets in seconds
     # t(TO) = t(FROM) + allowed[ FROM ][ TO ]
     allowed = {
@@ -20,9 +32,9 @@ class Epoch:
             },
         }
 
+    # -----------------------------------------------------------------------
     def __init__(self, frame, sec=None, jd=None, daynum=None, dt=None):
-        """
-        Create a new Epoch object.
+        """Create a new Epoch object.
 
         Build an epoch 1 of 2 ways:
 
@@ -31,6 +43,7 @@ class Epoch:
 
         or using a matplotlib day number
         #   Epoch('ET', daynum=730119.5)
+
 
         = ERROR CONDITIONS
         - If the input units are not in the allowed list, an error is thrown.
@@ -59,7 +72,11 @@ class Epoch:
                 "dnum= %s\n"
                 "dt  = %s" % (sec, jd, daynum, dt))
 
-        cbook._check_in_list(self.allowed, frame=frame)
+        if frame not in self.allowed:
+            raise ValueError(
+                "Input frame '%s' is not one of the supported frames of %s" %
+                (frame, list(self.allowed.keys())))
+
         self._frame = frame
 
         if dt is not None:
@@ -76,10 +93,11 @@ class Epoch:
             self._jd = float(jd)
 
             # Resolve seconds down to [ 0, 86400)
-            deltaDays = math.floor(self._seconds / 86400)
+            deltaDays = int(math.floor(self._seconds / 86400.0))
             self._jd += deltaDays
             self._seconds -= deltaDays * 86400.0
 
+    # -----------------------------------------------------------------------
     def convert(self, frame):
         if self._frame == frame:
             return self
@@ -88,9 +106,11 @@ class Epoch:
 
         return Epoch(frame, self._seconds + offset, self._jd)
 
+    # -----------------------------------------------------------------------
     def frame(self):
         return self._frame
 
+    # -----------------------------------------------------------------------
     def julianDate(self, frame):
         t = self
         if frame != self._frame:
@@ -98,6 +118,7 @@ class Epoch:
 
         return t._jd + t._seconds / 86400.0
 
+    # -----------------------------------------------------------------------
     def secondsPast(self, frame, jd):
         t = self
         if frame != self._frame:
@@ -106,6 +127,7 @@ class Epoch:
         delta = t._jd - jd
         return t._seconds + delta * 86400
 
+    # -----------------------------------------------------------------------
     def __eq__(self, rhs):
         return self._cmp(rhs, operator.eq)
 
@@ -125,8 +147,7 @@ class Epoch:
         return self._cmp(rhs, operator.ge)
 
     def _cmp(self, rhs, op):
-        """
-        Compare two Epoch's.
+        """Compare two Epoch's.
 
         = INPUT VARIABLES
         - rhs     The Epoch to compare against.
@@ -144,9 +165,9 @@ class Epoch:
 
         return op(t._seconds, rhs._seconds)
 
+    # -----------------------------------------------------------------------
     def __add__(self, rhs):
-        """
-        Add a duration to an Epoch.
+        """Add a duration to an Epoch.
 
         = INPUT VARIABLES
         - rhs     The Epoch to subtract.
@@ -162,9 +183,9 @@ class Epoch:
 
         return Epoch(t._frame, sec, t._jd)
 
+    # -----------------------------------------------------------------------
     def __sub__(self, rhs):
-        """
-        Subtract two Epoch's or a Duration from an Epoch.
+        """Subtract two Epoch's or a Duration from an Epoch.
 
         Valid:
         Duration = Epoch - Epoch
@@ -193,18 +214,19 @@ class Epoch:
 
         return U.Duration(rhs._frame, days*86400 + sec)
 
+    # -----------------------------------------------------------------------
     def __str__(self):
         """Print the Epoch."""
         return "%22.15e %s" % (self.julianDate(self._frame), self._frame)
 
+    # -----------------------------------------------------------------------
     def __repr__(self):
         """Print the Epoch."""
         return str(self)
 
-    @staticmethod
+    # -----------------------------------------------------------------------
     def range(start, stop, step):
-        """
-        Generate a range of Epoch objects.
+        """Generate a range of Epoch objects.
 
         Similar to the Python range() method.  Returns the range [
         start, stop) at the requested step.  Each element will be a
@@ -216,7 +238,7 @@ class Epoch:
         - step      Step to use.
 
         = RETURN VALUE
-        - Returns a list containing the requested Epoch values.
+        - Returns a list contianing the requested Epoch values.
         """
         elems = []
 
@@ -230,3 +252,7 @@ class Epoch:
             i += 1
 
         return elems
+
+    range = staticmethod(range)
+
+# ===========================================================================

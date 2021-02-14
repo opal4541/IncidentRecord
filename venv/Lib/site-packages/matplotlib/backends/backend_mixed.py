@@ -4,7 +4,7 @@ from matplotlib.backends.backend_agg import RendererAgg
 from matplotlib.tight_bbox import process_figure_for_rasterizing
 
 
-class MixedModeRenderer:
+class MixedModeRenderer(object):
     """
     A helper class to implement a renderer that switches between
     vector and raster drawing.  An example may be a PDF writer, where
@@ -27,7 +27,7 @@ class MixedModeRenderer:
         height : scalar
             The height of the canvas in logical units
 
-        dpi : float
+        dpi : scalar
             The dpi of the canvas
 
         vector_renderer : `matplotlib.backend_bases.RendererBase`
@@ -62,47 +62,64 @@ class MixedModeRenderer:
 
         self._bbox_inches_restore = bbox_inches_restore
 
-        self._renderer = vector_renderer
+        self._set_current_renderer(vector_renderer)
 
-    def __getattr__(self, attr):
-        # Proxy everything that hasn't been overridden to the base
-        # renderer. Things that *are* overridden can call methods
-        # on self._renderer directly, but must not cache/store
-        # methods (because things like RendererAgg change their
-        # methods on the fly in order to optimise proxying down
-        # to the underlying C implementation).
-        return getattr(self._renderer, attr)
+    _methods = """
+        close_group draw_image draw_markers draw_path
+        draw_path_collection draw_quad_mesh draw_tex draw_text
+        finalize flipy get_canvas_width_height get_image_magnification
+        get_texmanager get_text_width_height_descent new_gc open_group
+        option_image_nocomposite points_to_pixels strip_math
+        start_filter stop_filter draw_gouraud_triangle
+        draw_gouraud_triangles option_scale_image
+        _text2path _get_text_path_transform height width
+        """.split()
+
+    def _set_current_renderer(self, renderer):
+        self._renderer = renderer
+
+        for method in self._methods:
+            if hasattr(renderer, method):
+                setattr(self, method, getattr(renderer, method))
+        renderer.start_rasterizing = self.start_rasterizing
+        renderer.stop_rasterizing = self.stop_rasterizing
 
     def start_rasterizing(self):
         """
         Enter "raster" mode.  All subsequent drawing commands (until
-        `stop_rasterizing` is called) will be drawn with the raster backend.
+        stop_rasterizing is called) will be drawn with the raster
+        backend.
+
+        If start_rasterizing is called multiple times before
+        stop_rasterizing is called, this method has no effect.
         """
+
         # change the dpi of the figure temporarily.
         self.figure.set_dpi(self.dpi)
+
         if self._bbox_inches_restore:  # when tight bbox is used
             r = process_figure_for_rasterizing(self.figure,
                                                self._bbox_inches_restore)
             self._bbox_inches_restore = r
+
         if self._rasterizing == 0:
             self._raster_renderer = self._raster_renderer_class(
                 self._width*self.dpi, self._height*self.dpi, self.dpi)
-            self._renderer = self._raster_renderer
+            self._set_current_renderer(self._raster_renderer)
         self._rasterizing += 1
 
     def stop_rasterizing(self):
         """
         Exit "raster" mode.  All of the drawing that was done since
-        the last `start_rasterizing` call will be copied to the
+        the last start_rasterizing command will be copied to the
         vector backend by calling draw_image.
 
-        If `start_rasterizing` has been called multiple times,
-        `stop_rasterizing` must be called the same number of times before
-        "raster" mode is exited.
+        If stop_rasterizing is called multiple times before
+        start_rasterizing is called, this method has no effect.
         """
         self._rasterizing -= 1
         if self._rasterizing == 0:
-            self._renderer = self._vector_renderer
+            self._set_current_renderer(self._vector_renderer)
 
             height = self._height * self.dpi
             buffer, bounds = self._raster_renderer.tostring_rgba_minimized()

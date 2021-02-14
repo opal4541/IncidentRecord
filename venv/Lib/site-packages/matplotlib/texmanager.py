@@ -1,7 +1,8 @@
 r"""
-Support for embedded TeX expressions in Matplotlib via dvipng and dvips for the
-raster and PostScript backends.  The tex and dvipng/dvips information is cached
-in ~/.matplotlib/tex.cache for reuse between sessions.
+This module supports embedded TeX expressions in matplotlib via dvipng
+and dvips for the raster and postscript backends.  The tex and
+dvipng/dvips information is cached in ~/.matplotlib/tex.cache for reuse between
+sessions
 
 Requirements:
 
@@ -21,13 +22,13 @@ as follows::
   texmanager = TexManager()
   s = ('\TeX\ is Number '
        '$\displaystyle\sum_{n=1}^\infty\frac{-e^{i\pi}}{2^n}$!')
-  Z = texmanager.get_rgba(s, fontsize=12, dpi=80, rgb=(1, 0, 0))
+  Z = texmanager.get_rgba(s, fontsize=12, dpi=80, rgb=(1,0,0))
 
 To enable tex rendering of all text in your matplotlib figure, set
 :rc:`text.usetex` to True.
 """
 
-import functools
+import copy
 import glob
 import hashlib
 import logging
@@ -39,22 +40,35 @@ import subprocess
 import numpy as np
 
 import matplotlib as mpl
-from matplotlib import cbook, dviread, rcParams
+from matplotlib import _png, cbook, dviread, rcParams
 
 _log = logging.getLogger(__name__)
 
 
-class TexManager:
+class TexManager(object):
     """
     Convert strings to dvi files using TeX, caching the results to a directory.
-
-    Repeated calls to this constructor always return the same instance.
     """
 
-    # Caches.
-    texcache = os.path.join(mpl.get_cachedir(), 'tex.cache')
-    grey_arrayd = {}
+    cachedir = mpl.get_cachedir()
+    if cachedir is not None:
+        texcache = os.path.join(cachedir, 'tex.cache')
+        Path(texcache).mkdir(parents=True, exist_ok=True)
+    else:
+        # Should only happen in a restricted environment (such as Google App
+        # Engine). Deal with this gracefully by not creating a cache directory.
+        texcache = None
 
+    # Caches.
+    rgba_arrayd = {}
+    grey_arrayd = {}
+    postscriptd = property(mpl.cbook.deprecated("2.2")(lambda self: {}))
+    pscnt = property(mpl.cbook.deprecated("2.2")(lambda self: 0))
+
+    serif = ('cmr', '')
+    sans_serif = ('cmss', '')
+    monospace = ('cmtt', '')
+    cursive = ('pzc', r'\usepackage{chancery}')
     font_family = 'serif'
     font_families = ('serif', 'sans-serif', 'cursive', 'monospace')
 
@@ -71,55 +85,28 @@ class TexManager:
         'helvetica': ('phv', r'\usepackage{helvet}'),
         'avant garde': ('pag', r'\usepackage{avant}'),
         'courier': ('pcr', r'\usepackage{courier}'),
-        # Loading the type1ec package ensures that cm-super is installed, which
-        # is necessary for unicode computer modern.  (It also allows the use of
-        # computer modern at arbitrary sizes, but that's just a side effect.)
-        'monospace': ('cmtt', r'\usepackage{type1ec}'),
-        'computer modern roman': ('cmr', r'\usepackage{type1ec}'),
-        'computer modern sans serif': ('cmss', r'\usepackage{type1ec}'),
-        'computer modern typewriter': ('cmtt', r'\usepackage{type1ec}')}
+        'monospace': ('cmtt', ''),
+        'computer modern roman': ('cmr', ''),
+        'computer modern sans serif': ('cmss', ''),
+        'computer modern typewriter': ('cmtt', '')}
 
-    @cbook.deprecated("3.3", alternative="matplotlib.get_cachedir()")
-    @property
-    def cachedir(self):
-        return mpl.get_cachedir()
+    _rc_cache = None
+    _rc_cache_keys = (
+        ('text.latex.preamble', 'text.latex.unicode', 'text.latex.preview',
+         'font.family') + tuple('font.' + n for n in font_families))
 
-    @cbook.deprecated("3.3")
-    @property
-    def rgba_arrayd(self):
-        return {}
+    def __init__(self):
 
-    @functools.lru_cache()  # Always return the same instance.
-    def __new__(cls):
-        Path(cls.texcache).mkdir(parents=True, exist_ok=True)
-        return object.__new__(cls)
+        if self.texcache is None:
+            raise RuntimeError('Cannot create TexManager, as there is no '
+                               'cache directory available')
 
-    _fonts = {}  # Only for deprecation period.
-
-    @cbook.deprecated("3.3")
-    @property
-    def serif(self):
-        return self._fonts.get("serif", ('cmr', ''))
-
-    @cbook.deprecated("3.3")
-    @property
-    def sans_serif(self):
-        return self._fonts.get("sans-serif", ('cmss', ''))
-
-    @cbook.deprecated("3.3")
-    @property
-    def cursive(self):
-        return self._fonts.get("cursive", ('pzc', r'\usepackage{chancery}'))
-
-    @cbook.deprecated("3.3")
-    @property
-    def monospace(self):
-        return self._fonts.get("monospace", ('cmtt', ''))
-
-    def get_font_config(self):
+        Path(self.texcache).mkdir(parents=True, exist_ok=True)
         ff = rcParams['font.family']
         if len(ff) == 1 and ff[0].lower() in self.font_families:
             self.font_family = ff[0].lower()
+        elif isinstance(ff, str) and ff.lower() in self.font_families:
+            self.font_family = ff.lower()
         else:
             _log.info('font.family must be one of (%s) when text.usetex is '
                       'True. serif will be used by default.',
@@ -128,35 +115,36 @@ class TexManager:
 
         fontconfig = [self.font_family]
         for font_family in self.font_families:
+            font_family_attr = font_family.replace('-', '_')
             for font in rcParams['font.' + font_family]:
                 if font.lower() in self.font_info:
-                    self._fonts[font_family] = self.font_info[font.lower()]
+                    setattr(self, font_family_attr,
+                            self.font_info[font.lower()])
                     _log.debug('family: %s, font: %s, info: %s',
                                font_family, font, self.font_info[font.lower()])
                     break
                 else:
-                    _log.debug('%s font is not compatible with usetex.', font)
+                    _log.debug('%s font is not compatible with usetex.',
+                               font_family)
             else:
                 _log.info('No LaTeX-compatible font found for the %s font '
                           'family in rcParams. Using default.', font_family)
-                self._fonts[font_family] = self.font_info[font_family]
-            fontconfig.append(self._fonts[font_family][0])
-        # Add a hash of the latex preamble to fontconfig so that the
+                setattr(self, font_family_attr, self.font_info[font_family])
+            fontconfig.append(getattr(self, font_family_attr)[0])
+        # Add a hash of the latex preamble to self._fontconfig so that the
         # correct png is selected for strings rendered with same font and dpi
         # even if the latex preamble changes within the session
         preamble_bytes = self.get_custom_preamble().encode('utf-8')
         fontconfig.append(hashlib.md5(preamble_bytes).hexdigest())
+        self._fontconfig = ''.join(fontconfig)
 
         # The following packages and commands need to be included in the latex
         # file's preamble:
-        cmd = [self._fonts['serif'][1],
-               self._fonts['sans-serif'][1],
-               self._fonts['monospace'][1]]
+        cmd = [self.serif[1], self.sans_serif[1], self.monospace[1]]
         if self.font_family == 'cursive':
-            cmd.append(self._fonts['cursive'][1])
-        self._font_preamble = '\n'.join([r'\usepackage{type1cm}', *cmd])
-
-        return ''.join(fontconfig)
+            cmd.append(self.cursive[1])
+        self._font_preamble = '\n'.join(
+            [r'\usepackage{type1cm}'] + cmd + [r'\usepackage{textcomp}'])
 
     def get_basefile(self, tex, fontsize, dpi=None):
         """
@@ -167,6 +155,24 @@ class TexManager:
         return os.path.join(
             self.texcache, hashlib.md5(s.encode('utf-8')).hexdigest())
 
+    def get_font_config(self):
+        """Reinitializes self if relevant rcParams on have changed."""
+        if self._rc_cache is None:
+            self._rc_cache = dict.fromkeys(self._rc_cache_keys)
+        changed = [par for par in self._rc_cache_keys
+                   if rcParams[par] != self._rc_cache[par]]
+        if changed:
+            _log.debug('following keys changed: %s', changed)
+            for k in changed:
+                _log.debug('%-20s: %-10s -> %-10s',
+                           k, self._rc_cache[k], rcParams[k])
+                # deepcopy may not be necessary, but feels more future-proof
+                self._rc_cache[k] = copy.deepcopy(rcParams[k])
+            _log.debug('RE-INIT\nold fontconfig: %s', self._fontconfig)
+            self.__init__()
+        _log.debug('fontconfig: %s', self._fontconfig)
+        return self._fontconfig
+
     def get_font_preamble(self):
         """
         Return a string containing font configuration for the tex preamble.
@@ -175,29 +181,7 @@ class TexManager:
 
     def get_custom_preamble(self):
         """Return a string containing user additions to the tex preamble."""
-        return rcParams['text.latex.preamble']
-
-    def _get_preamble(self):
-        return "\n".join([
-            r"\documentclass{article}",
-            # Pass-through \mathdefault, which is used in non-usetex mode to
-            # use the default text font but was historically suppressed in
-            # usetex mode.
-            r"\newcommand{\mathdefault}[1]{#1}",
-            self._font_preamble,
-            r"\usepackage[utf8]{inputenc}",
-            r"\DeclareUnicodeCharacter{2212}{\ensuremath{-}}",
-            # geometry is loaded before the custom preamble as convert_psfrags
-            # relies on a custom preamble to change the geometry.
-            r"\usepackage[papersize=72in,body=70in,margin=1in]{geometry}",
-            self.get_custom_preamble(),
-            # textcomp is loaded last (if not already loaded by the custom
-            # preamble) in order not to clash with custom packages (e.g.
-            # newtxtext) which load it with different options.
-            r"\makeatletter"
-            r"\@ifpackageloaded{textcomp}{}{\usepackage{textcomp}}"
-            r"\makeatother",
-        ])
+        return '\n'.join(rcParams['text.latex.preamble'])
 
     def make_tex(self, tex, fontsize):
         """
@@ -207,30 +191,46 @@ class TexManager:
         """
         basefile = self.get_basefile(tex, fontsize)
         texfile = '%s.tex' % basefile
+        custom_preamble = self.get_custom_preamble()
         fontcmd = {'sans-serif': r'{\sffamily %s}',
                    'monospace': r'{\ttfamily %s}'}.get(self.font_family,
                                                        r'{\rmfamily %s}')
+        tex = fontcmd % tex
 
-        Path(texfile).write_text(
-            r"""
+        if rcParams['text.latex.unicode']:
+            unicode_preamble = r"""
+\usepackage[utf8]{inputenc}"""
+        else:
+            unicode_preamble = ''
+
+        s = r"""
+\documentclass{article}
 %s
+%s
+%s
+\usepackage[papersize={72in,72in},body={70in,70in},margin={1in,1in}]{geometry}
 \pagestyle{empty}
 \begin{document}
-%% The empty hbox ensures that a page is printed even for empty inputs, except
-%% when using psfrag which gets confused by it.
-\fontsize{%f}{%f}%%
-\ifdefined\psfrag\else\hbox{}\fi%%
-%s
+\fontsize{%f}{%f}%s
 \end{document}
-""" % (self._get_preamble(), fontsize, fontsize * 1.25, fontcmd % tex),
-            encoding='utf-8')
+""" % (self._font_preamble, unicode_preamble, custom_preamble,
+       fontsize, fontsize * 1.25, tex)
+        with open(texfile, 'wb') as fh:
+            if rcParams['text.latex.unicode']:
+                fh.write(s.encode('utf8'))
+            else:
+                try:
+                    fh.write(s.encode('ascii'))
+                except UnicodeEncodeError as err:
+                    _log.info("You are using unicode and latex, but have not "
+                              "enabled the 'text.latex.unicode' rcParam.")
+                    raise
 
         return texfile
 
     _re_vbox = re.compile(
         r"MatplotlibBox:\(([\d.]+)pt\+([\d.]+)pt\)x([\d.]+)pt")
 
-    @cbook.deprecated("3.3")
     def make_tex_preview(self, tex, fontsize):
         """
         Generate a tex file to render the tex string at a specific font size.
@@ -242,17 +242,28 @@ class TexManager:
         """
         basefile = self.get_basefile(tex, fontsize)
         texfile = '%s.tex' % basefile
+        custom_preamble = self.get_custom_preamble()
         fontcmd = {'sans-serif': r'{\sffamily %s}',
                    'monospace': r'{\ttfamily %s}'}.get(self.font_family,
                                                        r'{\rmfamily %s}')
+        tex = fontcmd % tex
+
+        if rcParams['text.latex.unicode']:
+            unicode_preamble = r"""
+\usepackage[utf8]{inputenc}"""
+        else:
+            unicode_preamble = ''
 
         # newbox, setbox, immediate, etc. are used to find the box
         # extent of the rendered text.
 
-        Path(texfile).write_text(
-            r"""
+        s = r"""
+\documentclass{article}
+%s
+%s
 %s
 \usepackage[active,showbox,tightpage]{preview}
+\usepackage[papersize={72in,72in},body={70in,70in},margin={1in,1in}]{geometry}
 
 %% we override the default showbox as it is treated as an error and makes
 %% the exit status not zero
@@ -264,21 +275,27 @@ class TexManager:
 {\fontsize{%f}{%f}%s}
 \end{preview}
 \end{document}
-""" % (self._get_preamble(), fontsize, fontsize * 1.25, fontcmd % tex),
-            encoding='utf-8')
+""" % (self._font_preamble, unicode_preamble, custom_preamble,
+       fontsize, fontsize * 1.25, tex)
+        with open(texfile, 'wb') as fh:
+            if rcParams['text.latex.unicode']:
+                fh.write(s.encode('utf8'))
+            else:
+                try:
+                    fh.write(s.encode('ascii'))
+                except UnicodeEncodeError as err:
+                    _log.info("You are using unicode and latex, but have not "
+                              "enabled the 'text.latex.unicode' rcParam.")
+                    raise
 
         return texfile
 
     def _run_checked_subprocess(self, command, tex):
-        _log.debug(cbook._pformat_subprocess(command))
+        _log.debug(command)
         try:
             report = subprocess.check_output(command,
                                              cwd=self.texcache,
                                              stderr=subprocess.STDOUT)
-        except FileNotFoundError as exc:
-            raise RuntimeError(
-                'Failed to process string with tex because {} could not be '
-                'found'.format(command[0])) from exc
         except subprocess.CalledProcessError as exc:
             raise RuntimeError(
                 '{prog} was not able to process the following string:\n'
@@ -287,7 +304,7 @@ class TexManager:
                 '{exc}\n\n'.format(
                     prog=command[0],
                     tex=tex.encode('unicode_escape'),
-                    exc=exc.output.decode('utf-8'))) from exc
+                    exc=exc.output.decode('utf-8')))
         _log.debug(report)
         return report
 
@@ -298,7 +315,7 @@ class TexManager:
         Return the file name.
         """
 
-        if dict.__getitem__(rcParams, 'text.latex.preview'):
+        if rcParams['text.latex.preview']:
             return self.make_dvi_preview(tex, fontsize)
 
         basefile = self.get_basefile(tex, fontsize)
@@ -318,7 +335,6 @@ class TexManager:
 
         return dvifile
 
-    @cbook.deprecated("3.3")
     def make_dvi_preview(self, tex, fontsize):
         """
         Generate a dvi file containing latex's layout of tex string.
@@ -364,39 +380,64 @@ class TexManager:
         # see get_rgba for a discussion of the background
         if not os.path.exists(pngfile):
             dvifile = self.make_dvi(tex, fontsize)
-            cmd = ["dvipng", "-bg", "Transparent", "-D", str(dpi),
-                   "-T", "tight", "-o", pngfile, dvifile]
-            # When testing, disable FreeType rendering for reproducibility; but
-            # dvipng 1.16 has a bug (fixed in f3ff241) that breaks --freetype0
-            # mode, so for it we keep FreeType enabled; the image will be
-            # slightly off.
-            if (getattr(mpl, "_called_from_pytest", False)
-                    and mpl._get_executable_info("dvipng").version != "1.16"):
-                cmd.insert(1, "--freetype0")
-            self._run_checked_subprocess(cmd, tex)
+            self._run_checked_subprocess(
+                ["dvipng", "-bg", "Transparent", "-D", str(dpi),
+                 "-T", "tight", "-o", pngfile, dvifile], tex)
         return pngfile
+
+    @mpl.cbook.deprecated("2.2")
+    def make_ps(self, tex, fontsize):
+        """
+        Generate a postscript file containing latex's rendering of tex string.
+
+        Return the file name.
+        """
+        basefile = self.get_basefile(tex, fontsize)
+        psfile = '%s.epsf' % basefile
+        if not os.path.exists(psfile):
+            dvifile = self.make_dvi(tex, fontsize)
+            self._run_checked_subprocess(
+                ["dvips", "-q", "-E", "-o", psfile, dvifile], tex)
+        return psfile
+
+    @mpl.cbook.deprecated("2.2")
+    def get_ps_bbox(self, tex, fontsize):
+        """
+        Return a list of PS bboxes for latex's rendering of the tex string.
+        """
+        psfile = self.make_ps(tex, fontsize)
+        with open(psfile) as ps:
+            for line in ps:
+                if line.startswith('%%BoundingBox:'):
+                    return [int(val) for val in line.split()[1:]]
+        raise RuntimeError('Could not parse %s' % psfile)
 
     def get_grey(self, tex, fontsize=None, dpi=None):
         """Return the alpha channel."""
-        if not fontsize:
-            fontsize = rcParams['font.size']
-        if not dpi:
-            dpi = rcParams['savefig.dpi']
         key = tex, self.get_font_config(), fontsize, dpi
         alpha = self.grey_arrayd.get(key)
         if alpha is None:
             pngfile = self.make_png(tex, fontsize, dpi)
-            rgba = mpl.image.imread(os.path.join(self.texcache, pngfile))
-            self.grey_arrayd[key] = alpha = rgba[:, :, -1]
+            X = _png.read_png(os.path.join(self.texcache, pngfile))
+            self.grey_arrayd[key] = alpha = X[:, :, -1]
         return alpha
 
     def get_rgba(self, tex, fontsize=None, dpi=None, rgb=(0, 0, 0)):
         """Return latex's rendering of the tex string as an rgba array."""
-        alpha = self.get_grey(tex, fontsize, dpi)
-        rgba = np.empty((*alpha.shape, 4))
-        rgba[..., :3] = mpl.colors.to_rgb(rgb)
-        rgba[..., -1] = alpha
-        return rgba
+        if not fontsize:
+            fontsize = rcParams['font.size']
+        if not dpi:
+            dpi = rcParams['savefig.dpi']
+        r, g, b = rgb
+        key = tex, self.get_font_config(), fontsize, dpi, tuple(rgb)
+        Z = self.rgba_arrayd.get(key)
+
+        if Z is None:
+            alpha = self.get_grey(tex, fontsize, dpi)
+            Z = np.dstack([r, g, b, alpha])
+            self.rgba_arrayd[key] = Z
+
+        return Z
 
     def get_text_width_height_descent(self, tex, fontsize, renderer=None):
         """Return width, height and descent of the text."""
@@ -405,7 +446,7 @@ class TexManager:
 
         dpi_fraction = renderer.points_to_pixels(1.) if renderer else 1
 
-        if dict.__getitem__(rcParams, 'text.latex.preview'):
+        if rcParams['text.latex.preview']:
             # use preview.sty
             basefile = self.get_basefile(tex, fontsize)
             baselinefile = '%s.baseline' % basefile
@@ -419,9 +460,9 @@ class TexManager:
             return width, height + depth, depth
 
         else:
-            # use dviread.
+            # use dviread. It sometimes returns a wrong descent.
             dvifile = self.make_dvi(tex, fontsize)
             with dviread.Dvi(dvifile, 72 * dpi_fraction) as dvi:
-                page, = dvi
+                page = next(iter(dvi))
             # A total height (including the descent) needs to be returned.
             return page.width, page.height + page.descent, page.descent

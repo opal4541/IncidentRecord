@@ -1,24 +1,25 @@
 import hashlib
-from pathlib import Path
+import os
+import sys
+import warnings
 
 from docutils import nodes
-from docutils.parsers.rst import Directive, directives
+from docutils.parsers.rst import directives
 import sphinx
 
-import matplotlib as mpl
-from matplotlib import cbook
+from matplotlib import rcParams
 from matplotlib.mathtext import MathTextParser
+rcParams['mathtext.fontset'] = 'cm'
 mathtext_parser = MathTextParser("Bitmap")
-
 
 # Define LaTeX math node:
 class latex_math(nodes.General, nodes.Element):
     pass
 
-
 def fontset_choice(arg):
-    return directives.choice(arg, MathTextParser._font_type_mapping)
+    return directives.choice(arg, ['cm', 'stix', 'stixsans'])
 
+options_spec = {'fontset': fontset_choice}
 
 def math_role(role, rawtext, text, lineno, inliner,
               options={}, content=[]):
@@ -28,53 +29,48 @@ def math_role(role, rawtext, text, lineno, inliner,
     node['latex'] = latex
     node['fontset'] = options.get('fontset', 'cm')
     return [node], []
-math_role.options = {'fontset': fontset_choice}
+math_role.options = options_spec
 
-
-class MathDirective(Directive):
-    has_content = True
-    required_arguments = 0
-    optional_arguments = 0
-    final_argument_whitespace = False
-    option_spec = {'fontset': fontset_choice}
-
-    def run(self):
-        latex = ''.join(self.content)
-        node = latex_math(self.block_text)
-        node['latex'] = latex
-        node['fontset'] = self.options.get('fontset', 'cm')
-        return [node]
-
+def math_directive(name, arguments, options, content, lineno,
+                   content_offset, block_text, state, state_machine):
+    latex = ''.join(content)
+    node = latex_math(block_text)
+    node['latex'] = latex
+    node['fontset'] = options.get('fontset', 'cm')
+    return [node]
 
 # This uses mathtext to render the expression
 def latex2png(latex, filename, fontset='cm'):
     latex = "$%s$" % latex
-    with mpl.rc_context({'mathtext.fontset': fontset}):
-        if Path(filename).exists():
-            depth = mathtext_parser.get_depth(latex, dpi=100)
-        else:
-            try:
-                depth = mathtext_parser.to_png(filename, latex, dpi=100)
-            except Exception:
-                cbook._warn_external(
-                    f"Could not render math expression {latex}")
-                depth = 0
+    orig_fontset = rcParams['mathtext.fontset']
+    rcParams['mathtext.fontset'] = fontset
+    if os.path.exists(filename):
+        depth = mathtext_parser.get_depth(latex, dpi=100)
+    else:
+        try:
+            depth = mathtext_parser.to_png(filename, latex, dpi=100)
+        except:
+            warnings.warn("Could not render math expression %s" % latex,
+                          Warning, stacklevel=2)
+            depth = 0
+    rcParams['mathtext.fontset'] = orig_fontset
+    sys.stdout.write("#")
+    sys.stdout.flush()
     return depth
-
 
 # LaTeX to HTML translation stuff:
 def latex2html(node, source):
     inline = isinstance(node.parent, nodes.TextElement)
     latex = node['latex']
-    fontset = node['fontset']
-    name = 'math-{}'.format(
-        hashlib.md5((latex + fontset).encode()).hexdigest()[-10:])
+    name = 'math-%s' % hashlib.md5(latex.encode()).hexdigest()[-10:]
 
-    destdir = Path(setup.app.builder.outdir, '_images', 'mathmpl')
-    destdir.mkdir(parents=True, exist_ok=True)
-    dest = destdir / f'{name}.png'
+    destdir = os.path.join(setup.app.builder.outdir, '_images', 'mathmpl')
+    if not os.path.exists(destdir):
+        os.makedirs(destdir)
+    dest = os.path.join(destdir, '%s.png' % name)
+    path = '/'.join((setup.app.builder.imgpath, 'mathmpl'))
 
-    depth = latex2png(latex, dest, fontset)
+    depth = latex2png(latex, dest, node['fontset'])
 
     if inline:
         cls = ''
@@ -85,8 +81,7 @@ def latex2html(node, source):
     else:
         style = ''
 
-    return (f'<img src="{setup.app.builder.imgpath}/mathmpl/{name}.png"'
-            f' {cls}{style}/>')
+    return '<img src="%s/%s.png" %s%s/>' % (path, name, cls, style)
 
 
 def setup(app):
@@ -117,10 +112,12 @@ def setup(app):
                  html=(visit_latex_math_html, depart_latex_math_html),
                  latex=(visit_latex_math_latex, depart_latex_math_latex))
     app.add_role('mathmpl', math_role)
-    app.add_directive('mathmpl', MathDirective)
+    app.add_directive('mathmpl', math_directive,
+                      True, (0, 0, 0), **options_spec)
     if sphinx.version_info < (1, 8):
         app.add_role('math', math_role)
-        app.add_directive('math', MathDirective)
+        app.add_directive('math', math_directive,
+                          True, (0, 0, 0), **options_spec)
 
     metadata = {'parallel_read_safe': True, 'parallel_write_safe': True}
     return metadata

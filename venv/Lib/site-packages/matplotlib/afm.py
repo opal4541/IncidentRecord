@@ -1,34 +1,36 @@
 """
-A python interface to Adobe Font Metrics Files.
-
-Although a number of other python implementations exist, and may be more
-complete than this, it was decided not to go with them because they were
+This is a python interface to Adobe Font Metrics Files.  Although a
+number of other python implementations exist, and may be more complete
+than this, it was decided not to go with them because they were
 either:
 
-1) copyrighted or used a non-BSD compatible license
-2) had too many dependencies and a free standing lib was needed
-3) did more than needed and it was easier to write afresh rather than
-   figure out how to get just what was needed.
+  1) copyrighted or used a non-BSD compatible license
 
-It is pretty easy to use, and has no external dependencies:
+  2) had too many dependencies and a free standing lib was needed
 
->>> import matplotlib as mpl
->>> from pathlib import Path
->>> afm_path = Path(mpl.get_data_path(), 'fonts', 'afm', 'ptmr8a.afm')
->>>
->>> from matplotlib.afm import AFM
->>> with afm_path.open('rb') as fh:
-...     afm = AFM(fh)
->>> afm.string_width_height('What the heck?')
-(6220.0, 694)
->>> afm.get_fontname()
-'Times-Roman'
->>> afm.get_kern_dist('A', 'f')
-0
->>> afm.get_kern_dist('A', 'y')
--92.0
->>> afm.get_bbox_char('!')
-[130, -9, 238, 676]
+  3) Did more than needed and it was easier to write afresh rather than
+     figure out how to get just what was needed.
+
+It is pretty easy to use, and requires only built-in python libs:
+
+    >>> from matplotlib import rcParams
+    >>> import os.path
+    >>> afm_fname = os.path.join(rcParams['datapath'],
+    ...                         'fonts', 'afm', 'ptmr8a.afm')
+    >>>
+    >>> from matplotlib.afm import AFM
+    >>> with open(afm_fname, 'rb') as fh:
+    ...     afm = AFM(fh)
+    >>> afm.string_width_height('What the heck?')
+    (6220.0, 694)
+    >>> afm.get_fontname()
+    'Times-Roman'
+    >>> afm.get_kern_dist('A', 'f')
+    0
+    >>> afm.get_kern_dist('A', 'y')
+    -92.0
+    >>> afm.get_bbox_char('!')
+    [130, -9, 238, 676]
 
 As in the Adobe Font Metrics File Format Specification, all dimensions
 are given in units of 1/1000 of the scale factor (point size) of the font
@@ -36,33 +38,24 @@ being used.
 """
 
 from collections import namedtuple
-import logging
 import re
+import sys
 
 from ._mathtext_data import uni2type1
+from matplotlib.cbook import deprecated
 
 
-_log = logging.getLogger(__name__)
-
+# some afm files have floats where we are expecting ints -- there is
+# probably a better way to handle this (support floats, round rather
+# than truncate).  But I don't know what the best approach is now and
+# this change to _to_int should at least prevent mpl from crashing on
+# these JDH (2009-11-06)
 
 def _to_int(x):
-    # Some AFM files have floats where we are expecting ints -- there is
-    # probably a better way to handle this (support floats, round rather than
-    # truncate).  But I don't know what the best approach is now and this
-    # change to _to_int should at least prevent Matplotlib from crashing on
-    # these.  JDH (2009-11-06)
     return int(float(x))
 
 
-def _to_float(x):
-    # Some AFM files use "," instead of "." as decimal separator -- this
-    # shouldn't be ambiguous (unless someone is wicked enough to use "," as
-    # thousands separator...).
-    if isinstance(x, bytes):
-        # Encoding doesn't really matter -- if we have codepoints >127 the call
-        # to float() will error anyways.
-        x = x.decode('latin-1')
-    return float(x.replace(',', '.'))
+_to_float = float
 
 
 def _to_str(x):
@@ -85,9 +78,31 @@ def _to_bool(s):
         return True
 
 
+def _sanity_check(fh):
+    """
+    Check if the file at least looks like AFM.
+    If not, raise :exc:`RuntimeError`.
+    """
+
+    # Remember the file position in case the caller wants to
+    # do something else with the file.
+    pos = fh.tell()
+    try:
+        line = next(fh)
+    finally:
+        fh.seek(pos, 0)
+
+    # AFM spec, Section 4: The StartFontMetrics keyword [followed by a
+    # version number] must be the first line in the file, and the
+    # EndFontMetrics keyword must be the last non-empty line in the
+    # file. We just check the first line.
+    if not line.startswith(b'StartFontMetrics'):
+        raise RuntimeError('Not an AFM file')
+
+
 def _parse_header(fh):
     """
-    Read the font metrics header (up to the char metrics) and returns
+    Reads the font metrics header (up to the char metrics) and returns
     a dictionary mapping *key* to *val*.  *val* will be converted to the
     appropriate python type as necessary; e.g.:
 
@@ -101,8 +116,9 @@ def _parse_header(fh):
       ItalicAngle, IsFixedPitch, FontBBox, UnderlinePosition,
       UnderlineThickness, Version, Notice, EncodingScheme, CapHeight,
       XHeight, Ascender, Descender, StartCharMetrics
+
     """
-    header_converters = {
+    headerConverters = {
         b'StartFontMetrics': _to_float,
         b'FontName': _to_str,
         b'FullName': _to_str,
@@ -111,13 +127,10 @@ def _parse_header(fh):
         b'ItalicAngle': _to_float,
         b'IsFixedPitch': _to_bool,
         b'FontBBox': _to_list_of_ints,
-        b'UnderlinePosition': _to_float,
-        b'UnderlineThickness': _to_float,
+        b'UnderlinePosition': _to_int,
+        b'UnderlineThickness': _to_int,
         b'Version': _to_str,
-        # Some AFM files have non-ASCII characters (which are not allowed by
-        # the spec).  Given that there is actually no public API to even access
-        # this field, just return it as straight bytes.
-        b'Notice': lambda x: x,
+        b'Notice': _to_str,
         b'EncodingScheme': _to_str,
         b'CapHeight': _to_float,  # Is the second version a mistake, or
         b'Capheight': _to_float,  # do some AFM files contain 'Capheight'? -JKS
@@ -129,43 +142,34 @@ def _parse_header(fh):
         b'StartCharMetrics': _to_int,
         b'CharacterSet': _to_str,
         b'Characters': _to_int,
-    }
+        }
+
     d = {}
-    first_line = True
     for line in fh:
         line = line.rstrip()
         if line.startswith(b'Comment'):
             continue
         lst = line.split(b' ', 1)
+
         key = lst[0]
-        if first_line:
-            # AFM spec, Section 4: The StartFontMetrics keyword
-            # [followed by a version number] must be the first line in
-            # the file, and the EndFontMetrics keyword must be the
-            # last non-empty line in the file.  We just check the
-            # first header entry.
-            if key != b'StartFontMetrics':
-                raise RuntimeError('Not an AFM file')
-            first_line = False
         if len(lst) == 2:
             val = lst[1]
         else:
             val = b''
+
         try:
-            converter = header_converters[key]
-        except KeyError:
-            _log.error('Found an unknown keyword in AFM header (was %r)' % key)
-            continue
-        try:
-            d[key] = converter(val)
+            d[key] = headerConverters[key](val)
         except ValueError:
-            _log.error('Value error parsing header in AFM: %s, %s', key, val)
+            print('Value error parsing header in AFM:', key, val,
+                  file=sys.stderr)
+            continue
+        except KeyError:
+            print('Found an unknown keyword in AFM header (was %r)' % key,
+                  file=sys.stderr)
             continue
         if key == b'StartCharMetrics':
-            break
-    else:
-        raise RuntimeError('Bad parse')
-    return d
+            return d
+    raise RuntimeError('Bad parse')
 
 
 CharMetrics = namedtuple('CharMetrics', 'width, name, bbox')
@@ -229,8 +233,6 @@ def _parse_char_metrics(fh):
         # Reference).
         if name == 'Euro':
             num = 128
-        elif name == 'minus':
-            num = ord("\N{MINUS SIGN}")  # 0x2212
         if num != -1:
             ascii_d[num] = metrics
         name_d[name] = metrics
@@ -286,13 +288,13 @@ def _parse_composites(fh):
 
     Returns
     -------
-    dict
+    composites : dict
         A dict mapping composite character names to a parts list. The parts
         list is a list of `.CompositePart` entries describing the parts of
         the composite.
 
-    Examples
-    --------
+    Example
+    -------
     A composite definition line::
 
       CC Aacute 2 ; PCC A 0 0 ; PCC acute 160 170 ;
@@ -355,13 +357,45 @@ def _parse_optional(fh):
     return d[b'StartKernData'], d[b'StartComposites']
 
 
-class AFM:
+@deprecated("3.0", "Use the class AFM instead.")
+def parse_afm(fh):
+    return _parse_afm(fh)
+
+
+def _parse_afm(fh):
+    """
+    Parse the Adobe Font Metrics file in file handle *fh*.
+
+    Returns
+    -------
+    header : dict
+        A header dict. See :func:`_parse_header`.
+    cmetrics_by_ascii : dict
+        From :func:`_parse_char_metrics`.
+    cmetrics_by_name : dict
+        From :func:`_parse_char_metrics`.
+    kernpairs : dict
+        From :func:`_parse_kern_pairs`.
+    composites : dict
+        From :func:`_parse_composites`
+
+    """
+    _sanity_check(fh)
+    header = _parse_header(fh)
+    cmetrics_by_ascii, cmetrics_by_name = _parse_char_metrics(fh)
+    kernpairs, composites = _parse_optional(fh)
+    return header, cmetrics_by_ascii, cmetrics_by_name, kernpairs, composites
+
+
+class AFM(object):
 
     def __init__(self, fh):
         """Parse the AFM file in file object *fh*."""
-        self._header = _parse_header(fh)
-        self._metrics, self._metrics_by_name = _parse_char_metrics(fh)
-        self._kern, self._composite = _parse_optional(fh)
+        (self._header,
+         self._metrics,
+         self._metrics_by_name,
+         self._kern,
+         self._composite) = _parse_afm(fh)
 
     def get_bbox_char(self, c, isord=False):
         if not isord:
@@ -407,7 +441,7 @@ class AFM:
         for c in s:
             if c == '\n':
                 continue
-            name = uni2type1.get(ord(c), f"uni{ord(c):04X}")
+            name = uni2type1.get(ord(c), 'question')
             try:
                 wx, _, bbox = self._metrics_by_name[name]
             except KeyError:

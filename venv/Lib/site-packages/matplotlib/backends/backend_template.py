@@ -1,32 +1,65 @@
 """
-A fully functional, do-nothing backend intended as a template for backend
-writers.  It is fully functional in that you can select it as a backend e.g.
-with ::
+This is a fully functional do nothing backend to provide a template to
+backend writers.  It is fully functional in that you can select it as
+a backend with
 
-    import matplotlib
-    matplotlib.use("template")
+  import matplotlib
+  matplotlib.use('Template')
 
-and your program will (should!) run without error, though no output is
-produced.  This provides a starting point for backend writers; you can
-selectively implement drawing methods (`~.RendererTemplate.draw_path`,
-`~.RendererTemplate.draw_image`, etc.) and slowly see your figure come to life
-instead having to have a full blown implementation before getting any results.
+and your matplotlib scripts will (should!) run without error, though
+no output is produced.  This provides a nice starting point for
+backend writers because you can selectively implement methods
+(draw_rectangle, draw_lines, etc...) and slowly see your figure come
+to life w/o having to have a full blown implementation before getting
+any results.
 
-Copy this file to a directory outside of the Matplotlib source tree, somewhere
-where Python can import it (by adding the directory to your ``sys.path`` or by
-packaging it as a normal Python package); if the backend is importable as
-``import my.backend`` you can then select it using ::
+Copy this to backend_xxx.py and replace all instances of 'template'
+with 'xxx'.  Then implement the class methods and functions below, and
+add 'xxx' to the switchyard in matplotlib/backends/__init__.py and
+'xxx' to the backends list in the validate_backend methon in
+matplotlib/__init__.py and you're off.  You can use your backend with::
 
-    import matplotlib
-    matplotlib.use("module://my.backend")
+  import matplotlib
+  matplotlib.use('xxx')
+  import matplotlib.pyplot as plt
+  plt.plot([1,2,3])
+  plt.show()
 
-If your backend implements support for saving figures (i.e. has a `print_xyz`
-method), you can register it as the default handler for a given file type::
+matplotlib also supports external backends, so you can place you can
+use any module in your PYTHONPATH with the syntax::
 
-    from matplotlib.backend_bases import register_backend
-    register_backend('xyz', 'my_backend', 'XYZ File Format')
-    ...
-    plt.savefig("figure.xyz")
+  import matplotlib
+  matplotlib.use('module://my_backend')
+
+where my_backend.py is your module name.  This syntax is also
+recognized in the rc file and in the -d argument in pylab, e.g.,::
+
+  python simple_plot.py -dmodule://my_backend
+
+If your backend implements support for saving figures (i.e. has a print_xyz()
+method) you can register it as the default handler for a given file type
+
+  from matplotlib.backend_bases import register_backend
+  register_backend('xyz', 'my_backend', 'XYZ File Format')
+  ...
+  plt.savefig("figure.xyz")
+
+The files that are most relevant to backend_writers are
+
+  matplotlib/backends/backend_your_backend.py
+  matplotlib/backend_bases.py
+  matplotlib/backends/__init__.py
+  matplotlib/__init__.py
+  matplotlib/_pylab_helpers.py
+
+Naming Conventions
+
+  * classes Upper or MixedUpperCase
+
+  * variables lower or lowerUpper
+
+  * functions lower or underscore_separated
+
 """
 
 from matplotlib._pylab_helpers import Gcf
@@ -40,12 +73,10 @@ class RendererTemplate(RendererBase):
     The renderer handles drawing/rendering operations.
 
     This is a minimal do-nothing class that can be used to get started when
-    writing a new backend.  Refer to `backend_bases.RendererBase` for
-    documentation of the methods.
+    writing a new backend. Refer to backend_bases.RendererBase for
+    documentation of the classes methods.
     """
-
     def __init__(self, dpi):
-        super().__init__()
         self.dpi = dpi
 
     def draw_path(self, gc, path, transform, rgbFace=None):
@@ -82,18 +113,15 @@ class RendererTemplate(RendererBase):
         pass
 
     def flipy(self):
-        # docstring inherited
         return True
 
     def get_canvas_width_height(self):
-        # docstring inherited
         return 100, 100
 
     def get_text_width_height_descent(self, s, prop, ismath):
         return 1, 1, 1
 
     def new_gc(self):
-        # docstring inherited
         return GraphicsContextTemplate()
 
     def points_to_pixels(self, points):
@@ -129,11 +157,10 @@ class GraphicsContextTemplate(GraphicsContextBase):
 
 ########################################################################
 #
-# The following functions and classes are for pyplot and implement
+# The following functions and classes are for pylab and implement
 # window/figure managers, etc...
 #
 ########################################################################
-
 
 def draw_if_interactive():
     """
@@ -143,7 +170,7 @@ def draw_if_interactive():
     """
 
 
-def show(*, block=None):
+def show(block=None):
     """
     For image backends - is not required.
     For GUI backends - show() is usually the last line of a pyplot script and
@@ -156,7 +183,9 @@ def show(*, block=None):
 
 
 def new_figure_manager(num, *args, FigureClass=Figure, **kwargs):
-    """Create a new figure manager instance."""
+    """
+    Create a new figure manager instance
+    """
     # If a main-level app must be created, this (and
     # new_figure_manager_given_figure) is the usual place to do it -- see
     # backend_wx, backend_wxagg and backend_tkagg for examples.  Not all GUIs
@@ -167,7 +196,9 @@ def new_figure_manager(num, *args, FigureClass=Figure, **kwargs):
 
 
 def new_figure_manager_given_figure(num, figure):
-    """Create a new figure manager instance for the given figure."""
+    """
+    Create a new figure manager instance for the given figure.
+    """
     canvas = FigureCanvasTemplate(figure)
     manager = FigureManagerTemplate(canvas, num)
     return manager
@@ -191,7 +222,9 @@ class FigureCanvasTemplate(FigureCanvasBase):
     """
 
     def draw(self):
-        """Draw the figure using the renderer."""
+        """
+        Draw the figure using the renderer
+        """
         renderer = RendererTemplate(self.figure.dpi)
         self.figure.draw(renderer)
 
@@ -200,7 +233,8 @@ class FigureCanvasTemplate(FigureCanvasBase):
 
     # If the file type is not in the base set of filetypes,
     # you should add it to the class-scope filetypes dictionary as follows:
-    filetypes = {**FigureCanvasBase.filetypes, 'foo': 'My magic Foo format'}
+    filetypes = FigureCanvasBase.filetypes.copy()
+    filetypes['foo'] = 'My magic Foo format'
 
     def print_foo(self, filename, *args, **kwargs):
         """
@@ -208,7 +242,7 @@ class FigureCanvasTemplate(FigureCanvasBase):
         to their original values after this call, so you don't need to
         save and restore them.
         """
-        self.draw()
+        pass
 
     def get_default_filetype(self):
         return 'foo'
@@ -216,11 +250,11 @@ class FigureCanvasTemplate(FigureCanvasBase):
 
 class FigureManagerTemplate(FigureManagerBase):
     """
-    Helper class for pyplot mode, wraps everything up into a neat bundle.
+    Wrap everything up into a window for the pylab interface
 
-    For non-interactive backends, the base class is sufficient.
+    For non interactive backends, the base class does all the work
     """
-
+    pass
 
 ########################################################################
 #

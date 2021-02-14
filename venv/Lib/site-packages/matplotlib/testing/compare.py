@@ -1,8 +1,10 @@
 """
-Utilities for comparing image results.
+Provides a collection of utilities for comparing (image) results.
+
 """
 
 import atexit
+import functools
 import hashlib
 import os
 from pathlib import Path
@@ -10,30 +12,82 @@ import re
 import shutil
 import subprocess
 import sys
-from tempfile import TemporaryDirectory, TemporaryFile
+from tempfile import TemporaryFile
 
 import numpy as np
-from PIL import Image
 
-import matplotlib as mpl
-from matplotlib import cbook
+import matplotlib
 from matplotlib.testing.exceptions import ImageComparisonFailure
+from matplotlib import _png, cbook
 
-__all__ = ['compare_images', 'comparable_formats']
+__all__ = ['compare_float', 'compare_images', 'comparable_formats']
 
 
 def make_test_filename(fname, purpose):
     """
-    Make a new filename by inserting *purpose* before the file's extension.
+    Make a new filename by inserting `purpose` before the file's
+    extension.
     """
     base, ext = os.path.splitext(fname)
     return '%s-%s%s' % (base, purpose, ext)
 
 
+@cbook.deprecated("3.0")
+def compare_float(expected, actual, relTol=None, absTol=None):
+    """
+    Fail if the floating point values are not close enough, with
+    the given message.
+
+    You can specify a relative tolerance, absolute tolerance, or both.
+
+    """
+    if relTol is None and absTol is None:
+        raise ValueError("You haven't specified a 'relTol' relative "
+                         "tolerance or a 'absTol' absolute tolerance "
+                         "function argument. You must specify one.")
+    msg = ""
+
+    if absTol is not None:
+        absDiff = abs(expected - actual)
+        if absTol < absDiff:
+            template = ['',
+                        'Expected: {expected}',
+                        'Actual:   {actual}',
+                        'Abs diff: {absDiff}',
+                        'Abs tol:  {absTol}']
+            msg += '\n  '.join([line.format(**locals()) for line in template])
+
+    if relTol is not None:
+        # The relative difference of the two values.  If the expected value is
+        # zero, then return the absolute value of the difference.
+        relDiff = abs(expected - actual)
+        if expected:
+            relDiff = relDiff / abs(expected)
+
+        if relTol < relDiff:
+            # The relative difference is a ratio, so it's always unit-less.
+            template = ['',
+                        'Expected: {expected}',
+                        'Actual:   {actual}',
+                        'Rel diff: {relDiff}',
+                        'Rel tol:  {relTol}']
+            msg += '\n  '.join([line.format(**locals()) for line in template])
+
+    return msg or None
+
+
 def get_cache_dir():
-    cache_dir = Path(mpl.get_cachedir(), 'test_cache')
-    cache_dir.mkdir(parents=True, exist_ok=True)
-    return str(cache_dir)
+    cachedir = matplotlib.get_cachedir()
+    if cachedir is None:
+        raise RuntimeError('Could not find a suitable configuration directory')
+    cache_dir = os.path.join(cachedir, 'test_cache')
+    try:
+        Path(cache_dir).mkdir(parents=True, exist_ok=True)
+    except IOError:
+        return None
+    if not os.access(cache_dir, os.W_OK):
+        return None
+    return cache_dir
 
 
 def get_file_hash(path, block_size=2 ** 20):
@@ -45,17 +99,16 @@ def get_file_hash(path, block_size=2 ** 20):
                 break
             md5.update(data)
 
-    if Path(path).suffix == '.pdf':
-        md5.update(str(mpl._get_executable_info("gs").version)
-                   .encode('utf-8'))
-    elif Path(path).suffix == '.svg':
-        md5.update(str(mpl._get_executable_info("inkscape").version)
-                   .encode('utf-8'))
+    if path.endswith('.pdf'):
+        from matplotlib import checkdep_ghostscript
+        md5.update(checkdep_ghostscript()[1].encode('utf-8'))
+    elif path.endswith('.svg'):
+        from matplotlib import checkdep_inkscape
+        md5.update(checkdep_inkscape().encode('utf-8'))
 
     return md5.hexdigest()
 
 
-@cbook.deprecated("3.3")
 def make_external_conversion_command(cmd):
     def convert(old, new):
         cmdline = cmd(old, new)
@@ -87,7 +140,7 @@ class _ConverterError(Exception):
     pass
 
 
-class _Converter:
+class _Converter(object):
     def __init__(self):
         self._proc = None
         # Explicitly register deletion from an atexit handler because if we
@@ -121,15 +174,16 @@ class _Converter:
 class _GSConverter(_Converter):
     def __call__(self, orig, dest):
         if not self._proc:
+            self._stdout = TemporaryFile()
             self._proc = subprocess.Popen(
-                [mpl._get_executable_info("gs").executable,
-                 "-dNOSAFER", "-dNOPAUSE", "-sDEVICE=png16m"],
+                [matplotlib.checkdep_ghostscript.executable,
+                 "-dNOPAUSE", "-sDEVICE=png16m"],
                 # As far as I can see, ghostscript never outputs to stderr.
                 stdin=subprocess.PIPE, stdout=subprocess.PIPE)
             try:
                 self._read_until(b"\nGS")
-            except _ConverterError as err:
-                raise OSError("Failed to start Ghostscript") from err
+            except _ConverterError:
+                raise OSError("Failed to start Ghostscript")
 
         def encode_and_escape(name):
             return (os.fsencode(name)
@@ -158,85 +212,63 @@ class _GSConverter(_Converter):
 
 class _SVGConverter(_Converter):
     def __call__(self, orig, dest):
-        old_inkscape = mpl._get_executable_info("inkscape").version < "1"
-        terminator = b"\n>" if old_inkscape else b"> "
-        if not hasattr(self, "_tmpdir"):
-            self._tmpdir = TemporaryDirectory()
         if (not self._proc  # First run.
                 or self._proc.poll() is not None):  # Inkscape terminated.
-            env = {
-                **os.environ,
-                # If one passes e.g. a png file to Inkscape, it will try to
-                # query the user for conversion options via a GUI (even with
-                # `--without-gui`).  Unsetting `DISPLAY` prevents this (and
-                # causes GTK to crash and Inkscape to terminate, but that'll
-                # just be reported as a regular exception below).
-                "DISPLAY": "",
-                # Do not load any user options.
-                "INKSCAPE_PROFILE_DIR": os.devnull,
-            }
-            # Old versions of Inkscape (e.g. 0.48.3.1) seem to sometimes
-            # deadlock when stderr is redirected to a pipe, so we redirect it
-            # to a temporary file instead.  This is not necessary anymore as of
-            # Inkscape 0.92.1.
+            env = os.environ.copy()
+            # If one passes e.g. a png file to Inkscape, it will try to
+            # query the user for conversion options via a GUI (even with
+            # `--without-gui`).  Unsetting `DISPLAY` prevents this (and causes
+            # GTK to crash and Inkscape to terminate, but that'll just be
+            # reported as a regular exception below).
+            env.pop("DISPLAY", None)  # May already be unset.
+            # Do not load any user options.
+            env["INKSCAPE_PROFILE_DIR"] = os.devnull
+            # Old versions of Inkscape (0.48.3.1, used on Travis as of now)
+            # seem to sometimes deadlock when stderr is redirected to a pipe,
+            # so we redirect it to a temporary file instead.  This is not
+            # necessary anymore as of Inkscape 0.92.1.
             stderr = TemporaryFile()
             self._proc = subprocess.Popen(
-                ["inkscape", "--without-gui", "--shell"] if old_inkscape else
-                ["inkscape", "--shell"],
-                stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=stderr,
-                env=env, cwd=self._tmpdir.name)
+                ["inkscape", "--without-gui", "--shell"],
+                stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                stderr=stderr, env=env)
             # Slight abuse, but makes shutdown handling easier.
             self._proc.stderr = stderr
             try:
-                self._read_until(terminator)
-            except _ConverterError as err:
-                raise OSError("Failed to start Inkscape in interactive "
-                              "mode") from err
+                self._read_until(b"\n>")
+            except _ConverterError:
+                raise OSError("Failed to start Inkscape in interactive mode")
 
-        # Inkscape's shell mode does not support escaping metacharacters in the
-        # filename ("\n", and ":;" for inkscape>=1).  Avoid any problems by
-        # running from a temporary directory and using fixed filenames.
-        inkscape_orig = Path(self._tmpdir.name, os.fsdecode(b"f.svg"))
-        inkscape_dest = Path(self._tmpdir.name, os.fsdecode(b"f.png"))
-        try:
-            inkscape_orig.symlink_to(Path(orig).resolve())
-        except OSError:
-            shutil.copyfile(orig, inkscape_orig)
-        self._proc.stdin.write(
-            b"f.svg --export-png=f.png\n" if old_inkscape else
-            b"file-open:f.svg;export-filename:f.png;export-do;file-close\n")
+        # Inkscape uses glib's `g_shell_parse_argv`, which has a consistent
+        # behavior across platforms, so we can just use `shlex.quote`.
+        orig_b, dest_b = map(_shlex_quote_bytes,
+                             map(os.fsencode, [orig, dest]))
+        if b"\n" in orig_b or b"\n" in dest_b:
+            # Who knows whether the current folder name has a newline, or if
+            # our encoding is even ASCII compatible...  Just fall back on the
+            # slow solution (Inkscape uses `fgets` so it will always stop at a
+            # newline).
+            return make_external_conversion_command(lambda old, new: [
+                'inkscape', '-z', old, '--export-png', new])(orig, dest)
+        self._proc.stdin.write(orig_b + b" --export-png=" + dest_b + b"\n")
         self._proc.stdin.flush()
         try:
-            self._read_until(terminator)
-        except _ConverterError as err:
+            self._read_until(b"\n>")
+        except _ConverterError:
             # Inkscape's output is not localized but gtk's is, so the output
             # stream probably has a mixed encoding.  Using the filesystem
             # encoding should at least get the filenames right...
-            self._proc.stderr.seek(0)
+            self._stderr.seek(0)
             raise ImageComparisonFailure(
-                self._proc.stderr.read().decode(
-                    sys.getfilesystemencoding(), "replace")) from err
-        os.remove(inkscape_orig)
-        shutil.move(inkscape_dest, dest)
-
-    def __del__(self):
-        super().__del__()
-        if hasattr(self, "_tmpdir"):
-            self._tmpdir.cleanup()
+                self._stderr.read().decode(
+                    sys.getfilesystemencoding(), "replace"))
 
 
 def _update_converter():
-    try:
-        mpl._get_executable_info("gs")
-    except mpl.ExecutableNotFoundError:
-        pass
-    else:
+    gs, gs_v = matplotlib.checkdep_ghostscript()
+    if gs_v is not None:
         converter['pdf'] = converter['eps'] = _GSConverter()
-    try:
-        mpl._get_executable_info("inkscape")
-    except mpl.ExecutableNotFoundError:
-        pass
-    else:
+    if matplotlib.checkdep_inkscape() is not None:
         converter['svg'] = _SVGConverter()
 
 
@@ -250,13 +282,8 @@ _update_converter()
 
 def comparable_formats():
     """
-    Return the list of file formats that `.compare_images` can compare
+    Returns the list of file formats that compare_images can compare
     on this system.
-
-    Returns
-    -------
-    list of str
-        E.g. ``['png', 'pdf', 'svg', 'eps']``.
 
     """
     return ['png', *converter]
@@ -271,32 +298,43 @@ def convert(filename, cache):
     hash of the exact contents of the input file.  There is no limit on the
     size of the cache, so it may need to be manually cleared periodically.
     """
-    path = Path(filename)
-    if not path.exists():
-        raise IOError(f"{path} does not exist")
-    if path.suffix[1:] not in converter:
-        import pytest
-        pytest.skip(f"Don't know how to convert {path.suffix} files to png")
-    newpath = path.parent / f"{path.stem}_{path.suffix[1:]}.png"
+    base, extension = filename.rsplit('.', 1)
+    if extension not in converter:
+        reason = "Don't know how to convert %s files to png" % extension
+        from . import is_called_from_pytest
+        if is_called_from_pytest():
+            import pytest
+            pytest.skip(reason)
+        else:
+            from nose import SkipTest
+            raise SkipTest(reason)
+    newname = base + '_' + extension + '.png'
+    if not os.path.exists(filename):
+        raise IOError("'%s' does not exist" % filename)
 
     # Only convert the file if the destination doesn't already exist or
     # is out of date.
-    if not newpath.exists() or newpath.stat().st_mtime < path.stat().st_mtime:
-        cache_dir = Path(get_cache_dir()) if cache else None
+    if (not os.path.exists(newname) or
+            os.stat(newname).st_mtime < os.stat(filename).st_mtime):
+        if cache:
+            cache_dir = get_cache_dir()
+        else:
+            cache_dir = None
 
         if cache_dir is not None:
-            hash_value = get_file_hash(path)
-            cached_path = cache_dir / (hash_value + newpath.suffix)
-            if cached_path.exists():
-                shutil.copyfile(cached_path, newpath)
-                return str(newpath)
+            hash_value = get_file_hash(filename)
+            new_ext = os.path.splitext(newname)[1]
+            cached_file = os.path.join(cache_dir, hash_value + new_ext)
+            if os.path.exists(cached_file):
+                shutil.copyfile(cached_file, newname)
+                return newname
 
-        converter[path.suffix[1:]](path, newpath)
+        converter[extension](filename, newname)
 
         if cache_dir is not None:
-            shutil.copyfile(newpath, cached_path)
+            shutil.copyfile(newname, cached_file)
 
-    return str(newpath)
+    return newname
 
 
 def crop_to_same(actual_path, actual_image, expected_path, expected_image):
@@ -310,20 +348,14 @@ def crop_to_same(actual_path, actual_image, expected_path, expected_image):
     return actual_image, expected_image
 
 
-def calculate_rms(expected_image, actual_image):
-    """
-    Calculate the per-pixel errors, then compute the root mean square error.
-    """
-    if expected_image.shape != actual_image.shape:
+def calculate_rms(expectedImage, actualImage):
+    "Calculate the per-pixel errors, then compute the root mean square error."
+    if expectedImage.shape != actualImage.shape:
         raise ImageComparisonFailure(
             "Image sizes do not match expected size: {} "
-            "actual size {}".format(expected_image.shape, actual_image.shape))
+            "actual size {}".format(expectedImage.shape, actualImage.shape))
     # Convert to float to avoid overflowing finite integer types.
-    return np.sqrt(((expected_image - actual_image).astype(float) ** 2).mean())
-
-
-# NOTE: compare_image and save_diff_image assume that the image does not have
-# 16-bit depth, as Pillow converts these to RGB incorrectly.
+    return np.sqrt(((expectedImage - actualImage).astype(float) ** 2).mean())
 
 
 def compare_images(expected, actual, tol, in_decorator=False):
@@ -338,77 +370,60 @@ def compare_images(expected, actual, tol, in_decorator=False):
     ----------
     expected : str
         The filename of the expected image.
-    actual : str
+    actual :str
         The filename of the actual image.
     tol : float
         The tolerance (a color value difference, where 255 is the
         maximal difference).  The test fails if the average pixel
         difference is greater than this value.
     in_decorator : bool
-        Determines the output format. If called from image_comparison
-        decorator, this should be True. (default=False)
-
-    Returns
-    -------
-    None or dict or str
-        Return *None* if the images are equal within the given tolerance.
-
-        If the images differ, the return value depends on  *in_decorator*.
-        If *in_decorator* is true, a dict with the following entries is
-        returned:
-
-        - *rms*: The RMS of the image difference.
-        - *expected*: The filename of the expected image.
-        - *actual*: The filename of the actual image.
-        - *diff_image*: The filename of the difference image.
-        - *tol*: The comparison tolerance.
-
-        Otherwise, a human-readable multi-line string representation of this
-        information is returned.
+        If called from image_comparison decorator, this should be
+        True. (default=False)
 
     Examples
     --------
-    ::
-
-        img1 = "./baseline/plot.png"
-        img2 = "./output/plot.png"
-        compare_images(img1, img2, 0.001)
+    img1 = "./baseline/plot.png"
+    img2 = "./output/plot.png"
+    compare_images(img1, img2, 0.001):
 
     """
-    actual = os.fspath(actual)
     if not os.path.exists(actual):
         raise Exception("Output image %s does not exist." % actual)
+
     if os.stat(actual).st_size == 0:
         raise Exception("Output image file %s is empty." % actual)
 
     # Convert the image to png
-    expected = os.fspath(expected)
+    extension = expected.split('.')[-1]
+
     if not os.path.exists(expected):
         raise IOError('Baseline image %r does not exist.' % expected)
-    extension = expected.split('.')[-1]
+
     if extension != 'png':
-        actual = convert(actual, cache=False)
-        expected = convert(expected, cache=True)
+        actual = convert(actual, False)
+        expected = convert(expected, True)
 
     # open the image files and remove the alpha channel (if it exists)
-    expected_image = np.asarray(Image.open(expected).convert("RGB"))
-    actual_image = np.asarray(Image.open(actual).convert("RGB"))
+    expectedImage = _png.read_png_int(expected)
+    actualImage = _png.read_png_int(actual)
+    expectedImage = expectedImage[:, :, :3]
+    actualImage = actualImage[:, :, :3]
 
-    actual_image, expected_image = crop_to_same(
-        actual, actual_image, expected, expected_image)
+    actualImage, expectedImage = crop_to_same(
+        actual, actualImage, expected, expectedImage)
 
     diff_image = make_test_filename(actual, 'failed-diff')
 
     if tol <= 0:
-        if np.array_equal(expected_image, actual_image):
+        if np.array_equal(expectedImage, actualImage):
             return None
 
     # convert to signed integers, so that the images can be subtracted without
     # overflow
-    expected_image = expected_image.astype(np.int16)
-    actual_image = actual_image.astype(np.int16)
+    expectedImage = expectedImage.astype(np.int16)
+    actualImage = actualImage.astype(np.int16)
 
-    rms = calculate_rms(expected_image, actual_image)
+    rms = calculate_rms(expectedImage, actualImage)
 
     if rms <= tol:
         return None
@@ -431,7 +446,7 @@ def compare_images(expected, actual, tol, in_decorator=False):
 
 
 def save_diff_image(expected, actual, output):
-    """
+    '''
     Parameters
     ----------
     expected : str
@@ -440,23 +455,23 @@ def save_diff_image(expected, actual, output):
         File path of actual image.
     output : str
         File path to save difference image to.
-    """
+    '''
     # Drop alpha channels, similarly to compare_images.
-    expected_image = np.asarray(Image.open(expected).convert("RGB"))
-    actual_image = np.asarray(Image.open(actual).convert("RGB"))
-    actual_image, expected_image = crop_to_same(
-        actual, actual_image, expected, expected_image)
-    expected_image = np.array(expected_image).astype(float)
-    actual_image = np.array(actual_image).astype(float)
-    if expected_image.shape != actual_image.shape:
+    expectedImage = _png.read_png(expected)[..., :3]
+    actualImage = _png.read_png(actual)[..., :3]
+    actualImage, expectedImage = crop_to_same(
+        actual, actualImage, expected, expectedImage)
+    expectedImage = np.array(expectedImage).astype(float)
+    actualImage = np.array(actualImage).astype(float)
+    if expectedImage.shape != actualImage.shape:
         raise ImageComparisonFailure(
             "Image sizes do not match expected size: {} "
-            "actual size {}".format(expected_image.shape, actual_image.shape))
-    abs_diff_image = np.abs(expected_image - actual_image)
+            "actual size {}".format(expectedImage.shape, actualImage.shape))
+    absDiffImage = np.abs(expectedImage - actualImage)
 
     # expand differences in luminance domain
-    abs_diff_image *= 255 * 10
-    save_image_np = np.clip(abs_diff_image, 0, 255).astype(np.uint8)
+    absDiffImage *= 255 * 10
+    save_image_np = np.clip(absDiffImage, 0, 255).astype(np.uint8)
     height, width, depth = save_image_np.shape
 
     # The PDF renderer doesn't produce an alpha channel, but the
@@ -469,4 +484,4 @@ def save_diff_image(expected, actual, output):
     # Hard-code the alpha channel to fully solid
     save_image_np[:, :, 3] = 255
 
-    Image.fromarray(save_image_np).save(output, format="png")
+    _png.write_png(save_image_np, output)

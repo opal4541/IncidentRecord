@@ -6,6 +6,7 @@
 from base64 import b64encode
 import io
 import json
+import os
 import pathlib
 import uuid
 
@@ -17,9 +18,10 @@ except ImportError:
     # Jupyter/IPython 3.x or earlier
     from IPython.kernel.comm import Comm
 
-from matplotlib import cbook, is_interactive
+from matplotlib import rcParams, is_interactive
 from matplotlib._pylab_helpers import Gcf
-from matplotlib.backend_bases import _Backend, NavigationToolbar2
+from matplotlib.backend_bases import (
+    _Backend, FigureCanvasBase, NavigationToolbar2)
 from matplotlib.backends.backend_webagg_core import (
     FigureCanvasWebAggCore, FigureManagerWebAgg, NavigationToolbar2WebAgg,
     TimerTornado)
@@ -27,19 +29,19 @@ from matplotlib.backends.backend_webagg_core import (
 
 def connection_info():
     """
-    Return a string showing the figure and connection status for the backend.
+    Return a string showing the figure and connection status for
+    the backend. This is intended as a diagnostic tool, and not for general
+    use.
 
-    This is intended as a diagnostic tool, and not for general use.
     """
-    result = [
-        '{fig} - {socket}'.format(
-            fig=(manager.canvas.figure.get_label()
-                 or "Figure {}".format(manager.num)),
-            socket=manager.web_sockets)
-        for manager in Gcf.get_all_fig_managers()
-    ]
+    result = []
+    for manager in Gcf.get_all_fig_managers():
+        fig = manager.canvas.figure
+        result.append('{0} - {0}'.format((fig.get_label() or
+                                          "Figure {0}".format(manager.num)),
+                                         manager.web_sockets))
     if not is_interactive():
-        result.append(f'Figures pending show: {len(Gcf.figs)}')
+        result.append('Figures pending show: {0}'.format(len(Gcf._activeQue)))
     return '\n'.join(result)
 
 
@@ -138,14 +140,15 @@ class FigureManagerNbAgg(FigureManagerWebAgg):
 
     def remove_comm(self, comm_id):
         self.web_sockets = {socket for socket in self.web_sockets
-                            if socket.comm.comm_id != comm_id}
+                            if not socket.comm.comm_id == comm_id}
 
 
 class FigureCanvasNbAgg(FigureCanvasWebAggCore):
-    _timer_cls = TimerTornado
+    def new_timer(self, *args, **kwargs):
+        return TimerTornado(*args, **kwargs)
 
 
-class CommSocket:
+class CommSocket(object):
     """
     Manages the Comm connection between IPython and the browser (client).
 
@@ -164,10 +167,9 @@ class CommSocket:
         display(HTML("<div id=%r></div>" % self.uuid))
         try:
             self.comm = Comm('matplotlib', data={'id': self.uuid})
-        except AttributeError as err:
+        except AttributeError:
             raise RuntimeError('Unable to create an IPython notebook Comm '
-                               'instance. Are you in the IPython '
-                               'notebook?') from err
+                               'instance. Are you in the IPython notebook?')
         self.comm.on_msg(self.on_message)
 
         manager = self.manager
@@ -231,7 +233,7 @@ class _BackendNbAgg(_Backend):
         if is_interactive():
             manager.show()
             figure.canvas.draw_idle()
-        canvas.mpl_connect('close_event', lambda event: Gcf.destroy(manager))
+        canvas.mpl_connect('close_event', lambda event: Gcf.destroy(num))
         return manager
 
     @staticmethod
@@ -239,7 +241,7 @@ class _BackendNbAgg(_Backend):
         manager.show()
 
     @staticmethod
-    def show(block=None):
+    def show(*args, **kwargs):
         ## TODO: something to do when keyword block==False ?
         from matplotlib._pylab_helpers import Gcf
 
@@ -252,12 +254,12 @@ class _BackendNbAgg(_Backend):
         for manager in managers:
             manager.show()
 
-            # plt.figure adds an event which makes the figure in focus the
-            # active one. Disable this behaviour, as it results in
+            # plt.figure adds an event which puts the figure in focus
+            # in the activeQue. Disable this behaviour, as it results in
             # figures being put as the active figure after they have been
             # shown, even in non-interactive mode.
             if hasattr(manager, '_cidgcf'):
                 manager.canvas.mpl_disconnect(manager._cidgcf)
 
-            if not interactive:
-                Gcf.figs.pop(manager.num, None)
+            if not interactive and manager in Gcf._activeQue:
+                Gcf._activeQue.remove(manager)
