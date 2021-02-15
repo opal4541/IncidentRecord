@@ -20,24 +20,14 @@ exLicense = ''
 exTime = ''
 
 
-@socketio.on('connect', namespace='/userhome')
+@socketio.on('connect', namespace='/web')
 def connect_web():
-    print('[INFO] userhome client connected: {}'.format(request.sid))
+    print('[INFO] web client connected: {}'.format(request.sid))
 
 
-@socketio.on('disconnect', namespace='/userhome')
+@socketio.on('disconnect', namespace='/web')
 def disconnect_web():
-    print('[INFO] userhome client disconnected: {}'.format(request.sid))
-
-
-@socketio.on('connect', namespace='/home')
-def connect_web():
-    print('[INFO] home client connected: {}'.format(request.sid))
-
-
-@socketio.on('disconnect', namespace='/home')
-def disconnect_web():
-    print('[INFO] home client disconnected: {}'.format(request.sid))
+    print('[INFO] web client disconnected: {}'.format(request.sid))
 
 
 @socketio.on('connect', namespace='/enter')
@@ -66,21 +56,30 @@ def handle_cv_message(message):
     enImage = message['enterimage']
     enLicense = message['enterlicense']
     enTime = message['entertime']
-    print(enLicense)
+    lastEnter = cursor.execute(
+        'SELECT TOP 1 H.HistoryID, C.LicensePlate, H.EnterTimestamp, H.ExitTimestamp, H.Activity FROM History H JOIN Car C ON H.CarID = C.CarID ORDER BY H.HistoryID DESC'
+    )
+    lastEnter = cursor.fetchone()
 
-    socketio.emit('server2web_user_enter', {
+    lastenter_list = []
+    lastenter_dict = {
+        'id': lastEnter[0],
+        'licenseplate': lastEnter[1],
+        'entertime': str(lastEnter[2]),
+        'exittime': str(lastEnter[3]),
+        'activity': str(lastEnter[4])
+    }
+
+    print(lastenter_dict)
+    # lastenter_list.append(lastenter_dict)
+
+    socketio.emit('server2web_enter', {
         'enterimage': enImage,
         'enterlicense': enLicense,
-        'entertime': enTime
+        'entertime': enTime,
+        'lastEnter': lastenter_list
     },
-                  namespace='/userhome')
-
-    socketio.emit('server2web_home_enter', {
-        'enterimage': enImage,
-        'enterlicense': enLicense,
-        'entertime': enTime
-    },
-                  namespace='/home')
+                  namespace='/web')
 
 
 @socketio.on('exit2server', namespace='/exit')
@@ -89,21 +88,106 @@ def handle_cv_message(message):
     exImage = message['exitimage']
     exLicense = message['exitlicense']
     exTime = message['exittime']
-    print(exLicense)
+    lastExit = cursor.execute(
+        'SELECT TOP 1 H.HistoryID, C.LicensePlate, H.EnterTimestamp, H.ExitTimestamp, H.Activity FROM History H JOIN Car C ON H.CarID = C.CarID WHERE H.ExitTimestamp IS NOT NULL ORDER BY H.HistoryID DESC'
+    )
+    lastExit = cursor.fetchone()
 
-    socketio.emit('server2web_user_exit', {
+    lastexit_list = []
+    lastexit_dict = {
+        'id': lastExit[0],
+        'licenseplate': lastExit[1],
+        'entertime': str(lastExit[2]),
+        'exittime': str(lastExit[3]),
+        'activity': str(lastExit[4])
+    }
+
+    lastexit_list.append(lastexit_dict)
+
+    socketio.emit('server2web_exit', {
         'exitimage': exImage,
         'exitlicense': exLicense,
-        'exittime': exTime
+        'exittime': exTime,
+        'lastExit': lastexit_list
     },
-                  namespace='/userhome')
+                  namespace='/web')
 
-    socketio.emit('server2web_home_exit', {
-        'exitimage': exImage,
-        'exitlicense': exLicense,
-        'exittime': exTime
-    },
-                  namespace='/home')
+
+@app.route('/histable')
+def hisTable():
+    historyData = cursor.execute(
+        'SELECT H.HistoryID, C.LicensePlate, H.EnterTimestamp, H.ExitTimestamp, H.Activity FROM History H JOIN Car C ON H.CarID = C.CarID ORDER BY H.HistoryID DESC'
+    )
+    historyData = cursor.fetchall()
+
+    history_list = []
+    history_dict = {}
+
+    for history in historyData:
+        history_dict = {
+            'id': history[0],
+            'licenseplate': history[1],
+            'entertime': str(history[2]),
+            'exittime': str(history[3]),
+            'activity': str(history[4])
+        }
+        history_list.append(history_dict)
+        history_dict = {}
+
+    return history_list
+
+
+@app.route('/inctable')
+def incTable():
+    incidentData = cursor.execute(
+        'SELECT I.IncidentID, C.LicensePlate, CUS.FirstName, CUS.LastName, I.Type, I.StartTimestamp, I.EndTimestamp, I.Status, U.FirstName, U.LastName, I.Description FROM Incident I JOIN Car C ON I.CarID = C.CarID JOIN Customer CUS ON C.CustomerID = CUS.CustomerID JOIN [User] U ON U.UserID = I.UserID'
+    )
+    incidentData = cursor.fetchall()
+
+    incident_list = []
+    incident_dict = {}
+
+    for incident in incidentData:
+        incident_dict = {
+            'id': incident[0],
+            'licenseplate': incident[1],
+            'firstname': incident[2],
+            'lastname': incident[3],
+            'type': incident[4],
+            'starttime': str(incident[5]),
+            'endtime': str(incident[6]),
+            'status': incident[7],
+            'userfirstname': incident[8],
+            'userlastname': incident[9],
+            'description' : incident[10]
+        }
+        incident_list.append(incident_dict)
+
+    return incident_list
+
+
+@app.route('/cartable')
+def carTable():
+    carData = cursor.execute(
+        'SELECT C.CarID, C.LicensePlate, Customer.FirstName, Customer.LastName, Customer.Phone, MAX(H.EnterTimestamp) FROM History H JOIN Car C ON H.CarID = C.CarID JOIN Customer ON C.CustomerID = Customer.CustomerID GROUP BY C.LicensePlate, C.CarID, C.CustomerID, Customer.FirstName, Customer.LastName, Customer.Phone'
+    )
+    carData = cursor.fetchall()
+
+    car_list = []
+    car_dict = {}
+
+    for car in carData:
+        car_dict = {
+            'id': car[0],
+            'licenseplate': car[1],
+            'firstname': car[2],
+            'lastname': car[3],
+            'phone': car[4],
+            'lastvisited': str(car[5])
+        }
+        car_list.append(car_dict)
+
+    return car_list
 
 
 @app.route('/')
@@ -111,20 +195,9 @@ def home():
     if not session.get('loggedin'):
         return render_template('login.html')
 
-    historyData = cursor.execute(
-        'SELECT H.HistoryID, C.LicensePlate, H.EnterTimestamp, H.ExitTimestamp, H.Activity FROM History H JOIN Car C ON H.CarID = C.CarID ORDER BY H.HistoryID DESC'
-    )
-    historyData = cursor.fetchall()
-
-    incidentData = cursor.execute(
-        'SELECT I.IncidentID, C.LicensePlate, CUS.FirstName, CUS.LastName, I.Type, I.StartTimestamp, I.EndTimestamp, I.Status, U.FirstName, U.LastName, I.Description FROM Incident I JOIN Car C ON I.CarID = C.CarID JOIN Customer CUS ON C.CustomerID = CUS.CustomerID JOIN [User] U ON U.UserID = I.UserID'
-    )
-    incidentData = cursor.fetchall()
-
-    carData = cursor.execute(
-        'SELECT C.CarID, C.LicensePlate, Customer.FirstName, Customer.LastName, Customer.Phone, MAX(H.EnterTimestamp) FROM History H JOIN Car C ON H.CarID = C.CarID JOIN Customer ON C.CustomerID = Customer.CustomerID GROUP BY C.LicensePlate, C.CarID, C.CustomerID, Customer.FirstName, Customer.LastName, Customer.Phone'
-    )
-    carData = cursor.fetchall()
+    historyData = hisTable()
+    incidentData = incTable()
+    carData = carTable()
 
     if (session.get('type') != "admin"):
         return render_template('userHome.html',

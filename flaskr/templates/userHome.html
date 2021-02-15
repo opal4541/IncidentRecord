@@ -438,16 +438,15 @@
               </p>
             </tr>
           </thead>
-
-          <tbody>
+          <tbody id="tbody">
             {% for row in historyData %}
             <tr>
               <p>
-                <td>{{row[0]}}</td>
-                <td>{{row[1]}}</td>
-                <td>{{row[2]}}</td>
-                <td>{{row[3]}}</td>
-                <td style="width: 400px;">{{row[4]}}</td>
+                <td id="idhis">{{row.id}}</td>
+                <td id="licensehis">{{row.licenseplate}}</td>
+                <td id="entimehis">{{row.entertime}}</td>
+                <td id="extimehis">{{row.exittime}}</td>
+                <td id="activityhis" style="width: 400px;">{{row.activity}}</td>
               </p>
             </tr>
             {% endfor %}
@@ -485,15 +484,15 @@
             {% for row in incidentData %}
             <tr>
               <p>
-                <td class="incidentid">{{row[0]}}</td>
-                <td class="licenseplate">{{row[1]}}</td>
-                <td class="customername">{{row[2]}}<span> </span>{{row[3]}}</td>
-                <td class="type">{{row[4]}}</td>
-                <td class="starttime">{{row[5]}}</td>
-                <td class="endtime">{{row[6]}}</td>
-                <td class="status">{{row[7]}}</td>
-                <td class="editby">{{row[8]}}<span> </span>{{row[9]}}</td>
-                <td class="description" style="display:none;">{{row[10]}}</td>
+                <td id="idinc" class="incidentid">{{row.id}}</td>
+                <td id="licenseinc" class="licenseplate">{{row.licenseplate}}</td>
+                <td id="customernameinc" class="customername">{{row.firstname}}<span> </span>{{row.lastname}}</td>
+                <td id="typeinc" class="type">{{row.type}}</td>
+                <td id="starttimeinc" class="starttime">{{row.starttime}}</td>
+                <td id="endtimeinc" class="endtime">{{row.endtime}}</td>
+                <td id="statusinc" class="status">{{row.status}}</td>
+                <td id="editbyinc" class="editby">{{row.userfirstname}}<span> </span>{{row.userlastname}}</td>
+                <td id="descriptioninc" class="description" style="display:none;">{{row.description}}</td>
                 <td><button class="viewbutton btn button1" data-target="#viewincident">View</button></td>
               </p>
             </tr>
@@ -528,11 +527,11 @@
             {% for row in carData %}
             <tr>
               <p>
-                <td>{{row[0]}}</td>
-                <td>{{row[1]}}</td>
-                <td>{{row[2]}}<span> </span>{{row[3]}}</td>
-                <td>{{row[4]}}</td>
-                <td>{{row[5]}}</td>
+                <td id="idcar">{{row.id}}</td>
+                <td id="licensecar">{{row.licenseplate}}</td>
+                <td id="customernamecar">{{row.firstname}}<span> </span>{{row.lastname}}</td>
+                <td id="phonecar">{{row.phone}}</td>
+                <td id="lastvisitedcar">{{row.lastvisited}}</td>
               </p>
             </tr>
             {% endfor %}
@@ -543,7 +542,7 @@
   </div>
 
   <!-- view Incident form -->
-  <div class="modal fade" id="iewincident" role="dialog">
+  <div class="modal fade" id="viewincident" role="dialog">
     <div class="modal-dialog">
 
       <!-- Modal content-->
@@ -617,7 +616,7 @@
     </div>
   </div>
 
-  <div class="modal fade" id="viewincident" role="dialog">
+  <div class="modal fade" id="iewincident" role="dialog">
     <div class="modal-dialog">
 
       <!-- Modal content-->
@@ -800,8 +799,11 @@
       var exitimage = document.getElementById("exitvid");
       var exitlicense = document.getElementById("exitlicense");
       var exittime = document.getElementById("exittime");
+      var lastenter;
+      var lastexit;
+      var table = document.getElementById("historytable");
 
-      var socket = io.connect('http://127.0.0.1:5000/userhome', {
+      var socket = io.connect('http://127.0.0.1:5000/web', {
         reconnection: false
       });
 
@@ -825,33 +827,36 @@
         console.log('Error! ' + error);
       });
 
-      socket.on('server2web_user_enter', (msg) => {
+      socket.on('server2web_enter', (msg) => {
         enterimage.src = msg.enterimage;
         enterlicense.innerHTML = msg.enterlicense;
         entertime.innerHTML = msg.entertime;
+        lastenter = msg.lastenter
+
+        // var row = table.insertRow(0);
+        // var cell1 = row.insertCell(0);
+        // var cell2 = row.insertCell(1);
+        // var cell3 = row.insertCell(2);
+        // var cell4 = row.insertCell(3);
+        // var cell5 = row.insertCell(4);
+
+        // cell1 = lastenter.id;
+        // cell2 = lastenter.licenseplate;
+        // cell3 = lastenter.entertime;
+        // cell4 = lastenter.exittime;
+        // cell5 = lastenter.activity;
       });
 
-      socket.on('server2web_user_exit', (msg) => {
+      socket.on('server2web_exit', (msg) => {
         exitimage.src = msg.exitimage;
         exitlicense.innerHTML = msg.exitlicense;
         exittime.innerHTML = msg.exittime;
+        lastexit = msg.lastExit;
+        console.log(lastexit)
       });
     });
 
-    // function insertHistoryRow(id,license,enTime) {
-    //   var historytable = document.getElementById("historytable");
-    //   var row = table.insertRow(0);
-    //   var cell1 = row.insertCell(0);
-    //   var cell2 = row.insertCell(1);
-    //   var cell3 = row.insertCell(2);
-    //   var cell4 = row.insertCell(3);
-    //   var cell5 = row.insertCell(4);
-    //   cell1.innerHTML = id;
-    //   cell2.innerHTML = license;
-    //   cell3.innerHTML = enTime;
-    //   cell4.innerHTML = "None";
-    //   cell5.innerHTML = "None";
-    // }
+
   </script>
 
 </body>
