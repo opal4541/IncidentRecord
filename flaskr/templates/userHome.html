@@ -757,31 +757,26 @@
     var historyArray = JSON.parse({{ historyData | tojson | safe }})
 
     function buildHistoryTable(data) {
-      var historytable = document.getElementById("historytbody");
+      var historytbody = document.getElementById("historytbody");
 
       for (var i = 0; i < data.length; i++) {
-        var row = `<tr>
-                      <p>
-                        <td id="idhis">${data[i].id}</td>
+
+        historytbody.insertRow(-1).innerHTML += `<td id="idhis">${data[i].id}</td>
                         <td id="licensehis">${data[i].licenseplate}</td>
                         <td id="entimehis">${data[i].entertime}</td>
                         <td id="extimehis">${data[i].exittime}</td>
-                        <td id="activityhis" style="width: 400px;">${data[i].activity}</td>
-                      </p>
-                  </tr>`
-        historytable.innerHTML += row
+                        <td id="activityhis" style="width: 400px;">${data[i].activity}</td>`;
       }
     }
 
     var incidentArray = JSON.parse({{ incidentData | tojson | safe }})
 
     function buildIncidentTable(data) {
-      var incidenttable = document.getElementById("incidenttbody");
+      var incidenttbody = document.getElementById("incidenttbody");
 
       for (var i = 0; i < data.length; i++) {
-        var row = `<tr>
-                      <p>
-                        <td id="idinc" class="incidentid">${data[i].id}</td>
+
+        incidenttbody.insertRow(-1).innerHTML += `<td id="idinc" class="incidentid">${data[i].id}</td>
                         <td id="licenseinc" class="licenseplate">${data[i].licenseplate}</td>
                         <td id="customernameinc" class="customername">${data[i].firstname}<span> </span>${data[i].lastname}</td>
                         <td id="typeinc" class="type">${data[i].type}</td>
@@ -790,62 +785,29 @@
                         <td id="statusinc" class="status">${data[i].status}</td>
                         <td id="editbyinc" class="editby">${data[i].userfirstname}<span> </span>${data[i].userlastname}</td>
                         <td id="descriptioninc" class="description" style="display:none;">${data[i].description}</td>
-                        <td><button class="viewbutton btn button1" data-target="#viewincident">View</button></td>
-                      </p>
-                  </tr>`
-        incidenttable.innerHTML += row
+                        <td><button class="viewbutton btn button1" data-target="#viewincident">View</button></td>`;
       }
     }
 
     var carArray = JSON.parse({{ carData | tojson | safe }})
 
     function buildCarTable(data) {
-      var cartable = document.getElementById("cartbody");
+      var cartbody = document.getElementById("cartbody");
 
       for (var i = 0; i < data.length; i++) {
-        var row = `<tr>
-                      <p>
-                        <td id="idcar">${data[i].id}</td>
+
+        cartbody.insertRow(-1).innerHTML += `<td id="idcar">${data[i].id}</td>
                         <td id="licensecar">${data[i].licenseplate}</td>
                         <td id="customernamecar">${data[i].firstname}<span> </span>${data[i].lastname}</td>
                         <td id="phonecar">${data[i].phone}</td>
-                        <td id="lastvisitedcar">${data[i].lastvisited}</td>
-                      </p>
-                  </tr>`
-        cartable.innerHTML += row
-      }
-    }
-
-    function sortTable(table) {
-      var  rows, i, x, y, shouldSwitch, switching;
-      
-      switching = true;
-
-      while (switching) {
-        switching = false
-        rows = table.rows;
-
-        for (i = 1; i < (row.length - 1); i++) {
-          shouldSwitch = false;
-
-          x = rows[i].getElementByTagName("td")[0]
-          y = rows[i + 1].getElementByTagName("td")[0]
-
-          if(Number(x.innerHTML) < Number(y.innerHTML)) {
-            shouldSwitch = true;
-            break;
-          }
-        }
-        if (shouldSwitch) {
-          rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-          switching = true;
-        }
+                        <td id="lastvisitedcar">${data[i].lastvisited}</td>`;
       }
     }
 
     buildHistoryTable(historyArray);
     buildIncidentTable(incidentArray);
     buildCarTable(carArray);
+
     document.addEventListener("DOMContentLoaded", function (event) {
       var enterimage = document.getElementById("entervid");
       var enterlicense = document.getElementById("enterlicense");
@@ -855,7 +817,8 @@
       var exittime = document.getElementById("exittime");
       var lastenter;
       var lastexit;
-      var histable = document.getElementById("historytbody");
+      var histbody = document.getElementById("historytbody");
+
 
       var socket = io.connect('http://127.0.0.1:5000/web', {
         reconnection: false
@@ -888,23 +851,29 @@
 
         lastenter = JSON.parse(msg.lastenter)
 
-        historytable.innerHTML += `<tr>
-                                      <p>
-                                        <td id="idhis">${lastenter[0].id}</td>
+        histbody.insertRow(0).innerHTML += `<td id="idhis">${lastenter[0].id}</td>
                                         <td id="licensehis">${lastenter[0].licenseplate}</td>
                                         <td id="entimehis">${lastenter[0].entertime}</td>
-                                        <td id="extimehis">${lastenter[0].exittime}</td>
-                                        <td id="activityhis" style="width: 400px;">${lastenter[0].activity}</td>
-                                      </p>
-                                    </tr>`;
-        
-        sortTable(historytable);
+                                        <td id="extimehis">${lastenter[0].exittsime}</td>
+                                        <td id="activityhis" style="width: 400px;">${lastenter[0].activity}</td>`;
       });
 
       socket.on('server2web_exit', (msg) => {
         exitimage.src = msg.exitimage;
         exitlicense.innerHTML = msg.exitlicense;
         exittime.innerHTML = msg.exittime;
+
+        lastexit = JSON.parse(msg.lastexit)
+
+
+        var rows = document.querySelector("#historytable tbody").rows;
+        var id = lastexit[0].id
+        for (var i = 0; i < rows.length; i++) {
+          var idhis = parseInt(rows[i].cells[0].text);
+          if (idhis == id) {
+            var exittime = document.getElementById("exittimehis");
+          }
+        }
 
       });
 

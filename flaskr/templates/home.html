@@ -946,12 +946,12 @@
     var historyArray = JSON.parse({{ historyData | tojson | safe }})
 
     function buildHistoryTable(data) {
-      var historytable = document.getElementById("historytbody");
+      var historytbody = document.getElementById("historytbody");
+
 
       for (var i = 0; i < data.length; i++) {
-        var row = `<tr>
-                      <p>
-                        <td id="idhis">${data[i].id}</td>
+
+        historytbody.insertRow(-1).innerHTML += `<td id="idhis">${data[i].id}</td>
                         <td id="licensehis">${data[i].licenseplate}</td>
                         <td id="entimehis">${data[i].entertime}</td>
                         <td id="extimehis">${data[i].exittime}</td>
@@ -959,22 +959,18 @@
                         <td><button class="btn button1" data-toggle="modal" data-target="#addactivity">Add</button>
                         </td>
                         <td><button class="btn button1" data-toggle="modal"
-                            data-target="#addincidentfromhis">Add</button></td>
-                      </p>
-                  </tr>`
-        historytable.innerHTML += row
+                            data-target="#addincidentfromhis">Add</button></td>`
       }
     }
 
     var incidentArray = JSON.parse({{ incidentData | tojson | safe }})
 
     function buildIncidentTable(data) {
-      var incidenttable = document.getElementById("incidenttbody");
+      var incidenttbody = document.getElementById("incidenttbody");
 
       for (var i = 0; i < data.length; i++) {
-        var row = `<tr>
-                      <p>
-                        <td id="idinc">${data[i].id}</td>
+
+        incidenttbody.insertRow(-1).innerHTML += `<td id="idinc">${data[i].id}</td>
                         <td id="licenseinc" class="licenseplate">${data[i].licenseplate}</td>
                         <td id="customernameinc" class="customername">${data[i].firstname}<span> </span>${data[i].lastname}</td>
                         <td id="typeinc" class="type">${data[i].type}</td>
@@ -988,30 +984,23 @@
                         <form action="{{url_for('deactivate')}}" method="post">
                           <input type="hidden" id="inciddeact" name="inciddeact" value=${data[i].id}>
                           <td><button id="deactivatebutton" type="submit" class="btn button2">Deactivate</button></td>
-                        </form>
-                      </p>
-                  </tr>`
-        incidenttable.innerHTML += row
+                        </form>`;
       }
     }
 
     var carArray = JSON.parse({{ carData | tojson | safe }})
 
     function buildCarTable(data) {
-      var cartable = document.getElementById("cartbody");
+      var cartbody = document.getElementById("cartbody");
 
       for (var i = 0; i < data.length; i++) {
-        var row = `<tr>
-                      <p>
-                        <td id="idcar">${data[i].id}</td>
+
+        cartbody.insertRow(-1).innerHTML += `<td id="idcar">${data[i].id}</td>
                         <td id="licensecar">${data[i].licenseplate}</td>
                         <td id="customernamecar">${data[i].firstname}<span> </span>${data[i].lastname}</td>
                         <td id="phonecar">${data[i].phone}</td>
                         <td id="lastvisitedcar">${data[i].lastvisited}</td>
-                        <td><button class="btn button1" data-toggle="modal" data-target="#editcar">Edit</button></td>
-                      </p>
-                  </tr>`
-        cartable.innerHTML += row
+                        <td><button class="btn button1" data-toggle="modal" data-target="#editcar">Edit</button></td>`;
       }
     }
 
@@ -1025,6 +1014,9 @@
       var exitimage = document.getElementById("exitvid");
       var exitlicense = document.getElementById("exitlicense");
       var exittime = document.getElementById("exittime");
+      var lastenter;
+      var lastexit;
+      var histbody = document.getElementById("historytbody");
 
       var socket = io.connect('http://127.0.0.1:5000/web', {
         reconnection: false
@@ -1057,9 +1049,7 @@
 
         lastenter = JSON.parse(msg.lastenter)
 
-        historytable.innerHTML += `<tr>
-                                      <p>
-                                        <td id="idhis" class="id">${lastenter[0].id}</td>
+        histbody.insertRow(0).innerHTML += `<td id="idhis" class="id">${lastenter[0].id}</td>
                                         <td id="licensehis">${lastenter[0].licenseplate}</td>
                                         <td id="entimehis">${lastenter[0].entertime}</td>
                                         <td id="extimehis">${lastenter[0].exittime}</td>
@@ -1067,12 +1057,7 @@
                                         <td><button class="btn button1" data-toggle="modal" data-target="#addactivity">Add</button>
                                         </td>
                                         <td><button class="btn button1" data-toggle="modal"
-                                            data-target="#addincidentfromhis">Add</button></td>
-                                      </p>
-                                    </tr>`;
-
-        sortTable(historytable);
-
+                                            data-target="#addincidentfromhis">Add</button></td>`;
       });
 
       socket.on('server2web_exit', (msg) => {

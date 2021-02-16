@@ -72,18 +72,13 @@ def handle_cv_message(message):
 
     lastenter_list.append(lastenter_dict)
     lastenter_json = json.dumps(lastenter_list)
-    socketio.emit(
-        'server2web_enter',
-        {
-            'enterimage': enImage,
-            'enterlicense': enLicense,
-            'entertime': enTime,
-            'lastenter': lastenter_json
-        },
-        namespace='/web')
-
-    # socketio.emit('updatehistory', {'lastenter': json.dumps(lastenter_list)},
-    #               namespace='/web')
+    socketio.emit('server2web_enter', {
+        'enterimage': enImage,
+        'enterlicense': enLicense,
+        'entertime': enTime,
+        'lastenter': lastenter_json
+    },
+                  namespace='/web')
 
 
 @socketio.on('exit2server', namespace='/exit')
@@ -92,31 +87,23 @@ def handle_cv_message(message):
     exImage = message['exitimage']
     exLicense = message['exitlicense']
     exTime = message['exittime']
-    # lastExit = cursor.execute(
-    #     'SELECT TOP 1 H.HistoryID, C.LicensePlate, H.EnterTimestamp, H.ExitTimestamp, H.Activity FROM History H JOIN Car C ON H.CarID = C.CarID WHERE H.ExitTimestamp IS NOT NULL ORDER BY H.HistoryID DESC'
-    # )
-    # lastExit = cursor.fetchone()
+    lastExit = cursor.execute(
+        'SELECT TOP 1 H.HistoryID, H.ExitTimestamp FROM History H JOIN Car C ON H.CarID = C.CarID WHERE H.ExitTimestamp IS NOT NULL ORDER BY H.HistoryID DESC'
+    )
+    lastExit = cursor.fetchone()
 
-    # lastexit_list = []
-    # lastexit_dict = {
-    #     'id': lastExit[0],
-    #     'licenseplate': lastExit[1],
-    #     'entertime': str(lastExit[2]),
-    #     'exittime': str(lastExit[3]),
-    #     'activity': lastExit[4]
-    # }
+    lastexit_list = []
+    lastexit_dict = {'id': lastExit[0], 'exittime': str(lastExit[1])}
 
-    # lastexit_list.append(lastexit_dict)
-
-    socketio.emit(
-        'server2web_exit',
-        {
-            'exitimage': exImage,
-            'exitlicense': exLicense,
-            'exittime': exTime
-            # 'lastExit': lastexit_list
-        },
-        namespace='/web')
+    lastexit_list.append(lastexit_dict)
+    lastxit_json = json.dumps(lastexit_list)
+    socketio.emit('server2web_exit', {
+        'exitimage': exImage,
+        'exitlicense': exLicense,
+        'exittime': exTime,
+        'lastexit': lastexit_json
+    },
+                  namespace='/web')
 
 
 @app.route('/histable')
