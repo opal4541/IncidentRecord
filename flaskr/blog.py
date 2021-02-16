@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, request, session
+from flask import Flask, render_template, redirect, url_for, request, session, json
 import pyodbc
 import datetime
 from flask_socketio import SocketIO
@@ -70,16 +70,20 @@ def handle_cv_message(message):
         'activity': str(lastEnter[4])
     }
 
-    print(lastenter_dict)
-    # lastenter_list.append(lastenter_dict)
+    lastenter_list.append(lastenter_dict)
+    lastenter_json = json.dumps(lastenter_list)
+    socketio.emit(
+        'server2web_enter',
+        {
+            'enterimage': enImage,
+            'enterlicense': enLicense,
+            'entertime': enTime,
+            'lastenter': lastenter_json
+        },
+        namespace='/web')
 
-    socketio.emit('server2web_enter', {
-        'enterimage': enImage,
-        'enterlicense': enLicense,
-        'entertime': enTime,
-        'lastEnter': lastenter_list
-    },
-                  namespace='/web')
+    # socketio.emit('updatehistory', {'lastenter': json.dumps(lastenter_list)},
+    #               namespace='/web')
 
 
 @socketio.on('exit2server', namespace='/exit')
@@ -88,29 +92,31 @@ def handle_cv_message(message):
     exImage = message['exitimage']
     exLicense = message['exitlicense']
     exTime = message['exittime']
-    lastExit = cursor.execute(
-        'SELECT TOP 1 H.HistoryID, C.LicensePlate, H.EnterTimestamp, H.ExitTimestamp, H.Activity FROM History H JOIN Car C ON H.CarID = C.CarID WHERE H.ExitTimestamp IS NOT NULL ORDER BY H.HistoryID DESC'
-    )
-    lastExit = cursor.fetchone()
+    # lastExit = cursor.execute(
+    #     'SELECT TOP 1 H.HistoryID, C.LicensePlate, H.EnterTimestamp, H.ExitTimestamp, H.Activity FROM History H JOIN Car C ON H.CarID = C.CarID WHERE H.ExitTimestamp IS NOT NULL ORDER BY H.HistoryID DESC'
+    # )
+    # lastExit = cursor.fetchone()
 
-    lastexit_list = []
-    lastexit_dict = {
-        'id': lastExit[0],
-        'licenseplate': lastExit[1],
-        'entertime': str(lastExit[2]),
-        'exittime': str(lastExit[3]),
-        'activity': str(lastExit[4])
-    }
+    # lastexit_list = []
+    # lastexit_dict = {
+    #     'id': lastExit[0],
+    #     'licenseplate': lastExit[1],
+    #     'entertime': str(lastExit[2]),
+    #     'exittime': str(lastExit[3]),
+    #     'activity': lastExit[4]
+    # }
 
-    lastexit_list.append(lastexit_dict)
+    # lastexit_list.append(lastexit_dict)
 
-    socketio.emit('server2web_exit', {
-        'exitimage': exImage,
-        'exitlicense': exLicense,
-        'exittime': exTime,
-        'lastExit': lastexit_list
-    },
-                  namespace='/web')
+    socketio.emit(
+        'server2web_exit',
+        {
+            'exitimage': exImage,
+            'exitlicense': exLicense,
+            'exittime': exTime
+            # 'lastExit': lastexit_list
+        },
+        namespace='/web')
 
 
 @app.route('/histable')
@@ -126,15 +132,14 @@ def hisTable():
     for history in historyData:
         history_dict = {
             'id': history[0],
-            'licenseplate': history[1],
+            'licenseplate': str(history[1]),
             'entertime': str(history[2]),
             'exittime': str(history[3]),
             'activity': str(history[4])
         }
         history_list.append(history_dict)
-        history_dict = {}
 
-    return history_list
+    return json.dumps(history_list)
 
 
 @app.route('/inctable')
@@ -150,20 +155,20 @@ def incTable():
     for incident in incidentData:
         incident_dict = {
             'id': incident[0],
-            'licenseplate': incident[1],
-            'firstname': incident[2],
-            'lastname': incident[3],
-            'type': incident[4],
+            'licenseplate': str(incident[1]),
+            'firstname': str(incident[2]),
+            'lastname': str(incident[3]),
+            'type': str(incident[4]),
             'starttime': str(incident[5]),
             'endtime': str(incident[6]),
-            'status': incident[7],
-            'userfirstname': incident[8],
-            'userlastname': incident[9],
-            'description' : incident[10]
+            'status': str(incident[7]),
+            'userfirstname': str(incident[8]),
+            'userlastname': str(incident[9]),
+            'description': str(incident[10])
         }
         incident_list.append(incident_dict)
 
-    return incident_list
+    return json.dumps(incident_list)
 
 
 @app.route('/cartable')
@@ -179,15 +184,15 @@ def carTable():
     for car in carData:
         car_dict = {
             'id': car[0],
-            'licenseplate': car[1],
-            'firstname': car[2],
-            'lastname': car[3],
-            'phone': car[4],
+            'licenseplate': str(car[1]),
+            'firstname': str(car[2]),
+            'lastname': str(car[3]),
+            'phone': str(car[4]),
             'lastvisited': str(car[5])
         }
         car_list.append(car_dict)
 
-    return car_list
+    return json.dumps(car_list)
 
 
 @app.route('/')
@@ -330,7 +335,7 @@ def addIncidentFromHistory():
 @app.route('/editincident', methods=['POST', 'GET'])
 def editIncident():
     if request.method == 'POST':
-        incidentID = request.form['incid']
+        incidentID = request.form['incideditinc']
         licenseplate = request.form['licenseplateeditinc']
         fname = request.form['cusfirstnameeditinc']
         lname = request.form['cuslastnameeditinc']
@@ -466,14 +471,14 @@ def editIncident():
 @app.route('/deactivate', methods=['POST'])
 def deactivate():
     if request.method == 'POST':
-        incidentID = request.form['incid']
+        incidentID = request.form['inciddeact']
         time = datetime.datetime.now()
         time = time.strftime("%Y-%m-%d %H:%M:%S")
         cursor.execute(
             "UPDATE Incident SET EndTimeStamp = ?, Status = ? WHERE IncidentID = ?",
             (time, "Inactive", incidentID))
         connection.commit()
-        return home()
+        return redirect(url_for('home'))
 
 
 @app.route('/addincident', methods=['POST'])

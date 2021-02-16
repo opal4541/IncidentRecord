@@ -438,23 +438,7 @@
               </p>
             </tr>
           </thead>
-
-          <tbody>
-            {% for row in historyData %}
-            <tr>
-              <p>
-                <td id="idhis">{{row.id}}</td>
-                <td id="licensehis">{{row.licenseplate}}</td>
-                <td id="entimehis">{{row.entertime}}</td>
-                <td id="extimehis">{{row.exittime}}</td>
-                <td id="activityhis" style="width: 400px; display: none;">{{row.activity}}</td>
-                <td><button class="btn button1" data-toggle="modal" data-target="#addactivity{{row.id}}">Add</button>
-                </td>
-                <td><button class="btn button1" data-toggle="modal"
-                    data-target="#addincidentfromhis{{row.id}}">Add</button></td>
-              </p>
-            </tr>
-            {% endfor %}
+          <tbody id="historytbody">
           </tbody>
         </table>
       </div>
@@ -486,28 +470,7 @@
               </p>
             </tr>
           </thead>
-          <tbody>
-            {% for row in incidentData %}
-            <tr>
-              <p>
-                <td id="idinc" class="incidentid">{{row.id}}</td>
-                <td id="licenseinc" class="licenseplate">{{row.licenseplate}}</td>
-                <td id="customernameinc" class="customername">{{row.firstname}}<span> </span>{{row.lastname}}</td>
-                <td id="typeinc" class="type">{{row.type}}</td>
-                <td id="starttimeinc" class="starttime">{{row.starttime}}</td>
-                <td id="endtimeinc" class="endtime">{{row.endtime}}</td>
-                <td id="statusinc" class="status">{{row.status}}</td>
-                <td id="editbyinc" class="editby">{{row.userfirstname}}<span> </span>{{row.userlastname}}</td>
-                <td><button class="btn button1" data-toggle="modal" data-target="#editincident{{row.id}}"
-                    onclick="checkButton('{{row.type}}')">Edit</button>
-                </td>
-              <form action="{{url_for('deactivate')}}" method="post">
-                <input type="hidden" id="incid" name="incid" value="{{row.id}}">
-                <td><button id="deactivatebutton" type="submit" class="btn button2">Deactivate</button></td>
-              </form>
-              </p>
-            </tr>
-            {% endfor %}
+          <tbody id="incidenttbody">
           </tbody>
         </table>
       </div>
@@ -539,28 +502,16 @@
               </p>
             </tr>
           </thead>
-          <tbody>
-            {% for row in carData %}
-            <tr>
-              <p>
-                <td id="idcar">{{row.id}}</td>
-                <td id="licensecar">{{row.licenseplate}}</td>
-                <td id="customernamecar">{{row.firstname}}<span> </span>{{row.lastname}}</td>
-                <td id="phonecar">{{row.phone}}</td>
-                <td id="lastvisitedcar">{{row.lastvisited}}</td>
-                <td><button class="btn button1" data-toggle="modal" data-target="#editcar{{row.id}}">Edit</button></td>
-              </p>
-            </tr>
-            {% endfor %}
+          <tbody id="cartbody">
           </tbody>
         </table>
       </div>
     </div>
   </div>
 
-  {% for row in historyData %}
+
   <!-- Add activity form -->
-  <div class="modal fade" id="addactivity{{row.id}}" role="dialog">
+  <div class="modal fade" id="addactivity" role="dialog">
     <div class="modal-dialog">
 
       <!-- Modal content-->
@@ -573,27 +524,27 @@
           <div class="modal-body">
             <div class="row">
               <div class="col-sm-4 form-group">
-                <input type="hidden" id="hisid" name="hisid" value="{{row.id}}">
+                <input type="hidden" id="hisid" name="hisid" value="">
                 <label for="licenseplateaddact">License Plate:</label><br>
                 <input class="form-control" id="licenseplateaddact" name="licenseplateaddact"
-                  placeholder="License Plate" type="text" value={{row.license}} readonly>
+                  placeholder="License Plate" type="text" readonly>
               </div>
               <div class="col-sm-4 form-group">
                 <label for="entertimeaddact">Enter Time:</label><br>
                 <textarea class="form-control" id="entertimeaddact" name="entertimeaddact" placeholder="Enter Time"
-                  type="datetime" rows="1" readonly>{{row.entertime}}</textarea>
+                  type="datetime" rows="1" readonly></textarea>
               </div>
               <div class="col-sm-4 form-group">
                 <label for="exittimeaddact">Exit Time:</label><br>
                 <textarea class="form-control" id="exittimeaddact" name="exittimeaddact" placeholder="Exit Time"
-                  type="datetime" rows="1" readonly>{{row.exittime}}</textarea>
+                  type="datetime" rows="1" readonly></textarea>
               </div>
             </div>
             <div class="row">
               <div class="col-sm-12 form-group">
                 <label for="activityaddact">Activity:</label><br>
                 <textarea class="form-control" id="activityaddact" name="activityaddact" placeholder="Activity" rows="5"
-                  type="text">{{row.activity}}</textarea>
+                  type="text"></textarea>
               </div>
             </div>
           </div>
@@ -605,11 +556,9 @@
       </form>
     </div>
   </div>
-  {% endfor %}
 
-  {% for row in historyData %}
   <!-- Add Incident from history form -->
-  <div class="modal fade" id="addincidentfromhis{{row.id}}" role="dialog">
+  <div class="modal fade" id="addincidentfromhis" role="dialog">
     <div class="modal-dialog">
 
       <!-- Modal content-->
@@ -625,9 +574,9 @@
                 <label for="licenseplateaddincfromhis">License Plate:</label>
               </div>
               <div class="col-sm-8 form-group">
-                <input type="hidden" id="incid" name="incid" value="{{row.id}}">
+                <input type="hidden" id="incidaddinc" name="incidaddinc" value="">
                 <input class="form-control" id="licenseplateaddincfromhis" name="licenseplateaddincfromhis"
-                  placeholder="License Plate" type="text" value="{{row.licenseplate}}" readonly>
+                  placeholder="License Plate" type="text" value="" readonly>
               </div>
             </div>
             <div class="row">
@@ -678,7 +627,7 @@
       </div>
     </div>
   </div>
-  {% endfor %}
+
 
   <!-- Add Incident form -->
   <div class="modal fade" id="addincident" role="dialog">
@@ -751,9 +700,8 @@
   </div>
 
 
-  {% for row in incidentData %}
   <!-- Edit Incident form -->
-  <div class="modal fade" id="editincident{{row.id}}" data-target="{{row.id}}" role="dialog">
+  <div class="modal fade" id="editincident" data-target="" role="dialog">
     <div class="modal-dialog">
 
       <!-- Modal content-->
@@ -769,9 +717,9 @@
                 <label for="licenseplateeditinc">License Plate:</label>
               </div>
               <div class="col-sm-8 form-group">
-                <input type="hidden" id="incid" name="incid" value="{{row.id}}">
+                <input type="hidden" id="incideditint" name="incideditint" value="">
                 <input class="form-control" id="licenseplateeditinc" name="licenseplateeditinc"
-                  placeholder="License Plate" value="{{row.licenseplate}}" type="text">
+                  placeholder="License Plate" value="" type="text">
               </div>
             </div>
             <div class="row">
@@ -780,17 +728,17 @@
               </div>
               <div class="col-sm-4 form-group">
                 <input class="form-control" id="cusfirstnameeditinc" name="cusfirstnameeditinc"
-                  placeholder="Customer Firstname" value="{{row.firstname}}" type="text" required>
+                  placeholder="Customer Firstname" value="" type="text" required>
               </div>
               <div class="col-sm-4 form-group">
                 <input class="form-control" id="cuslastnameeditinc" name="cuslastnameeditinc"
-                  placeholder="Customer Lastname" value="{{row.lastname}}" type="text" required>
+                  placeholder="Customer Lastname" value="" type="text" required>
               </div>
             </div>
             <div class="row">
               <div class="col-sm-4 form-group">
                 <label for="typeeditinc">Type:</label>
-                <input type="hidden" id="radiovalue" name="radiovalue" value="{{row.type}}">
+                <input type="hidden" id="radiovalue" name="radiovalue" value="">
               </div>
               <div class="col-sm-2 form-group">
                 <input type="radio" id="noteeditinc" name="typeeditinc" value="Note">
@@ -811,7 +759,7 @@
               </div>
               <div class="col-sm-8 form-group">
                 <textarea class="form-control" id="descriptioneditinc" name="descriptioneditinc"
-                  placeholder="Description" rows="5">{{row.description}}</textarea>
+                  placeholder="Description" rows="5"></textarea>
               </div>
             </div>
             <div class="modal-footer">
@@ -823,11 +771,10 @@
       </div>
     </div>
   </div>
-  {% endfor %}
 
-  {% for row in carData %}
+
   <!-- Edit Car form -->
-  <div class="modal fade" id="editcar{{row.id}}" role="dialog">
+  <div class="modal fade" id="editcar" role="dialog">
     <div class="modal-dialog">
 
       <!-- Modal content-->
@@ -843,9 +790,9 @@
                 <label for="licenseplateeditcar">License Plate:</label>
               </div>
               <div class="col-sm-8 form-group">
-                <input type="hidden" id="carid" name="carid" value="{{row.id}}">
+                <input type="hidden" id="carid" name="carid" value="">
                 <input class="form-control" id="licenseplateeditcar" name="licenseplateeditcar"
-                  placeholder="License Plate" type="text" value="{{row.licenseplate}}" required>
+                  placeholder="License Plate" type="text" value="" required>
               </div>
             </div>
             <div class="row">
@@ -854,11 +801,11 @@
               </div>
               <div class="col-sm-4 form-group">
                 <input class="form-control" id="cusfirstnameeditcar" name="cusfirstnameeditcar"
-                  placeholder="Customer Firstname" type="text" value="{{row.firstname}}" required>
+                  placeholder="Customer Firstname" type="text" value="" required>
               </div>
               <div class="col-sm-4 form-group">
                 <input class="form-control" id="cuslastnameeditcar" name="cuslastnameeditcar"
-                  placeholder="Customer Lastname" type="text" value="{{row.lastname}}" required>
+                  placeholder="Customer Lastname" type="text" value="" required>
               </div>
             </div>
             <div class="row">
@@ -867,7 +814,7 @@
               </div>
               <div class="col-sm-8 form-group">
                 <input class="form-control" id="phoneeditcar" name="phoneeditcar" placeholder="Phone" type="text"
-                  value="{{row.phone}}" required>
+                  value="" required>
               </div>
             </div>
           </div>
@@ -879,7 +826,7 @@
       </div>
     </div>
   </div>
-  {% endfor %}
+
 
   <!-- Image of location/map -->
   <!-- <img src="/w3images/map.jpg" class="w3-image w3-greyscale-min" style="width:100%"> -->
@@ -995,6 +942,82 @@
 
     document.querySelector('#carsearch').addEventListener('keyup', filterCar, false);
 
+
+    var historyArray = JSON.parse({{ historyData | tojson | safe }})
+
+    function buildHistoryTable(data) {
+      var historytable = document.getElementById("historytbody");
+
+      for (var i = 0; i < data.length; i++) {
+        var row = `<tr>
+                      <p>
+                        <td id="idhis">${data[i].id}</td>
+                        <td id="licensehis">${data[i].licenseplate}</td>
+                        <td id="entimehis">${data[i].entertime}</td>
+                        <td id="extimehis">${data[i].exittime}</td>
+                        <td id="activityhis" style="width: 400px; display: none;">${data[i].activity}</td>
+                        <td><button class="btn button1" data-toggle="modal" data-target="#addactivity">Add</button>
+                        </td>
+                        <td><button class="btn button1" data-toggle="modal"
+                            data-target="#addincidentfromhis">Add</button></td>
+                      </p>
+                  </tr>`
+        historytable.innerHTML += row
+      }
+    }
+
+    var incidentArray = JSON.parse({{ incidentData | tojson | safe }})
+
+    function buildIncidentTable(data) {
+      var incidenttable = document.getElementById("incidenttbody");
+
+      for (var i = 0; i < data.length; i++) {
+        var row = `<tr>
+                      <p>
+                        <td id="idinc">${data[i].id}</td>
+                        <td id="licenseinc" class="licenseplate">${data[i].licenseplate}</td>
+                        <td id="customernameinc" class="customername">${data[i].firstname}<span> </span>${data[i].lastname}</td>
+                        <td id="typeinc" class="type">${data[i].type}</td>
+                        <td id="starttimeinc" class="starttime">${data[i].starttime}</td>
+                        <td id="endtimeinc" class="endtime">${data[i].endtime}</td>
+                        <td id="statusinc" class="status">${data[i].status}</td>
+                        <td id="editbyinc" class="editby">${data[i].userfirstname}<span> </span>${data[i].userlastname}</td>
+                        <td><button class="btn button1" data-toggle="modal" data-target="#editincident"
+                            onclick="checkButton('${data[i].type}')">Edit</button>
+                        </td>
+                        <form action="{{url_for('deactivate')}}" method="post">
+                          <input type="hidden" id="inciddeact" name="inciddeact" value=${data[i].id}>
+                          <td><button id="deactivatebutton" type="submit" class="btn button2">Deactivate</button></td>
+                        </form>
+                      </p>
+                  </tr>`
+        incidenttable.innerHTML += row
+      }
+    }
+
+    var carArray = JSON.parse({{ carData | tojson | safe }})
+
+    function buildCarTable(data) {
+      var cartable = document.getElementById("cartbody");
+
+      for (var i = 0; i < data.length; i++) {
+        var row = `<tr>
+                      <p>
+                        <td id="idcar">${data[i].id}</td>
+                        <td id="licensecar">${data[i].licenseplate}</td>
+                        <td id="customernamecar">${data[i].firstname}<span> </span>${data[i].lastname}</td>
+                        <td id="phonecar">${data[i].phone}</td>
+                        <td id="lastvisitedcar">${data[i].lastvisited}</td>
+                        <td><button class="btn button1" data-toggle="modal" data-target="#editcar">Edit</button></td>
+                      </p>
+                  </tr>`
+        cartable.innerHTML += row
+      }
+    }
+
+    buildHistoryTable(historyArray);
+    buildIncidentTable(incidentArray);
+    buildCarTable(carArray);
     document.addEventListener("DOMContentLoaded", function (event) {
       var enterimage = document.getElementById("entervid");
       var enterlicense = document.getElementById("enterlicense");
@@ -1031,6 +1054,25 @@
         enterimage.src = msg.enterimage;
         enterlicense.innerHTML = msg.enterlicense;
         entertime.innerHTML = msg.entertime;
+
+        lastenter = JSON.parse(msg.lastenter)
+
+        historytable.innerHTML += `<tr>
+                                      <p>
+                                        <td id="idhis" class="id">${lastenter[0].id}</td>
+                                        <td id="licensehis">${lastenter[0].licenseplate}</td>
+                                        <td id="entimehis">${lastenter[0].entertime}</td>
+                                        <td id="extimehis">${lastenter[0].exittime}</td>
+                                        <td id="activityhis" style="width: 400px; display: none;">${lastenter[0].activity}</td>
+                                        <td><button class="btn button1" data-toggle="modal" data-target="#addactivity">Add</button>
+                                        </td>
+                                        <td><button class="btn button1" data-toggle="modal"
+                                            data-target="#addincidentfromhis">Add</button></td>
+                                      </p>
+                                    </tr>`;
+
+        sortTable(historytable);
+
       });
 
       socket.on('server2web_exit', (msg) => {

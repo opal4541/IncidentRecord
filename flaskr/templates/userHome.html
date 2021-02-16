@@ -438,18 +438,7 @@
               </p>
             </tr>
           </thead>
-          <tbody id="tbody">
-            {% for row in historyData %}
-            <tr>
-              <p>
-                <td id="idhis">{{row.id}}</td>
-                <td id="licensehis">{{row.licenseplate}}</td>
-                <td id="entimehis">{{row.entertime}}</td>
-                <td id="extimehis">{{row.exittime}}</td>
-                <td id="activityhis" style="width: 400px;">{{row.activity}}</td>
-              </p>
-            </tr>
-            {% endfor %}
+          <tbody id="historytbody">
           </tbody>
         </table>
       </div>
@@ -480,23 +469,7 @@
               </p>
             </tr>
           </thead>
-          <tbody>
-            {% for row in incidentData %}
-            <tr>
-              <p>
-                <td id="idinc" class="incidentid">{{row.id}}</td>
-                <td id="licenseinc" class="licenseplate">{{row.licenseplate}}</td>
-                <td id="customernameinc" class="customername">{{row.firstname}}<span> </span>{{row.lastname}}</td>
-                <td id="typeinc" class="type">{{row.type}}</td>
-                <td id="starttimeinc" class="starttime">{{row.starttime}}</td>
-                <td id="endtimeinc" class="endtime">{{row.endtime}}</td>
-                <td id="statusinc" class="status">{{row.status}}</td>
-                <td id="editbyinc" class="editby">{{row.userfirstname}}<span> </span>{{row.userlastname}}</td>
-                <td id="descriptioninc" class="description" style="display:none;">{{row.description}}</td>
-                <td><button class="viewbutton btn button1" data-target="#viewincident">View</button></td>
-              </p>
-            </tr>
-            {% endfor %}
+          <tbody id="incidenttbody">
           </tbody>
         </table>
       </div>
@@ -523,18 +496,7 @@
               </p>
             </tr>
           </thead>
-          <tbody>
-            {% for row in carData %}
-            <tr>
-              <p>
-                <td id="idcar">{{row.id}}</td>
-                <td id="licensecar">{{row.licenseplate}}</td>
-                <td id="customernamecar">{{row.firstname}}<span> </span>{{row.lastname}}</td>
-                <td id="phonecar">{{row.phone}}</td>
-                <td id="lastvisitedcar">{{row.lastvisited}}</td>
-              </p>
-            </tr>
-            {% endfor %}
+          <tbody id="cartbody">
           </tbody>
         </table>
       </div>
@@ -792,6 +754,98 @@
       });
     });
 
+    var historyArray = JSON.parse({{ historyData | tojson | safe }})
+
+    function buildHistoryTable(data) {
+      var historytable = document.getElementById("historytbody");
+
+      for (var i = 0; i < data.length; i++) {
+        var row = `<tr>
+                      <p>
+                        <td id="idhis">${data[i].id}</td>
+                        <td id="licensehis">${data[i].licenseplate}</td>
+                        <td id="entimehis">${data[i].entertime}</td>
+                        <td id="extimehis">${data[i].exittime}</td>
+                        <td id="activityhis" style="width: 400px;">${data[i].activity}</td>
+                      </p>
+                  </tr>`
+        historytable.innerHTML += row
+      }
+    }
+
+    var incidentArray = JSON.parse({{ incidentData | tojson | safe }})
+
+    function buildIncidentTable(data) {
+      var incidenttable = document.getElementById("incidenttbody");
+
+      for (var i = 0; i < data.length; i++) {
+        var row = `<tr>
+                      <p>
+                        <td id="idinc" class="incidentid">${data[i].id}</td>
+                        <td id="licenseinc" class="licenseplate">${data[i].licenseplate}</td>
+                        <td id="customernameinc" class="customername">${data[i].firstname}<span> </span>${data[i].lastname}</td>
+                        <td id="typeinc" class="type">${data[i].type}</td>
+                        <td id="starttimeinc" class="starttime">${data[i].starttime}</td>
+                        <td id="endtimeinc" class="endtime">${data[i].endtime}</td>
+                        <td id="statusinc" class="status">${data[i].status}</td>
+                        <td id="editbyinc" class="editby">${data[i].userfirstname}<span> </span>${data[i].userlastname}</td>
+                        <td id="descriptioninc" class="description" style="display:none;">${data[i].description}</td>
+                        <td><button class="viewbutton btn button1" data-target="#viewincident">View</button></td>
+                      </p>
+                  </tr>`
+        incidenttable.innerHTML += row
+      }
+    }
+
+    var carArray = JSON.parse({{ carData | tojson | safe }})
+
+    function buildCarTable(data) {
+      var cartable = document.getElementById("cartbody");
+
+      for (var i = 0; i < data.length; i++) {
+        var row = `<tr>
+                      <p>
+                        <td id="idcar">${data[i].id}</td>
+                        <td id="licensecar">${data[i].licenseplate}</td>
+                        <td id="customernamecar">${data[i].firstname}<span> </span>${data[i].lastname}</td>
+                        <td id="phonecar">${data[i].phone}</td>
+                        <td id="lastvisitedcar">${data[i].lastvisited}</td>
+                      </p>
+                  </tr>`
+        cartable.innerHTML += row
+      }
+    }
+
+    function sortTable(table) {
+      var  rows, i, x, y, shouldSwitch, switching;
+      
+      switching = true;
+
+      while (switching) {
+        switching = false
+        rows = table.rows;
+
+        for (i = 1; i < (row.length - 1); i++) {
+          shouldSwitch = false;
+
+          x = rows[i].getElementByTagName("td")[0]
+          y = rows[i + 1].getElementByTagName("td")[0]
+
+          if(Number(x.innerHTML) < Number(y.innerHTML)) {
+            shouldSwitch = true;
+            break;
+          }
+        }
+        if (shouldSwitch) {
+          rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+          switching = true;
+        }
+      }
+    }
+
+    buildHistoryTable(historyArray);
+    buildIncidentTable(incidentArray);
+    buildCarTable(carArray);
     document.addEventListener("DOMContentLoaded", function (event) {
       var enterimage = document.getElementById("entervid");
       var enterlicense = document.getElementById("enterlicense");
@@ -801,7 +855,7 @@
       var exittime = document.getElementById("exittime");
       var lastenter;
       var lastexit;
-      var table = document.getElementById("historytable");
+      var histable = document.getElementById("historytbody");
 
       var socket = io.connect('http://127.0.0.1:5000/web', {
         reconnection: false
@@ -831,29 +885,29 @@
         enterimage.src = msg.enterimage;
         enterlicense.innerHTML = msg.enterlicense;
         entertime.innerHTML = msg.entertime;
-        lastenter = msg.lastenter
 
-        // var row = table.insertRow(0);
-        // var cell1 = row.insertCell(0);
-        // var cell2 = row.insertCell(1);
-        // var cell3 = row.insertCell(2);
-        // var cell4 = row.insertCell(3);
-        // var cell5 = row.insertCell(4);
+        lastenter = JSON.parse(msg.lastenter)
 
-        // cell1 = lastenter.id;
-        // cell2 = lastenter.licenseplate;
-        // cell3 = lastenter.entertime;
-        // cell4 = lastenter.exittime;
-        // cell5 = lastenter.activity;
+        historytable.innerHTML += `<tr>
+                                      <p>
+                                        <td id="idhis">${lastenter[0].id}</td>
+                                        <td id="licensehis">${lastenter[0].licenseplate}</td>
+                                        <td id="entimehis">${lastenter[0].entertime}</td>
+                                        <td id="extimehis">${lastenter[0].exittime}</td>
+                                        <td id="activityhis" style="width: 400px;">${lastenter[0].activity}</td>
+                                      </p>
+                                    </tr>`;
+        
+        sortTable(historytable);
       });
 
       socket.on('server2web_exit', (msg) => {
         exitimage.src = msg.exitimage;
         exitlicense.innerHTML = msg.exitlicense;
         exittime.innerHTML = msg.exittime;
-        lastexit = msg.lastExit;
-        console.log(lastexit)
+
       });
+
     });
 
 
