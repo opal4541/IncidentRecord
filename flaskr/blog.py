@@ -272,6 +272,11 @@ def addIncidentFromHistory():
         typeinc = request.form['typeaddincfromhis']
         description = request.form['descriptionaddincfromhis']
 
+        if fname == "":
+            fname = None
+        if lname == "":
+            lname = None
+
         carid = cursor.execute('SELECT CarID FROM Car WHERE LicensePlate = ? ',
                                (licenseplate))
         carid = cursor.fetchone()
@@ -322,12 +327,17 @@ def addIncidentFromHistory():
 @app.route('/editincident', methods=['POST', 'GET'])
 def editIncident():
     if request.method == 'POST':
-        incidentID = request.form['incideditinc']
+        incidentID = request.form['ideditinc']
         licenseplate = request.form['licenseplateeditinc']
         fname = request.form['cusfirstnameeditinc']
         lname = request.form['cuslastnameeditinc']
         typeinc = request.form['typeeditinc']
         description = request.form['descriptioneditinc']
+
+        if fname == "":
+            fname = None
+        if lname == "":
+            lname = None
 
         carid = cursor.execute(
             'SELECT CarID FROM Car WHERE Car.LicensePlate = ? ',
@@ -477,6 +487,11 @@ def addIncident():
         typeinc = request.form['typeaddinc']
         description = request.form['descriptionaddinc']
 
+        if fname == "":
+            fname = None
+        if lname == "":
+            lname = None
+
         carid = cursor.execute('SELECT CarID FROM Car WHERE LicensePlate = ? ',
                                (licenseplate))
         carid = cursor.fetchone()
@@ -613,11 +628,18 @@ def addIncident():
 @app.route('/editcar', methods=['POST', 'GET'])
 def editCar():
     if request.method == 'POST':
-        carID = request.form['carid']
+        carID = request.form['carideditcar']
         licenseplate = request.form['licenseplateeditcar']
         fname = request.form['cusfirstnameeditcar']
         lname = request.form['cuslastnameeditcar']
         phone = request.form['phoneeditcar']
+
+        if phone == "":
+            phone = None
+        if fname == "":
+            fname = None
+        if lname == "":
+            lname = None
 
         cusid = cursor.execute(
             'SELECT Car.CustomerID From Car WHERE CarID = ?', (carID))
