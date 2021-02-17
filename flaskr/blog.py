@@ -57,7 +57,7 @@ def handle_cv_message(message):
     enLicense = message['enterlicense']
     enTime = message['entertime']
     lastEnter = cursor.execute(
-        'SELECT TOP 1 H.HistoryID, C.LicensePlate, H.EnterTimestamp, H.ExitTimestamp, H.Activity FROM History H JOIN Car C ON H.CarID = C.CarID ORDER BY H.HistoryID DESC'
+        'SELECT TOP 1 H.HistoryID, C.LicensePlate, H.EnterTimestamp, H.ExitTimestamp, H.Activity, CUS.FirstName, CUS.LastName, CUS.Phone FROM History H JOIN Car C ON H.CarID = C.CarID JOIN Customer CUS ON C.CarID = CUS.CarID ORDER BY H.HistoryID DESC'
     )
     lastEnter = cursor.fetchone()
 
@@ -96,7 +96,7 @@ def handle_cv_message(message):
     lastexit_dict = {'id': lastExit[0], 'exittime': str(lastExit[1])}
 
     lastexit_list.append(lastexit_dict)
-    lastxit_json = json.dumps(lastexit_list)
+    lastexit_json = json.dumps(lastexit_list)
     socketio.emit('server2web_exit', {
         'exitimage': exImage,
         'exitlicense': exLicense,
@@ -109,7 +109,7 @@ def handle_cv_message(message):
 @app.route('/histable')
 def hisTable():
     historyData = cursor.execute(
-        'SELECT H.HistoryID, C.LicensePlate, H.EnterTimestamp, H.ExitTimestamp, H.Activity FROM History H JOIN Car C ON H.CarID = C.CarID ORDER BY H.HistoryID DESC'
+        'SELECT H.HistoryID, C.LicensePlate, H.EnterTimestamp, H.ExitTimestamp, H.Activity, CUS.FirstName, CUS.LastName, CUS.Phone FROM History H JOIN Car C ON H.CarID = C.CarID JOIN Customer CUS ON C.CarID = CUS.CarID ORDER BY H.HistoryID DESC'
     )
     historyData = cursor.fetchall()
 
@@ -122,7 +122,10 @@ def hisTable():
             'licenseplate': str(history[1]),
             'entertime': str(history[2]),
             'exittime': str(history[3]),
-            'activity': str(history[4])
+            'activity': str(history[4]),
+            'firstname': str(history[5]),
+            'lastname': str(history[6]),
+            'phone': str(history[7])
         }
         history_list.append(history_dict)
 
@@ -132,7 +135,7 @@ def hisTable():
 @app.route('/inctable')
 def incTable():
     incidentData = cursor.execute(
-        'SELECT I.IncidentID, C.LicensePlate, CUS.FirstName, CUS.LastName, I.Type, I.StartTimestamp, I.EndTimestamp, I.Status, U.FirstName, U.LastName, I.Description FROM Incident I JOIN Car C ON I.CarID = C.CarID JOIN Customer CUS ON C.CustomerID = CUS.CustomerID JOIN [User] U ON U.UserID = I.UserID'
+        'SELECT I.IncidentID, C.LicensePlate, CUS.FirstName, CUS.LastName, I.Type, I.StartTimestamp, I.EndTimestamp, I.Status, U.FirstName, U.LastName, I.Description, CUS.Phone FROM Incident I JOIN Car C ON I.CarID = C.CarID JOIN Customer CUS ON C.CarID = CUS.CarID JOIN [User] U ON U.UserID = I.UserID'
     )
     incidentData = cursor.fetchall()
 
@@ -151,7 +154,8 @@ def incTable():
             'status': str(incident[7]),
             'userfirstname': str(incident[8]),
             'userlastname': str(incident[9]),
-            'description': str(incident[10])
+            'description': str(incident[10]),
+            'phone': str(incident[11])
         }
         incident_list.append(incident_dict)
 
@@ -161,7 +165,7 @@ def incTable():
 @app.route('/cartable')
 def carTable():
     carData = cursor.execute(
-        'SELECT C.CarID, C.LicensePlate, Customer.FirstName, Customer.LastName, Customer.Phone, MAX(H.EnterTimestamp) FROM History H JOIN Car C ON H.CarID = C.CarID JOIN Customer ON C.CustomerID = Customer.CustomerID GROUP BY C.LicensePlate, C.CarID, C.CustomerID, Customer.FirstName, Customer.LastName, Customer.Phone'
+        'SELECT C.CarID, C.LicensePlate, CUS.FirstName, CUS.LastName, CUS.Phone, MAX(H.EnterTimestamp) FROM History H RIGHT JOIN Car C ON H.CarID = C.CarID JOIN Customer CUS ON C.CarID = CUS.CarID  GROUP BY C.LicensePlate, C.CarID, CUS.CarID, CUS.FirstName, CUS.LastName, CUS.Phone ORDER BY C.CarID'
     )
     carData = cursor.fetchall()
 
@@ -248,409 +252,182 @@ def logout():
     return home()
 
 
-@app.route('/addactivity', methods=['POST', 'GET'])
+@app.route('/addactivity', methods=['POST'])
 def addActivity():
-    if request.method == 'POST':
-        historyID = request.form['hisid']
-        licenseplate = request.form['licenseplateaddact']
-        EnterTime = request.form['entertimeaddact']
-        ExitTime = request.form['exittimeaddact']
-        activity = request.form['activityaddact']
+    historyID = request.form['hisid']
+    licenseplate = request.form['licenseplateaddact']
+    EnterTime = request.form['entertimeaddact']
+    ExitTime = request.form['exittimeaddact']
+    activity = request.form['activityaddact']
 
-        cursor.execute('UPDATE History SET Activity = ? WHERE HistoryID = ?',
-                       (activity, historyID))
-        connection.commit()
-        return redirect(url_for('home'))
+    cursor.execute('UPDATE History SET Activity = ? WHERE HistoryID = ?',
+                   (activity, historyID))
+    connection.commit()
+    return redirect(url_for('home'))
 
 
-@app.route('/addincidentfromhistory', methods=['POST', 'GET'])
+@app.route('/addincidentfromhistory', methods=['POST'])
 def addIncidentFromHistory():
-    if request.method == 'POST':
-        licenseplate = request.form['licenseplateaddincfromhis']
-        fname = request.form['cusfirstnameaddincfromhis']
-        lname = request.form['cuslastnameaddincfromhis']
-        typeinc = request.form['typeaddincfromhis']
-        description = request.form['descriptionaddincfromhis']
+    licenseplate = request.form['licenseplateaddincfromhis']
+    fname = request.form['cusfirstnameaddincfromhis']
+    lname = request.form['cuslastnameaddincfromhis']
+    phone = request.form['phoneaddincfromhis']
+    typeinc = request.form['typeaddincfromhis']
+    description = request.form['descriptionaddincfromhis']
 
-        if fname == "":
-            fname = None
-        if lname == "":
-            lname = None
+    if lname == "":
+        lname = None
+    if phone == "":
+        phone = None
 
-        carid = cursor.execute('SELECT CarID FROM Car WHERE LicensePlate = ? ',
-                               (licenseplate))
-        carid = cursor.fetchone()
-        userid = cursor.execute(
-            "SELECT UserID From [User] WHERE [User].FirstName = ? AND [User].LastName = ?",
-            (session['firstname'], session['lastname']))
-        userid = cursor.fetchone()
-        cusid = cursor.execute(
-            'SELECT CustomerID From Customer WHERE FirstName = ? AND LastName = ?',
-            (fname, lname))
-        cusid = cursor.fetchone()
-        incid = cursor.execute(
-            'SELECT IncidentID From Incident WHERE CarID = ? AND Status = ?',
-            (carid[0], 'Active'))
-        incid = cursor.fetchone()
-        time = datetime.datetime.now()
-        time = time.strftime("%Y-%m-%d %H:%M:%S")
+    carid = cursor.execute('SELECT CarID FROM Car WHERE LicensePlate = ? ',
+                           (licenseplate))
+    carid = cursor.fetchone()
+    cusid = cursor.execute(
+        "SELECT CustomerID From Customer CUS WHERE CUS.CarID = ?",
+        (carid[0]))
+    cusid = cursor.fetchone()
+    userid = cursor.execute(
+        "SELECT UserID From [User] WHERE [User].FirstName = ? AND [User].LastName = ?",
+        (session['firstname'], session['lastname']))
+    userid = cursor.fetchone()
+    time = datetime.datetime.now()
+    time = time.strftime("%Y-%m-%d %H:%M:%S")
 
-        if incid:
-            cursor.execute(
-                'UPDATE Incident SET EndTimeStamp = ?, Status = ? WHERE IncidentID = ?',
-                (time, 'Inactive', incid[0]))
-            connection.commit()
-            return redirect(url_for('home'))
-
-        if cusid:
-            cursor.execute(
-                'INSERT INTO Incident(CarID, UserID, Description, Type, StartTimestamp, Status) VALUES (?, ?, ?, ?, ?, ?)',
-                (carid[0], userid[0], description, typeinc, time, "Active"))
-            connection.commit()
-            return redirect(url_for('home'))
-        else:
-            # ถ้าไม่มี customer name อยู่ใน customer db ให้เอา cus id ที่เชื่อมกับ car id มาอัพเดทชื่อเอา
-            cusidnew = cursor.execute(
-                'SELECT CustomerID From Car WHERE CarID = ?', (carid[0]))
-            cusidnew = cursor.fetchone()
-            cursor.execute(
-                'UPDATE Customer SET FirstName = ?, LastName = ? WHERE CustomerID = ?',
-                (fname, lname, cusidnew[0]))
-            cursor.execute(
-                'INSERT INTO Incident(CarID, UserID, Description, Type, StartTimestamp, Status) VALUES (?, ?, ?, ?, ?, ?)',
-                (carid[0], userid[0], description, typeinc, time, "Active"))
-
-        connection.commit()
-        return redirect(url_for('home'))
+    cursor.execute(
+        'UPDATE Customer SET FirstName = ? , LastName = ?, Phone = ? WHERE CustomerID = ?',
+        (fname, lname, phone, cusid[0]))
+    connection.commit()
+    cursor.execute(
+        'INSERT INTO Incident(CarID, UserID, Description, Type, StartTimestamp, Status) VALUES (?, ?, ?, ?, ?, ?)',
+        (carid[0], userid[0], description, typeinc, time, "Active"))
+    connection.commit()
+    return redirect(url_for('home'))
 
 
-@app.route('/editincident', methods=['POST', 'GET'])
+@app.route('/editincident', methods=['POST'])
 def editIncident():
-    if request.method == 'POST':
-        incidentID = request.form['ideditinc']
-        licenseplate = request.form['licenseplateeditinc']
-        fname = request.form['cusfirstnameeditinc']
-        lname = request.form['cuslastnameeditinc']
-        typeinc = request.form['typeeditinc']
-        description = request.form['descriptioneditinc']
+    incidentID = request.form['ideditinc']
+    licenseplate = request.form['licenseplateeditinc']
+    fname = request.form['cusfirstnameeditinc']
+    lname = request.form['cuslastnameeditinc']
+    typeinc = request.form['typeeditinc']
+    phone = request.form['phoneeditinc']
+    description = request.form['descriptioneditinc']
 
-        if fname == "":
-            fname = None
-        if lname == "":
-            lname = None
+    if lname == "":
+        lname = None
+    if phone == "":
+        phone = None
 
-        carid = cursor.execute(
-            'SELECT CarID FROM Car WHERE Car.LicensePlate = ? ',
-            (licenseplate))
-        carid = cursor.fetchone()
-        userid = cursor.execute(
-            "SELECT UserID From [User] WHERE [User].FirstName = ? AND [User].LastName = ?",
-            (session['firstname'], session['lastname']))
-        userid = cursor.fetchone()
-        cusid = cursor.execute(
-            'SELECT CustomerID From Customer WHERE FirstName = ? AND LastName = ?',
-            (fname, lname))
-        cusid = cursor.fetchone()
+    cusid = cursor.execute(
+        'SELECT CustomerID From Customer CUS JOIN Car C ON CUS.CarID = C.CarID WHERE C.LicensePlate = ?',
+        (licenseplate))
+    cusid = cursor.fetchone()
 
-        if carid:
-            if cusid:
-                cursor.execute('UPDATE Car SET CustomerID = ? WHERE CarID = ?',
-                               (cusid[0], carid[0]))
-                cursor.execute(
-                    'UPDATE Incident SET CarID = ?, UserID = ?, Type = ?, Description = ? WHERE IncidentID = ?',
-                    (carid[0], userid[0], typeinc, description, incidentID))
-                connection.commit()
-                return redirect(url_for('home'))
-            else:
-                # if the name was not input
-                if fname == None:
-                    cursor.execute(
-                        'INSERT INTO Customer(FirstName, LastName) VALUES ("", "")'
-                    )
-                    connection.commit()
-                    customerID = cursor.execute(
-                        'SELECT TOP 1 CustomerID FROM Customer ORDER BY CustomerID DESC'
-                    )
-                    customerID = cursor.fetchone()
-                    cursor.execute(
-                        'UPDATE Car SET CustomerID = ? WHERE CarID = ?',
-                        (customerID[0], carid[0]))
-                    cursor.execute(
-                        'UPDATE Incident SET CarID = ?, UserID = ?, Type = ?, Description = ? WHERE IncidentID = ?',
-                        (carid[0], userid[0], typeinc, description,
-                         incidentID))
-                    connection.commit()
-                    return redirect(url_for('home'))
-                # the name input
-                else:
-                    cursor.execute(
-                        'INSERT INTO Customer(FirstName, LastName) VALUES (?,?)',
-                        (fname, lname))
-                    customerID = cursor.execute(
-                        'SELECT TOP 1 CustomerID FROM Customer ORDER BY CustomerID DESC'
-                    )
-                    customerID = cursor.fetchone()
-                    cursor.execute(
-                        'UPDATE Car SET CustomerID = ? WHERE CarID = ?',
-                        (customerID[0], carid[0]))
-                    cursor.execute(
-                        'UPDATE Incident SET CarID = ?, UserID = ?, Type = ?, Description = ? WHERE IncidentID = ?',
-                        (carid[0], userid[0], typeinc, description,
-                         incidentID))
-                    connection.commit()
-                    return redirect(url_for('home'))
-        else:
-            # the car does not exist but cus exist
-            if cusid:
-                cursor.execute(
-                    'INSERT INTO Car(LicensePlate, CustomerID) VALUES(?, ?)',
-                    (licenseplate, cusid[0]))
-                newcarID = cursor.execute(
-                    'SELECT TOP 1 CarID FROM Car ORDER BY CarID DESC')
-                newcarID = cursor.fetchone()
-                cursor.execute(
-                    'UPDATE Incident SET CarID = ?, UserID = ?, Type = ?, Description = ? WHERE IncidentID = ?',
-                    (newcarID[0], userid[0], typeinc, description, incidentID))
-                connection.commit()
-                return redirect(url_for('home'))
-            else:
-                # car and cus not exist
-                # if the name was not input
-                if fname == None:
-                    cursor.execute(
-                        'INSERT INTO Customer(FirstName, LastName) VALUES ("", "")'
-                    )
-                    customerID = cursor.execute(
-                        'SELECT TOP 1 CustomerID FROM Customer ORDER BY CustomerID DESC'
-                    )
-                    customerID = cursor.fetchone()
-                    cursor.execute(
-                        'INSERT INTO Car(LicensePlate, CustomerID) VALUES (?,?)',
-                        (licenseplate, customerID[0]))
-                    newcarID = cursor.execute(
-                        'SELECT TOP 1 CarID FROM Car ORDER BY CarID DESC')
-                    newcarID = cursor.fetchone()
-                    cursor.execute(
-                        'UPDATE Incident SET CarID = ?, UserID = ?, Type = ?, Description = ? WHERE IncidentID = ?',
-                        (newcarID[0], userid[0], typeinc, description,
-                         incidentID))
-                    connection.commit()
-                    return redirect(url_for('home'))
-                # the name input
-                else:
-                    cursor.execute(
-                        'INSERT INTO Customer(FirstName, LastName) VALUES (?,?)',
-                        (fname, lname))
-                    customerID = cursor.execute(
-                        'SELECT TOP 1 CustomerID FROM Customer ORDER BY CustomerID DESC'
-                    )
-                    customerID = cursor.fetchone()
-                    cursor.execute(
-                        'INSERT INTO Car(LicensePlate, CustomerID) VALUES (?,?)',
-                        (licenseplate, customerID[0]))
-                    newcarID = cursor.execute(
-                        'SELECT TOP 1 CarID FROM Car ORDER BY CarID DESC')
-                    newcarID = cursor.fetchone()
-                    cursor.execute(
-                        'UPDATE Incident SET CarID = ?, UserID = ?, Type = ?, Description = ? WHERE IncidentID = ?',
-                        (newcarID[0], userid[0], typeinc, description,
-                         incidentID))
-                    connection.commit()
-                    return redirect(url_for('home'))
+    userid = cursor.execute(
+        "SELECT UserID From [User] WHERE [User].FirstName = ? AND [User].LastName = ?",
+        (session['firstname'], session['lastname']))
+    userid = cursor.fetchone()
 
-        cursor.execute(
-            'UPDATE Incident SET CarID = ?, UserID = ?, Type = ?, Description = ? WHERE IncidentID = ?',
-            (carid[0], userid[0], typeinc, description, incidentID))
-        connection.commit()
-        return redirect(url_for('home'))
+    cursor.execute(
+        'UPDATE Incident SET UserID = ?, Type = ?, Description = ? WHERE IncidentID = ?',
+        (userid[0], typeinc, description, incidentID))
+    connection.commit()
+
+    cursor.execute(
+        'UPDATE Customer SET FirstName = ?, LastName = ?, Phone = ? WHERE CustomerID = ?',
+        (fname, lname, phone, cusid[0]))
+    connection.commit()
+    return redirect(url_for('home'))
 
 
 @app.route('/deactivate', methods=['POST'])
 def deactivate():
-    if request.method == 'POST':
-        incidentID = request.form['inciddeact']
-        time = datetime.datetime.now()
-        time = time.strftime("%Y-%m-%d %H:%M:%S")
-        cursor.execute(
-            "UPDATE Incident SET EndTimeStamp = ?, Status = ? WHERE IncidentID = ?",
-            (time, "Inactive", incidentID))
-        connection.commit()
-        return redirect(url_for('home'))
+    incidentid = request.form['inciddeact']
+    time = datetime.datetime.now()
+    time = time.strftime("%Y-%m-%d %H:%M:%S")
+    cursor.execute(
+        "UPDATE Incident SET EndTimeStamp = ?, Status = ? WHERE IncidentID = ?",
+        (time, "Inactive", incidentid))
+    connection.commit()
+    return redirect(url_for('home'))
 
 
 @app.route('/addincident', methods=['POST'])
 def addIncident():
-    if request.method == "POST":
-        licenseplate = request.form['licenseplateaddinc']
-        fname = request.form['cusfirstnameaddinc']
-        lname = request.form['cuslastnameaddinc']
-        typeinc = request.form['typeaddinc']
-        description = request.form['descriptionaddinc']
+    licenseplate = request.form['licenseplateaddinc']
+    fname = request.form['cusfirstnameaddinc']
+    lname = request.form['cuslastnameaddinc']
+    phone = request.form['phoneaddinc']
+    typeinc = request.form['typeaddinc']
+    description = request.form['descriptionaddinc']
 
-        if fname == "":
-            fname = None
-        if lname == "":
-            lname = None
+    if lname == "":
+        lname = None
+    if phone == "":
+        phone = None
 
-        carid = cursor.execute('SELECT CarID FROM Car WHERE LicensePlate = ? ',
-                               (licenseplate))
-        carid = cursor.fetchone()
-        cusid = cursor.execute(
-            "SELECT CustomerID From Customer WHERE FirstName = ? AND LastName = ?",
-            (fname, lname))
-        cusid = cursor.fetchone()
-        userid = cursor.execute(
-            "SELECT UserID From [User] WHERE [User].FirstName = ? AND [User].LastName = ?",
-            (session['firstname'], session['lastname']))
-        userid = cursor.fetchone()
-        time = datetime.datetime.now()
-        time = time.strftime("%Y-%m-%d %H:%M:%S")
+    userid = cursor.execute(
+        "SELECT UserID From [User] WHERE [User].FirstName = ? AND [User].LastName = ?",
+        (session['firstname'], session['lastname']))
+    userid = cursor.fetchone()
+    time = datetime.datetime.now()
+    time = time.strftime("%Y-%m-%d %H:%M:%S")
 
-        # if the licenseplate existing
-        if carid:
-            # if the license plate already have incident, then it will deactivate the old one
-            incid = cursor.execute(
-                'SELECT IncidentID From Incident WHERE CarID = ? AND Status = ?',
-                (carid[0], 'Active'))
-            incid = cursor.fetchone()
-            if incid:
-                cursor.execute(
-                    'UPDATE Incident SET EndTimeStamp = ?, Status = ? WHERE IncidentID = ?',
-                    (time, 'Inactive', incid[0]))
-                connection.commit()
-            # if the licenseplate exist then customer also exist, then update the customerid
-            if cusid:
-                cursor.execute('UPDATE Car SET CustomerID = ? WHERE CarID = ?',
-                               (cusid, carid))
-                cursor.execute(
-                    "INSERT INTO Incident(CarID, UserID, Description, Type, StartTimestamp, Status) VALUES (?, ?, ?, ?, ?, ?)",
-                    (carid[0], userid[0], description, typeinc, time,
-                     "Active"))
-                connection.commit()
-                return redirect(url_for('home'))
-            else:
-                # if the name was not input
-                if fname == None:
-                    cursor.execute(
-                        'INSERT INTO Customer(FirstName, LastName) VALUES ("", "")'
-                    )
-                    connection.commit()
-                    customerID = cursor.execute(
-                        'SELECT TOP 1 CustomerID FROM Customer ORDER BY CustomerID DESC'
-                    )
-                    customerID = cursor.fetchone()
-                    cursor.execute(
-                        'UPDATE Car SET CustomerID = ? WHERE CarID = ?',
-                        (customerID[0], carid[0]))
-                    cursor.execute(
-                        'INSERT INTO Incident(CarID, UserID, Description, Type, StartTimestamp, Status) VALUES (?, ?, ?, ?, ?, ?)',
-                        (carid[0], userid[0], description, typeinc, time,
-                         "Active"))
-                    connection.commit()
-                    return redirect(url_for('home'))
-                # the name input
-                else:
-                    cursor.execute(
-                        'INSERT INTO Customer(FirstName, LastName) VALUES (?,?)',
-                        (fname, lname))
-                    cursor.execute(
-                        'UPDATE Car SET CustomerID = ? WHERE CarID = ?',
-                        (customerID[0], carid[0]))
-                    cursor.execute(
-                        'INSERT INTO Incident(CarID, UserID, Description, Type, StartTimestamp, Status) VALUES (?, ?, ?, ?, ?, ?)',
-                        (carid[0], userid[0], description, typeinc, time,
-                         "Active"))
-                    connection.commit()
-                    return redirect(url_for('home'))
-        else:
-            # the car does not exist but cus exist
-            if cusid:
-                cursor.execute(
-                    'INSERT INTO Car(LicensePlate, CustomerID) VALUES(?, ?)',
-                    (licenseplate, cusid[0]))
-                newcarID = cursor.execute(
-                    'SELECT TOP 1 CarID FROM Car ORDER BY CarID DESC')
-                newcarID = cursor.fetchone()
-                cursor.execute(
-                    'INSERT INTO Incident(CarID, UserID, Description, Type, StartTimestamp, Status) VALUES (?, ?, ?, ?, ?, ?)',
-                    (newcarID[0], userid[0], description, typeinc, time,
-                     "Active"))
-                connection.commit()
-                return redirect(url_for('home'))
-            else:
-                # car and cus not exist
-                # if the name was not input
-                if fname == None:
-                    cursor.execute(
-                        'INSERT INTO Customer(FirstName, LastName) VALUES ("", "")'
-                    )
-                    customerID = cursor.execute(
-                        'SELECT TOP 1 CustomerID FROM Customer ORDER BY CustomerID DESC'
-                    )
-                    customerID = cursor.fetchone()
-                    cursor.execute(
-                        'INSERT INTO Car(LicensePlate, CustomerID) VALUES (?,?)',
-                        (licenseplate, customerID[0]))
-                    newcarID = cursor.execute(
-                        'SELECT TOP 1 CarID FROM Car ORDER BY CarID DESC')
-                    newcarID = cursor.fetchone()
-                    cursor.execute(
-                        'INSERT INTO Incident(CarID, UserID, Description, Type, StartTimestamp, Status) VALUES (?, ?, ?, ?, ?, ?)',
-                        (newcarID[0], userid[0], description, typeinc, time,
-                         "Active"))
-                    connection.commit()
-                    return redirect(url_for('home'))
-                # the name input
-                else:
-                    cursor.execute(
-                        'INSERT INTO Customer(FirstName, LastName) VALUES (?,?)',
-                        (fname, lname))
-                    customerID = cursor.execute(
-                        'SELECT TOP 1 CustomerID FROM Customer ORDER BY CustomerID DESC'
-                    )
-                    customerID = cursor.fetchone()
-                    cursor.execute(
-                        'INSERT INTO Car(LicensePlate, CustomerID) VALUES (?,?)',
-                        (licenseplate, customerID[0]))
-                    newcarID = cursor.execute(
-                        'SELECT TOP 1 CarID FROM Car ORDER BY CarID DESC')
-                    newcarID = cursor.fetchone()
-                    cursor.execute(
-                        'INSERT INTO Incident(CarID, UserID, Description, Type, StartTimestamp, Status) VALUES (?, ?, ?, ?, ?, ?)',
-                        (newcarID[0], userid[0], description, typeinc, time,
-                         "Active"))
-                    connection.commit()
-                    return redirect(url_for('home'))
-        connection.commit()
-        return redirect(url_for('home'))
+    carid = cursor.execute('SELECT CarID FROM Car WHERE LicensePlate = ? ',
+                           (licenseplate))
+    carid = cursor.fetchone()
 
-
-@app.route('/editcar', methods=['POST', 'GET'])
-def editCar():
-    if request.method == 'POST':
-        carID = request.form['carideditcar']
-        licenseplate = request.form['licenseplateeditcar']
-        fname = request.form['cusfirstnameeditcar']
-        lname = request.form['cuslastnameeditcar']
-        phone = request.form['phoneeditcar']
-
-        if phone == "":
-            phone = None
-        if fname == "":
-            fname = None
-        if lname == "":
-            lname = None
-
-        cusid = cursor.execute(
-            'SELECT Car.CustomerID From Car WHERE CarID = ?', (carID))
-        cusid = cursor.fetchone()
+    if carid:
         cursor.execute(
-            'UPDATE Customer SET FirstName = ?, LastName = ?, Phone = ? WHERE CustomerID = ?',
-            (fname, lname, phone, cusid[0]))
-        cursor.execute('UPDATE Car SET LicensePlate = ? WHERE CarID = ?',
-                       (licenseplate, carID))
+            'UPDATE Customer SET FirstName = ? , LastName = ?, Phone = ? WHERE CarID = ?',
+            (fname, lname, phone, carid[0]))
+        cursor.execute(
+            'INSERT INTO Incident(CarID, UserID, Description, Type, StartTimestamp, Status) VALUES (?, ?, ?, ?, ?, ?)',
+            (carid[0], userid[0], description, typeinc, time, "Active"))
         connection.commit()
         return redirect(url_for('home'))
+
+    cursor.execute('INSERT INTO Car(LicensePlate) VALUES (?)', (licenseplate))
+    connection.commit()
+
+    carid = cursor.execute('SELECT CarID FROM Car WHERE LicensePlate = ?',
+                           (licenseplate))
+    carid = cursor.fetchone()
+
+    cursor.execute(
+        'INSERT INTO Customer(FirstName, LastName, Phone, CarID) VALUES (?, ?, ?, ?)',
+        (fname, lname, phone, carid[0]))
+    connection.commit()
+
+    cursor.execute(
+        'INSERT INTO Incident(CarID, UserID, Description, Type, StartTimestamp, Status) VALUES (?, ?, ?, ?, ?, ?)',
+        (carid[0], userid[0], description, typeinc, time, "Active"))
+    connection.commit()
+    return redirect(url_for('home'))
+
+
+@app.route('/editcar', methods=['POST'])
+def editCar():
+    carID = request.form['carideditcar']
+    licenseplate = request.form['licenseplateeditcar']
+    fname = request.form['cusfirstnameeditcar']
+    lname = request.form['cuslastnameeditcar']
+    phone = request.form['phoneeditcar']
+
+    if phone == "":
+        phone = None
+    if lname == "":
+        lname = None
+
+    cursor.execute(
+        'UPDATE Customer SET FirstName = ?, LastName = ?, Phone = ? WHERE CarID = ?',
+        (fname, lname, phone, carID))
+    cursor.execute('UPDATE Car SET LicensePlate = ? WHERE CarID = ?',
+                   (licenseplate, carID))
+    connection.commit()
+    return redirect(url_for('home'))
 
 
 if __name__ == '__main__':

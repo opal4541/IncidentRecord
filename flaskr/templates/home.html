@@ -594,6 +594,15 @@
             </div>
             <div class="row">
               <div class="col-sm-4 form-group">
+                <label for="phoneaddincfromhis">Phone:</label>
+              </div>
+              <div class="col-sm-8 form-group">
+                <input class="form-control" id="phoneaddincfromhis" name="phoneaddincfromhis" placeholder="Phone"
+                  type="text">
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-4 form-group">
                 <label for="typeaddincfromhis">Type:</label>
               </div>
               <div class="col-sm-2 form-group">
@@ -661,6 +670,14 @@
               <div class="col-sm-4 form-group">
                 <input class="form-control" id="cuslastnameaddinc" name="cuslastnameaddinc"
                   placeholder="Customer Lastname" type="text">
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-4 form-group">
+                <label for="phoneaddinc">Phone:</label>
+              </div>
+              <div class="col-sm-8 form-group">
+                <input class="form-control" id="phoneaddinc" name="phoneaddinc" placeholder="Phone" type="text">
               </div>
             </div>
             <div class="row">
@@ -733,6 +750,14 @@
               <div class="col-sm-4 form-group">
                 <input class="form-control" id="cuslastnameeditinc" name="cuslastnameeditinc"
                   placeholder="Customer Lastname" type="text">
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-4 form-group">
+                <label for="phoneeditinc">Phone:</label>
+              </div>
+              <div class="col-sm-8 form-group">
+                <input class="form-control" id="phoneeditinc" name="phoneeditinc" placeholder="Phone" type="text">
               </div>
             </div>
             <div class="row">
@@ -945,8 +970,22 @@
       $(".addincfromhisbutton").click(function () {
         //get data from table row
         var lice = $(this).parents("tr").find("#licensehis").text();
+        var fname = $(this).parents("tr").find("#firstnamehis").text();
+        var lname = $(this).parents("tr").find("#lastnamehis").text();
+        var phone = $(this).parents("tr").find("#phonehis").text();
         //assign to value for input box inside modal
         $("#licenseplateaddincfromhis").val(lice);
+
+        if (lname == "None") {
+          $("#cuslastnameaddincfromhis").val("");
+        } else {
+          $("#cuslastnameaddincfromhis").val(lname);
+        }
+        if (phone == "None") {
+          $("#phoneaddincfromhis").val("");
+        } else {
+          $("#phoneaddincfromhis").val(phone);
+        }
         //open modal
         $("#addincidentfromhis").modal();
       });
@@ -964,7 +1003,7 @@
         $("#entertimeaddact").val(ent);
         $("#exittimeaddact").val(ext);
 
-        if (act == "None"){
+        if (act == "None") {
           $("#activityaddact").val("");
         } else {
           $("#activityaddact").val(act);
@@ -981,12 +1020,23 @@
         var fname = name.split(" ")[0];
         var lname = name.split(" ")[1];
         var desc = $(this).parents("tr").find("#descriptioninc").text();
+        var phone = $(this).parents("tr").find("#phoneinc").text();
         //assign to value for input box inside modal
         $("#ideditinc").val(id);
         $("#licenseplateeditinc").val(lice);
         $("#cusfirstnameeditinc").val(fname);
-        $("#cuslastnameeditinc").val(lname);
         $("#descriptioneditinc").val(desc);
+
+        if (lname == "None") {
+          $("#cuslastnameeditinc").val("");
+        } else {
+          $("#cuslastnameeditinc").val(lname);
+        }
+        if (phone == "None") {
+          $("#phoneeditinc").val("");
+        } else {
+          $("#phoneeditinc").val(phone);
+        }
         //open modal
         $("#editincident").modal();
       });
@@ -1002,16 +1052,14 @@
         //assign to value for input box inside modal
         $("#carideditcar").val(id);
         $("#licenseplateeditcar").val(lice);
-        
-        if (name == "None"){
-          $("#cusfirstnameeditcar").val("");
+        $("#cusfirstnameeditcar").val(fname);
+
+        if (lname == "None") {
           $("#cuslastnameeditcar").val("");
         } else {
-          $("#cusfirstnameeditcar").val(fname);
           $("#cuslastnameeditcar").val(lname);
         }
-
-        if (phone == "None"){
+        if (phone == "None") {
           $("#phoneeditcar").val("");
         } else {
           $("#phoneeditcar").val(phone);
@@ -1038,6 +1086,9 @@
                         <td id="entimehis">${data[i].entertime}</td>
                         <td id="extimehis">${data[i].exittime}</td>
                         <td id="activityhis" style="width: 400px; display: none;">${data[i].activity}</td>
+                        <td id="firstnamehis" style="display: none;">${data[i].firstname}</td>
+                        <td id="lastnamehis" style="display: none;">${data[i].lastname}</td>
+                        <td id="phonehis" style="display: none;">${data[i].phone}</td>
                         <td><button class="addactbutton btn button1" data-target="#addactivity">Add</button>
                         </td>
                         <td><button class="addincfromhisbutton btn button1" data-target="#addincidentfromhis">Add</button></td>`
@@ -1050,7 +1101,6 @@
       var incidenttbody = document.getElementById("incidenttbody");
 
       for (var i = 0; i < data.length; i++) {
-
         incidenttbody.insertRow(-1).innerHTML += `<td id="idinc">${data[i].id}</td>
                         <td id="licenseinc" class="licenseplate">${data[i].licenseplate}</td>
                         <td id="customernameinc" class="customername">${data[i].firstname}<span> </span>${data[i].lastname}</td>
@@ -1060,13 +1110,17 @@
                         <td id="statusinc" class="status">${data[i].status}</td>
                         <td id="editbyinc" class="editby">${data[i].userfirstname}<span> </span>${data[i].userlastname}</td>
                         <td id="descriptioninc" class="description" style="display:none;">${data[i].description}</td>
-                        <td><button class="editincidentbutton btn button1" data-target="#editincident"
-                            onclick="checkButton('${data[i].type}')">Edit</button>
+                        <td id="phoneinc" class="phone" style="display:none;">${data[i].phone}</td>
+                        <td>
+                          <button class="editincidentbutton btn button1" data-target="#editincident" 
+                          onclick="checkButton('${data[i].type}')">Edit</button>
                         </td>
-                        <form action="{{url_for('deactivate')}}" method="post">
-                          <input type="hidden" id="inciddeact" name="inciddeact" value=${data[i].id}>
-                          <td><button id="deactivatebutton" type="submit" class="btn button2">Deactivate</button></td>
-                        </form>`;
+                        <td>
+                          <form action="{{url_for('deactivate')}}" method="post">
+                            <input type="hidden" id="inciddeact" name="inciddeact" value="${data[i].id}">
+                            <button id="deactivatebutton" type="submit" class="btn button2">Deactivate</button>
+                          </form>
+                        </td>`;
       }
     }
 

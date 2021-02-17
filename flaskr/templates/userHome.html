@@ -760,7 +760,6 @@
       var historytbody = document.getElementById("historytbody");
 
       for (var i = 0; i < data.length; i++) {
-
         historytbody.insertRow(-1).innerHTML += `<td id="idhis">${data[i].id}</td>
                         <td id="licensehis">${data[i].licenseplate}</td>
                         <td id="entimehis">${data[i].entertime}</td>
@@ -854,7 +853,7 @@
         histbody.insertRow(0).innerHTML += `<td id="idhis">${lastenter[0].id}</td>
                                         <td id="licensehis">${lastenter[0].licenseplate}</td>
                                         <td id="entimehis">${lastenter[0].entertime}</td>
-                                        <td id="extimehis">${lastenter[0].exittsime}</td>
+                                        <td id="extimehis">${lastenter[0].exittime}</td>
                                         <td id="activityhis" style="width: 400px;">${lastenter[0].activity}</td>`;
       });
 
@@ -862,19 +861,15 @@
         exitimage.src = msg.exitimage;
         exitlicense.innerHTML = msg.exitlicense;
         exittime.innerHTML = msg.exittime;
-
         lastexit = JSON.parse(msg.lastexit)
 
-
-        var rows = document.querySelector("#historytable tbody").rows;
-        var id = lastexit[0].id
-        for (var i = 0; i < rows.length; i++) {
-          var idhis = parseInt(rows[i].cells[0].text);
-          if (idhis == id) {
-            var exittime = document.getElementById("exittimehis");
+        for(var i = 0; i < historytbody.rows.length; i++) {
+          var cells = histbody.rows[i].cells;
+          if (lastexit[0].id == cells[0].innerHTML) {
+            cells[3].innerHTML = lastexit[0].exittime
+            break
           }
         }
-
       });
 
     });

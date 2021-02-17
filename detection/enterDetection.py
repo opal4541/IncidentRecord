@@ -201,17 +201,17 @@ def addEnterHistory(licensePlate, time):
         cursor.commit()
         return True
 
-    cursor.execute('INSERT INTO Customer(FirstName) VALUES (?)', (""))
+    cursor.execute('INSERT INTO Car(LicensePlate) VALUES (?)', licensePlate)
     cursor.commit()
-    customerID = cursor.execute(
-        'SELECT TOP 1 CustomerID FROM Customer ORDER BY CustomerID DESC')
-    customerID = cursor.fetchone()
-    cursor.execute('INSERT INTO Car(CustomerID, LicensePlate) VALUES (?,?)',
-                   (customerID[0], licensePlate))
-    cursor.commit()
+
     carID = cursor.execute(
         'SELECT C.CarID FROM Car C WHERE C.LicensePlate = ?', licensePlate)
     carID = cursor.fetchone()
+
+    cursor.execute('INSERT INTO Customer(FirstName, CarID) VALUES (?, ?)',
+                   ("", carID[0]))
+    cursor.commit()
+
     cursor.execute('INSERT INTO History (CarID, EnterTimestamp) VALUES (?,?)',
                    (carID[0], enterTime))
     cursor.commit()
