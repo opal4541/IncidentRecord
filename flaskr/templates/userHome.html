@@ -733,6 +733,8 @@
 
         var lice = $(this).parents("tr").find(".licenseplate").text();
         var cust = $(this).parents("tr").find(".customername").text();
+        var fname = cust.split(" ")[0];
+        var lname = cust.split(" ")[1];
         var type = $(this).parents("tr").find(".type").text();
         var star = $(this).parents("tr").find(".starttime").text();
         var end = $(this).parents("tr").find(".endtime").text();
@@ -742,12 +744,17 @@
 
         //assign to value for input box inside modal
         $("#lice").val(lice);
-        $("#cust").val(cust);
         $("#type").val(type);
         $("#star").val(star);
         $("#end").val(end);
         $("#stat").val(stat);
         $("#desc").val(desc);
+
+        if(lname == "None"){
+          $("#cust").val(fname + " ");
+        }else{
+          $("#cust").val(cust);
+        }
 
         //open modal
         $("#viewincident").modal();
@@ -817,6 +824,7 @@
       var lastenter;
       var lastexit;
       var histbody = document.getElementById("historytbody");
+      var incidenttbody = document.getElementById("incidenttbody");
 
 
       var socket = io.connect('http://127.0.0.1:5000/web', {
@@ -847,7 +855,6 @@
         enterimage.src = msg.enterimage;
         enterlicense.innerHTML = msg.enterlicense;
         entertime.innerHTML = msg.entertime;
-
         lastenter = JSON.parse(msg.lastenter)
 
         histbody.insertRow(0).innerHTML += `<td id="idhis">${lastenter[0].id}</td>
@@ -863,13 +870,41 @@
         exittime.innerHTML = msg.exittime;
         lastexit = JSON.parse(msg.lastexit)
 
-        for(var i = 0; i < historytbody.rows.length; i++) {
+        for (var i = 0; i < historytbody.rows.length; i++) {
           var cells = histbody.rows[i].cells;
           if (lastexit[0].id == cells[0].innerHTML) {
             cells[3].innerHTML = lastexit[0].exittime
             break
           }
         }
+      });
+
+      socket.on('server2web_addact', (msg) => {
+        var id = msg.id;
+        var activity = msg.activity;
+
+        for (var i = 0; i < historytbody.rows.length; i++) {
+          var cells = histbody.rows[i].cells;
+          if (id == cells[0].innerHTML) {
+            cells[4].innerHTML = activity;
+            break
+          }
+        }
+      });
+
+      socket.on('server2web_addincfromhis', (msg) => {
+        var lastincident = JSON.parse(msg.lastincident)
+
+        incidenttbody.insertRow(-1).innerHTML += `<td id="idinc" class="incidentid">${lastincident[0].id}</td>
+                        <td id="licenseinc" class="licenseplate">${lastincident[0].licenseplate}</td>
+                        <td id="customernameinc" class="customername">${lastincident[0].firstname}<span> </span>${lastincident[0].lastname}</td>
+                        <td id="typeinc" class="type">${lastincident[0].type}</td>
+                        <td id="starttimeinc" class="starttime">${lastincident[0].starttime}</td>
+                        <td id="endtimeinc" class="endtime">${lastincident[0].endtime}</td>
+                        <td id="statusinc" class="status">${lastincident[0].status}</td>
+                        <td id="editbyinc" class="editby">${lastincident[0].userfirstname}<span> </span>${lastincident[0].userlastname}</td>
+                        <td id="descriptioninc" class="description" style="display:none;">${lastincident[0].description}</td>
+                        <td><button class="viewbutton btn button1" data-target="#viewincident">View</button></td>`;
       });
 
     });

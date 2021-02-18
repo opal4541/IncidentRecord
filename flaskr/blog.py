@@ -263,6 +263,18 @@ def addActivity():
     cursor.execute('UPDATE History SET Activity = ? WHERE HistoryID = ?',
                    (activity, historyID))
     connection.commit()
+
+    activity = cursor.execute(
+        'SELECT H.HistoryID, H.Activity FROM History H WHERE HistoryID = ?',
+        historyID)
+    activity = cursor.fetchone()
+
+    socketio.emit('server2web_addact', {
+        'id': activity[0],
+        'activity': str(activity[1])
+    },
+                  namespace='/web')
+
     return redirect(url_for('home'))
 
 
@@ -284,8 +296,7 @@ def addIncidentFromHistory():
                            (licenseplate))
     carid = cursor.fetchone()
     cusid = cursor.execute(
-        "SELECT CustomerID From Customer CUS WHERE CUS.CarID = ?",
-        (carid[0]))
+        "SELECT CustomerID From Customer CUS WHERE CUS.CarID = ?", (carid[0]))
     cusid = cursor.fetchone()
     userid = cursor.execute(
         "SELECT UserID From [User] WHERE [User].FirstName = ? AND [User].LastName = ?",
@@ -302,6 +313,34 @@ def addIncidentFromHistory():
         'INSERT INTO Incident(CarID, UserID, Description, Type, StartTimestamp, Status) VALUES (?, ?, ?, ?, ?, ?)',
         (carid[0], userid[0], description, typeinc, time, "Active"))
     connection.commit()
+
+    incident = cursor.execute(
+        'SELECT TOP 1 I.IncidentID, C.LicensePlate, CUS.FirstName, CUS.LastName, I.Type, I.StartTimestamp, I.EndTimestamp, I.Status, U.FirstName, U.LastName, I.Description, CUS.Phone FROM Incident I JOIN Car C ON I.CarID = C.CarID JOIN Customer CUS ON C.CarID = CUS.CarID JOIN [User] U ON U.UserID = I.UserID ORDER BY IncidentID DESC'
+    )
+    incident = cursor.fetchone()
+
+    incident_list = []
+    incident_dict = {
+        'id': incident[0],
+        'licenseplate': str(incident[1]),
+        'firstname': str(incident[2]),
+        'lastname': str(incident[3]),
+        'type': str(incident[4]),
+        'starttime': str(incident[5]),
+        'endtime': str(incident[6]),
+        'status': str(incident[7]),
+        'userfirstname': str(incident[8]),
+        'userlastname': str(incident[9]),
+        'description': str(incident[10]),
+        'phone': str(incident[11])
+    }
+
+    incident_list.append(incident_dict)
+    incident_json = json.dumps(incident_list)
+
+    socketio.emit('server2web_addincfromhis', {'lastincident': incident_json},
+                  namespace='/web')
+
     return redirect(url_for('home'))
 
 

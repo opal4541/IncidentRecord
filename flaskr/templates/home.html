@@ -975,6 +975,7 @@
         var phone = $(this).parents("tr").find("#phonehis").text();
         //assign to value for input box inside modal
         $("#licenseplateaddincfromhis").val(lice);
+        $("#cusfirstnameaddincfromhis").val(fname);
 
         if (lname == "None") {
           $("#cuslastnameaddincfromhis").val("");
@@ -1182,7 +1183,6 @@
         enterimage.src = msg.enterimage;
         enterlicense.innerHTML = msg.enterlicense;
         entertime.innerHTML = msg.entertime;
-
         lastenter = JSON.parse(msg.lastenter)
 
         histbody.insertRow(0).innerHTML += `<td id="idhis" class="id">${lastenter[0].id}</td>
@@ -1200,6 +1200,15 @@
         exitimage.src = msg.exitimage;
         exitlicense.innerHTML = msg.exitlicense;
         exittime.innerHTML = msg.exittime;
+        lastexit = JSON.parse(msg.lastexit)
+
+        for (var i = 0; i < historytbody.rows.length; i++) {
+          var cells = histbody.rows[i].cells;
+          if (lastexit[0].id == cells[0].innerHTML) {
+            cells[3].innerHTML = lastexit[0].exittime
+            break
+          }
+        }
       });
     });
   </script>
