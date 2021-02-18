@@ -750,9 +750,9 @@
         $("#stat").val(stat);
         $("#desc").val(desc);
 
-        if(lname == "None"){
+        if (lname == "None") {
           $("#cust").val(fname + " ");
-        }else{
+        } else {
           $("#cust").val(cust);
         }
 
@@ -764,7 +764,7 @@
     var historyArray = JSON.parse({{ historyData | tojson | safe }})
 
     function buildHistoryTable(data) {
-      var historytbody = document.getElementById("historytbody");
+    var historytbody = document.getElementById("historytbody");
 
       for (var i = 0; i < data.length; i++) {
         historytbody.insertRow(-1).innerHTML += `<td id="idhis">${data[i].id}</td>
@@ -778,7 +778,7 @@
     var incidentArray = JSON.parse({{ incidentData | tojson | safe }})
 
     function buildIncidentTable(data) {
-      var incidenttbody = document.getElementById("incidenttbody");
+    var incidenttbody = document.getElementById("incidenttbody");
 
       for (var i = 0; i < data.length; i++) {
 
@@ -798,7 +798,7 @@
     var carArray = JSON.parse({{ carData | tojson | safe }})
 
     function buildCarTable(data) {
-      var cartbody = document.getElementById("cartbody");
+    var cartbody = document.getElementById("cartbody");
 
       for (var i = 0; i < data.length; i++) {
 
@@ -823,9 +823,9 @@
       var exittime = document.getElementById("exittime");
       var lastenter;
       var lastexit;
-      var histbody = document.getElementById("historytbody");
+      var historytbody = document.getElementById("historytbody");
       var incidenttbody = document.getElementById("incidenttbody");
-
+      var cartbody = document.getElementById("cartbody");
 
       var socket = io.connect('http://127.0.0.1:5000/web', {
         reconnection: false
@@ -857,7 +857,7 @@
         entertime.innerHTML = msg.entertime;
         lastenter = JSON.parse(msg.lastenter)
 
-        histbody.insertRow(0).innerHTML += `<td id="idhis">${lastenter[0].id}</td>
+        historytbody.insertRow(0).innerHTML += `<td id="idhis">${lastenter[0].id}</td>
                                         <td id="licensehis">${lastenter[0].licenseplate}</td>
                                         <td id="entimehis">${lastenter[0].entertime}</td>
                                         <td id="extimehis">${lastenter[0].exittime}</td>
@@ -871,7 +871,7 @@
         lastexit = JSON.parse(msg.lastexit)
 
         for (var i = 0; i < historytbody.rows.length; i++) {
-          var cells = histbody.rows[i].cells;
+          var cells = historytbody.rows[i].cells;
           if (lastexit[0].id == cells[0].innerHTML) {
             cells[3].innerHTML = lastexit[0].exittime
             break
@@ -884,7 +884,7 @@
         var activity = msg.activity;
 
         for (var i = 0; i < historytbody.rows.length; i++) {
-          var cells = histbody.rows[i].cells;
+          var cells = historytbody.rows[i].cells;
           if (id == cells[0].innerHTML) {
             cells[4].innerHTML = activity;
             break
@@ -905,8 +905,41 @@
                         <td id="editbyinc" class="editby">${lastincident[0].userfirstname}<span> </span>${lastincident[0].userlastname}</td>
                         <td id="descriptioninc" class="description" style="display:none;">${lastincident[0].description}</td>
                         <td><button class="viewbutton btn button1" data-target="#viewincident">View</button></td>`;
-      });
 
+        $(function () {
+          $(".viewbutton").click(function () {
+            //get data from table row
+
+            var lice = $(this).parents("tr").find(".licenseplate").text();
+            var cust = $(this).parents("tr").find(".customername").text();
+            var fname = cust.split(" ")[0];
+            var lname = cust.split(" ")[1];
+            var type = $(this).parents("tr").find(".type").text();
+            var star = $(this).parents("tr").find(".starttime").text();
+            var end = $(this).parents("tr").find(".endtime").text();
+            var stat = $(this).parents("tr").find(".status").text();
+            var desc = $(this).parents("tr").find(".description").text();
+
+
+            //assign to value for input box inside modal
+            $("#lice").val(lice);
+            $("#type").val(type);
+            $("#star").val(star);
+            $("#end").val(end);
+            $("#stat").val(stat);
+            $("#desc").val(desc);
+
+            if (lname == "None") {
+              $("#cust").val(fname + " ");
+            } else {
+              $("#cust").val(cust);
+            }
+
+            //open modal
+            $("#viewincident").modal();
+          });
+        });
+      });
     });
 
 
