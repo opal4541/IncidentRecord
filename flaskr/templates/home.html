@@ -736,7 +736,7 @@
               <div class="col-sm-8 form-group">
                 <input type="hidden" id="ideditinc" name="ideditinc">
                 <input class="form-control" id="licenseplateeditinc" name="licenseplateeditinc"
-                  placeholder="License Plate" value="" type="text" required>
+                  placeholder="License Plate" value="" type="text" required readonly>
               </div>
             </div>
             <div class="row">
@@ -1075,7 +1075,7 @@
     var historyArray = JSON.parse({{ historyData | tojson | safe }})
 
     function buildHistoryTable(data) {
-    var historytbody = document.getElementById("historytbody");
+      var historytbody = document.getElementById("historytbody");
 
       for (var i = 0; i < data.length; i++) {
 
@@ -1096,7 +1096,7 @@
     var incidentArray = JSON.parse({{ incidentData | tojson | safe }})
 
     function buildIncidentTable(data) {
-    var incidenttbody = document.getElementById("incidenttbody");
+      var incidenttbody = document.getElementById("incidenttbody");
 
       for (var i = 0; i < data.length; i++) {
         incidenttbody.insertRow(-1).innerHTML += `<td id="idinc">${data[i].id}</td>
@@ -1125,7 +1125,7 @@
     var carArray = JSON.parse({{ carData | tojson | safe }})
 
     function buildCarTable(data) {
-    var cartbody = document.getElementById("cartbody");
+      var cartbody = document.getElementById("cartbody");
 
       for (var i = 0; i < data.length; i++) {
 
@@ -1183,6 +1183,7 @@
         enterlicense.innerHTML = msg.enterlicense;
         entertime.innerHTML = msg.entertime;
         lastenter = JSON.parse(msg.lastenter)
+        checkcar = false
 
         historytbody.insertRow(0).innerHTML += `<td id="idhis" class="id">${lastenter[0].id}</td>
                                         <td id="licensehis">${lastenter[0].licenseplate}</td>
@@ -1191,6 +1192,23 @@
                                         <td id="activityhis" style="width: 400px; display: none;">${lastenter[0].activity}</td>
                                         <td><button class="addactbutton btn button1" data-target="#addactivity">Add</button></td>
                                         <td><button class="addincfromhisbutton btn button1" data-target="#addincidentfromhis">Add</button></td>`;
+
+        for (var i = 0; i < cartbody.rows.length; i++) {
+          var cells = cartbody.rows[i].cells;
+          if (msg.enterlicense == cells[1].innerHTML) {
+            cells[4].innerHTML = lastenter[0].entertime
+            checkcar = true
+            break
+          }
+        }
+        if (checkcar == false) {
+          cartbody.insertRow(-1).innerHTML += `<td id="idcar">${lastenter[0].carid}</td>
+                        <td id="licensecar">${lastenter[0].licenseplate}</td>
+                        <td id="customernamecar">${lastenter[0].firstname}<span> </span>${lastenter[0].lastname}</td>
+                        <td id="phonecar">${lastenter[0].phone}</td>
+                        <td id="lastvisitedcar">${lastenter[0].entertime}</td>`;
+        }
+
         $(function () {
           $(".addincfromhisbutton").click(function () {
             var lice = $(this).parents("tr").find("#licensehis").text();

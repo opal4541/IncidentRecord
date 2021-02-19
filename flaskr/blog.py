@@ -57,7 +57,7 @@ def handle_cv_message(message):
     enLicense = message['enterlicense']
     enTime = message['entertime']
     lastEnter = cursor.execute(
-        'SELECT TOP 1 H.HistoryID, C.LicensePlate, H.EnterTimestamp, H.ExitTimestamp, H.Activity, CUS.FirstName, CUS.LastName, CUS.Phone FROM History H JOIN Car C ON H.CarID = C.CarID JOIN Customer CUS ON C.CarID = CUS.CarID ORDER BY H.HistoryID DESC'
+        'SELECT TOP 1 H.HistoryID, C.LicensePlate, H.EnterTimestamp, H.ExitTimestamp, H.Activity, CUS.FirstName, CUS.LastName, CUS.Phone, C.CarID FROM History H JOIN Car C ON H.CarID = C.CarID JOIN Customer CUS ON C.CarID = CUS.CarID ORDER BY H.HistoryID DESC'
     )
     lastEnter = cursor.fetchone()
 
@@ -67,7 +67,11 @@ def handle_cv_message(message):
         'licenseplate': lastEnter[1],
         'entertime': str(lastEnter[2]),
         'exittime': str(lastEnter[3]),
-        'activity': str(lastEnter[4])
+        'activity': str(lastEnter[4]),
+        'firstname': str(lastEnter[5]),
+        'lastname': str(lastEnter[6]),
+        'phone': str(lastEnter[7]),
+        'carid': str(lastEnter[8])
     }
 
     lastenter_list.append(lastenter_dict)
@@ -88,7 +92,7 @@ def handle_cv_message(message):
     exLicense = message['exitlicense']
     exTime = message['exittime']
     lastExit = cursor.execute(
-        'SELECT TOP 1 H.HistoryID, H.ExitTimestamp FROM History H JOIN Car C ON H.CarID = C.CarID WHERE H.ExitTimestamp IS NOT NULL ORDER BY H.HistoryID DESC'
+        'SELECT TOP 1 H.HistoryID, H.ExitTimestamp FROM History H JOIN Car C ON H.CarID = C.CarID WHERE H.ExitTimestamp IS NOT NULL AND C.LicensePlate = ? ORDER BY H.HistoryID DESC', exLicense
     )
     lastExit = cursor.fetchone()
 
@@ -135,7 +139,7 @@ def hisTable():
 @app.route('/inctable')
 def incTable():
     incidentData = cursor.execute(
-        'SELECT I.IncidentID, C.LicensePlate, CUS.FirstName, CUS.LastName, I.Type, I.StartTimestamp, I.EndTimestamp, I.Status, U.FirstName, U.LastName, I.Description, CUS.Phone FROM Incident I JOIN Car C ON I.CarID = C.CarID JOIN Customer CUS ON C.CarID = CUS.CarID JOIN [User] U ON U.UserID = I.UserID'
+        'SELECT I.IncidentID, C.LicensePlate, CUS.FirstName, CUS.LastName, I.Type, I.StartTimestamp, I.EndTimestamp, I.Status, U.FirstName, U.LastName, I.Description, CUS.Phone, C.CarID FROM Incident I JOIN Car C ON I.CarID = C.CarID JOIN Customer CUS ON C.CarID = CUS.CarID JOIN [User] U ON U.UserID = I.UserID'
     )
     incidentData = cursor.fetchall()
 
@@ -155,7 +159,8 @@ def incTable():
             'userfirstname': str(incident[8]),
             'userlastname': str(incident[9]),
             'description': str(incident[10]),
-            'phone': str(incident[11])
+            'phone': str(incident[11]),
+            'carid': incident[12]
         }
         incident_list.append(incident_dict)
 
@@ -264,14 +269,14 @@ def addActivity():
                    (activity, historyID))
     connection.commit()
 
-    activity = cursor.execute(
+    addactivity = cursor.execute(
         'SELECT H.HistoryID, H.Activity FROM History H WHERE HistoryID = ?',
         historyID)
-    activity = cursor.fetchone()
+    addactivity = cursor.fetchone()
 
     socketio.emit('server2web_addact', {
-        'id': activity[0],
-        'activity': str(activity[1])
+        'id': adactivity[0],
+        'activity': str(adactivity[1])
     },
                   namespace='/web')
 
@@ -315,7 +320,7 @@ def addIncidentFromHistory():
     connection.commit()
 
     incident = cursor.execute(
-        'SELECT TOP 1 I.IncidentID, C.LicensePlate, CUS.FirstName, CUS.LastName, I.Type, I.StartTimestamp, I.EndTimestamp, I.Status, U.FirstName, U.LastName, I.Description, CUS.Phone FROM Incident I JOIN Car C ON I.CarID = C.CarID JOIN Customer CUS ON C.CarID = CUS.CarID JOIN [User] U ON U.UserID = I.UserID ORDER BY IncidentID DESC'
+        'SELECT TOP 1 I.IncidentID, C.LicensePlate, CUS.FirstName, CUS.LastName, I.Type, I.StartTimestamp, I.EndTimestamp, I.Status, U.FirstName, U.LastName, I.Description, CUS.Phone, C.CarID FROM Incident I JOIN Car C ON I.CarID = C.CarID JOIN Customer CUS ON C.CarID = CUS.CarID JOIN [User] U ON U.UserID = I.UserID WHERE C.LicensePlate = ? ORDER BY IncidentID DESC', licenseplate
     )
     incident = cursor.fetchone()
 
@@ -332,7 +337,8 @@ def addIncidentFromHistory():
         'userfirstname': str(incident[8]),
         'userlastname': str(incident[9]),
         'description': str(incident[10]),
-        'phone': str(incident[11])
+        'phone': str(incident[11]),
+        'carid': incident[12]
     }
 
     incident_list.append(incident_dict)
@@ -378,18 +384,58 @@ def editIncident():
         'UPDATE Customer SET FirstName = ?, LastName = ?, Phone = ? WHERE CustomerID = ?',
         (fname, lname, phone, cusid[0]))
     connection.commit()
+
+    editedincident = cursor.execute(
+        'SELECT I.IncidentID, C.LicensePlate, CUS.FirstName, CUS.LastName, I.Type, U.FirstName, U.LastName, I.Description, CUS.Phone, C.carID FROM Incident I JOIN Car C ON I.CarID = C.CarID JOIN Customer CUS ON C.CarID = CUS.CarID JOIN [User] U ON U.UserID = I.UserID WHERE IncidentID = ?',
+        incidentID)
+    editedincident = cursor.fetchone()
+
+    editedincident_list = []
+    editedincident_dict = {
+        'id': editedincident[0],
+        'licenseplate': str(editedincident[1]),
+        'firstname': str(editedincident[2]),
+        'lastname': str(editedincident[3]),
+        'type': str(editedincident[4]),
+        'userfirstname': str(editedincident[5]),
+        'userlastname': str(editedincident[6]),
+        'description': str(editedincident[7]),
+        'phone': str(editedincident[8]),
+        'carid': editedincident[9]
+    }
+
+    editedincident_list.append(editedincident_dict)
+    editedincident_json = json.dumps(editedincident_list)
+
+    socketio.emit('server2web_editinc',
+                  {'editedincident': editedincident_json},
+                  namespace='/web')
+
     return redirect(url_for('home'))
 
 
 @app.route('/deactivate', methods=['POST'])
 def deactivate():
-    incidentid = request.form['inciddeact']
+    incidentId = request.form['inciddeact']
     time = datetime.datetime.now()
     time = time.strftime("%Y-%m-%d %H:%M:%S")
     cursor.execute(
-        "UPDATE Incident SET EndTimeStamp = ?, Status = ? WHERE IncidentID = ?",
-        (time, "Inactive", incidentid))
+        "UPDATE Incident SET EndTimestamp = ?, Status = ? WHERE IncidentID = ?",
+        (time, "Inactive", incidentId))
     connection.commit()
+
+    deactinc = cursor.execute(
+        'SELECT I.IncidentID, I.EndTimestamp, I.Status FROM Incident I WHERE IncidentID = ?',
+        incidentId)
+    deactinc = cursor.fetchone()
+
+    socketio.emit('server2web_deact', {
+        'id': deactinc[0],
+        'endtime': str(deactinc[1]),
+        'status': str(deactinc[2])
+    },
+                  namespace='/web')
+
     return redirect(url_for('home'))
 
 
@@ -426,6 +472,35 @@ def addIncident():
             'INSERT INTO Incident(CarID, UserID, Description, Type, StartTimestamp, Status) VALUES (?, ?, ?, ?, ?, ?)',
             (carid[0], userid[0], description, typeinc, time, "Active"))
         connection.commit()
+
+        incident = cursor.execute(
+        'SELECT TOP 1 I.IncidentID, C.LicensePlate, CUS.FirstName, CUS.LastName, I.Type, I.StartTimestamp, I.EndTimestamp, I.Status, U.FirstName, U.LastName, I.Description, CUS.Phone, C.CarID FROM Incident I JOIN Car C ON I.CarID = C.CarID JOIN Customer CUS ON C.CarID = CUS.CarID JOIN [User] U ON U.UserID = I.UserID WHERE C.LicensePlate = ? ORDER BY IncidentID DESC', licenseplate
+        )
+        incident = cursor.fetchone()
+
+        incident_list = []
+        incident_dict = {
+            'id': incident[0],
+            'licenseplate': str(incident[1]),
+            'firstname': str(incident[2]),
+            'lastname': str(incident[3]),
+            'type': str(incident[4]),
+            'starttime': str(incident[5]),
+            'endtime': str(incident[6]),
+            'status': str(incident[7]),
+            'userfirstname': str(incident[8]),
+            'userlastname': str(incident[9]),
+            'description': str(incident[10]),
+            'phone': str(incident[11]),
+            'carid': incident[12]
+        }
+
+        incident_list.append(incident_dict)
+        incident_json = json.dumps(incident_list)
+
+        socketio.emit('server2web_addinc', {'lastincident': incident_json},
+                    namespace='/web')
+
         return redirect(url_for('home'))
 
     cursor.execute('INSERT INTO Car(LicensePlate) VALUES (?)', (licenseplate))
@@ -444,12 +519,41 @@ def addIncident():
         'INSERT INTO Incident(CarID, UserID, Description, Type, StartTimestamp, Status) VALUES (?, ?, ?, ?, ?, ?)',
         (carid[0], userid[0], description, typeinc, time, "Active"))
     connection.commit()
+
+    incident = cursor.execute(
+        'SELECT TOP 1 I.IncidentID, C.LicensePlate, CUS.FirstName, CUS.LastName, I.Type, I.StartTimestamp, I.EndTimestamp, I.Status, U.FirstName, U.LastName, I.Description, CUS.Phone, C.CarID FROM Incident I JOIN Car C ON I.CarID = C.CarID JOIN Customer CUS ON C.CarID = CUS.CarID JOIN [User] U ON U.UserID = I.UserID ORDER BY IncidentID DESC'
+    )
+    incident = cursor.fetchone()
+
+    incident_list = []
+    incident_dict = {
+        'id': incident[0],
+        'licenseplate': str(incident[1]),
+        'firstname': str(incident[2]),
+        'lastname': str(incident[3]),
+        'type': str(incident[4]),
+        'starttime': str(incident[5]),
+        'endtime': str(incident[6]),
+        'status': str(incident[7]),
+        'userfirstname': str(incident[8]),
+        'userlastname': str(incident[9]),
+        'description': str(incident[10]),
+        'phone': str(incident[11]),
+        'carid': incident[12]
+    }
+
+    incident_list.append(incident_dict)
+    incident_json = json.dumps(incident_list)
+
+    socketio.emit('server2web_addinc', {'lastincident': incident_json},
+                  namespace='/web')
+
     return redirect(url_for('home'))
 
 
 @app.route('/editcar', methods=['POST'])
 def editCar():
-    carID = request.form['carideditcar']
+    carId = request.form['carideditcar']
     licenseplate = request.form['licenseplateeditcar']
     fname = request.form['cusfirstnameeditcar']
     lname = request.form['cuslastnameeditcar']
@@ -462,10 +566,24 @@ def editCar():
 
     cursor.execute(
         'UPDATE Customer SET FirstName = ?, LastName = ?, Phone = ? WHERE CarID = ?',
-        (fname, lname, phone, carID))
+        (fname, lname, phone, carId))
     cursor.execute('UPDATE Car SET LicensePlate = ? WHERE CarID = ?',
-                   (licenseplate, carID))
+                   (licenseplate, carId))
     connection.commit()
+    
+    editedcar = cursor.execute(
+        'SELECT C.CarID, C.LicensePlate, CUS.FirstName, CUS.LastName, CUS.Phone FROM Car C JOIN Customer CUS ON C.CarID = CUS.CarID WHERE C.carID = ?',carId)
+    editedcar = cursor.fetchone()
+
+    socketio.emit('server2web_editcar', {
+        'id': editedcar[0],
+        'license': str(editedcar[1]),
+        'firstname': str(editedcar[2]),
+        'lastname': str(editedcar[3]),
+        'phone': str(editedcar[4])
+    },
+                  namespace='/web')
+
     return redirect(url_for('home'))
 
 

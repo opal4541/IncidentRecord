@@ -764,7 +764,7 @@
     var historyArray = JSON.parse({{ historyData | tojson | safe }})
 
     function buildHistoryTable(data) {
-    var historytbody = document.getElementById("historytbody");
+      var historytbody = document.getElementById("historytbody");
 
       for (var i = 0; i < data.length; i++) {
         historytbody.insertRow(-1).innerHTML += `<td id="idhis">${data[i].id}</td>
@@ -778,7 +778,7 @@
     var incidentArray = JSON.parse({{ incidentData | tojson | safe }})
 
     function buildIncidentTable(data) {
-    var incidenttbody = document.getElementById("incidenttbody");
+      var incidenttbody = document.getElementById("incidenttbody");
 
       for (var i = 0; i < data.length; i++) {
 
@@ -791,6 +791,8 @@
                         <td id="statusinc" class="status">${data[i].status}</td>
                         <td id="editbyinc" class="editby">${data[i].userfirstname}<span> </span>${data[i].userlastname}</td>
                         <td id="descriptioninc" class="description" style="display:none;">${data[i].description}</td>
+                        <td id="carid" class="carid" style="display:none;">${data[i].carid}</td>
+                        <td id="phone" class="phone" style="display:none;">${data[i].phone}</td>
                         <td><button class="viewbutton btn button1" data-target="#viewincident">View</button></td>`;
       }
     }
@@ -798,7 +800,7 @@
     var carArray = JSON.parse({{ carData | tojson | safe }})
 
     function buildCarTable(data) {
-    var cartbody = document.getElementById("cartbody");
+      var cartbody = document.getElementById("cartbody");
 
       for (var i = 0; i < data.length; i++) {
 
@@ -855,13 +857,30 @@
         enterimage.src = msg.enterimage;
         enterlicense.innerHTML = msg.enterlicense;
         entertime.innerHTML = msg.entertime;
-        lastenter = JSON.parse(msg.lastenter)
+        lastenter = JSON.parse(msg.lastenter);
+        checkcar = false
 
         historytbody.insertRow(0).innerHTML += `<td id="idhis">${lastenter[0].id}</td>
                                         <td id="licensehis">${lastenter[0].licenseplate}</td>
                                         <td id="entimehis">${lastenter[0].entertime}</td>
                                         <td id="extimehis">${lastenter[0].exittime}</td>
                                         <td id="activityhis" style="width: 400px;">${lastenter[0].activity}</td>`;
+
+        for (var i = 0; i < cartbody.rows.length; i++) {
+          var cells = cartbody.rows[i].cells;
+          if (msg.enterlicense == cells[1].innerHTML) {
+            cells[4].innerHTML = lastenter[0].entertime;
+            checkcar = true
+            break
+          }
+        }
+        if (checkcar == false) {
+          cartbody.insertRow(-1).innerHTML += `<td id="idcar">${lastenter[0].carid}</td>
+                        <td id="licensecar">${lastenter[0].licenseplate}</td>
+                        <td id="customernamecar">${lastenter[0].firstname}<span> </span>${lastenter[0].lastname}</td>
+                        <td id="phonecar">${lastenter[0].phone}</td>
+                        <td id="lastvisitedcar">${lastenter[0].entertime}</td>`;
+        }
       });
 
       socket.on('server2web_exit', (msg) => {
@@ -893,7 +912,7 @@
       });
 
       socket.on('server2web_addincfromhis', (msg) => {
-        var lastincident = JSON.parse(msg.lastincident)
+        var lastincident = JSON.parse(msg.lastincident);
 
         incidenttbody.insertRow(-1).innerHTML += `<td id="idinc" class="incidentid">${lastincident[0].id}</td>
                         <td id="licenseinc" class="licenseplate">${lastincident[0].licenseplate}</td>
@@ -904,7 +923,28 @@
                         <td id="statusinc" class="status">${lastincident[0].status}</td>
                         <td id="editbyinc" class="editby">${lastincident[0].userfirstname}<span> </span>${lastincident[0].userlastname}</td>
                         <td id="descriptioninc" class="description" style="display:none;">${lastincident[0].description}</td>
+                        <td id="carid" class="carid" style="display:none;">${lastincident[0].carid}</td>
+                        <td id="phone" class="phone" style="display:none;">${lastincident[0].phone}</td>
                         <td><button class="viewbutton btn button1" data-target="#viewincident">View</button></td>`;
+
+        for (var i = 0; i < incidenttbody.rows.length; i++) {
+          var cells = incidenttbody.rows[i].cells;
+          if (lastincident[0].licenseplate == cells[1].innerHTML) {
+            cells[2].innerHTML = lastincident[0].firstname + " " + lastincident[0].lastname;
+            cells[10].innerHTML = lastincident[0].phone;
+          }
+        }
+
+        for (var i = 0; i < cartbody.rows.length; i++) {
+          var cells = cartbody.rows[i].cells;
+          if (lastincident[0].licenseplate == cells[1].innerHTML) {
+            cells[2].innerHTML = lastincident[0].firstname + " " + lastincident[0].lastname;
+            cells[3].innerHTML = lastincident[0].phone;
+            checkcar = true
+            console.log(checkcar)
+            break
+          }
+        }
 
         $(function () {
           $(".viewbutton").click(function () {
@@ -940,8 +980,155 @@
           });
         });
       });
-    });
 
+      socket.on('server2web_editinc', (msg) => {
+        var editedinc = JSON.parse(msg.editedincident)
+
+        for (var i = 0; i < incidenttbody.rows.length; i++) {
+          var cells = incidenttbody.rows[i].cells;
+          if (editedinc[0].id == cells[0].innerHTML) {
+            cells[2].innerHTML = editedinc[0].firstname + " " + editedinc[0].lastname;
+            cells[3].innerHTML = editedinc[0].type;
+            cells[7].innerHTML = editedinc[0].userfirstname + " " + editedinc[0].userlastname;
+            cells[8].innerHTML = editedinc[0].description;
+          }
+          if (editedinc[0].licenseplate == cells[1].innerHTML) {
+            if (cells[2].innerHTML != editedinc[0].firstname + " " + editedinc[0].lastname) {
+              cells[2].innerHTML = editedinc[0].firstname + " " + editedinc[0].lastname;
+            }
+          }
+        }
+
+        for (var i = 0; i < cartbody.rows.length; i++) {
+          var cells = cartbody.rows[i].cells;
+          if (editedinc[0].carid == cells[0].innerHTML) {
+            cells[2].innerHTML = editedinc[0].firstname + " " + editedinc[0].lastname;
+            cells[3].innerHTML = editedinc[0].phone;
+            break
+          }
+        }
+      });
+
+      socket.on('server2web_deact', (msg) => {
+        var id = msg.id;
+        var endtime = msg.endtime;
+        var status = msg.status;
+
+        for (var i = 0; i < incidenttbody.rows.length; i++) {
+          var cells = incidenttbody.rows[i].cells;
+          if (id == cells[0].innerHTML) {
+            cells[5].innerHTML = endtime;
+            cells[6].innerHTML = status;
+            break
+          }
+        }
+      });
+
+      socket.on('server2web_editcar', (msg) => {
+        var check = false;
+        var oldlicense = ""
+
+        for (var i = 0; i < cartbody.rows.length; i++) {
+          var cells = cartbody.rows[i].cells;
+          if (msg.id == cells[0].innerHTML) {
+
+            if (cells[1].innerHTML == msg.license && cells[2].innerHTML == msg.firstname + " " + msg.lastname) {
+              check = true;
+            }
+            oldlicense = cells[1].innerHTML;
+            cells[1].innerHTML = msg.license;
+            cells[2].innerHTML = msg.firstname + " " + msg.lastname;
+            cells[3].innerHTML = msg.phone;
+            break
+          }
+        }
+        if (check == false) {
+          for (var i = 0; i < incidenttbody.rows.length; i++) {
+            var cells = incidenttbody.rows[i].cells;
+            if (oldlicense == cells[1].innerHTML) {
+              cells[1].innerHTML = msg.license;
+              cells[2].innerHTML = msg.firstname + " " + msg.lastname;
+            }
+          }
+        }
+      });
+      socket.on('server2web_addinc', (msg) => {
+        var lastincident = JSON.parse(msg.lastincident);
+        var checkcar = false;
+
+        incidenttbody.insertRow(-1).innerHTML += `<td id="idinc" class="incidentid">${lastincident[0].id}</td>
+                        <td id="licenseinc" class="licenseplate">${lastincident[0].licenseplate}</td>
+                        <td id="customernameinc" class="customername">${lastincident[0].firstname}<span> </span>${lastincident[0].lastname}</td>
+                        <td id="typeinc" class="type">${lastincident[0].type}</td>
+                        <td id="starttimeinc" class="starttime">${lastincident[0].starttime}</td>
+                        <td id="endtimeinc" class="endtime">${lastincident[0].endtime}</td>
+                        <td id="statusinc" class="status">${lastincident[0].status}</td>
+                        <td id="editbyinc" class="editby">${lastincident[0].userfirstname}<span> </span>${lastincident[0].userlastname}</td>
+                        <td id="descriptioninc" class="description" style="display:none;">${lastincident[0].description}</td>
+                        <td id="carid" class="carid" style="display:none;">${lastincident[0].carid}</td>
+                        <td id="phone" class="phone" style="display:none;">${lastincident[0].phone}</td>
+                        <td><button class="viewbutton btn button1" data-target="#viewincident">View</button></td>`;
+
+        for (var i = 0; i < incidenttbody.rows.length; i++) {
+          var cells = incidenttbody.rows[i].cells;
+          if (lastincident[0].licenseplate == cells[1].innerHTML) {
+            cells[2].innerHTML = lastincident[0].firstname + " " + lastincident[0].lastname;
+            cells[10].innerHTML = lastincident[0].phone;
+          }
+        }
+
+        for (var i = 0; i < cartbody.rows.length; i++) {
+          var cells = cartbody.rows[i].cells;
+          if (lastincident[0].licenseplate == cells[1].innerHTML) {
+            cells[2].innerHTML = lastincident[0].firstname + " " + lastincident[0].lastname;
+            cells[3].innerHTML = lastincident[0].phone;
+            checkcar = true
+            console.log(checkcar)
+            break
+          }
+        }
+        if (checkcar == false) {
+          cartbody.insertRow(-1).innerHTML += `<td id="idcar">${lastincident[0].carid}</td>
+                        <td id="licensecar">${lastincident[0].licenseplate}</td>
+                        <td id="customernamecar">${lastincident[0].firstname}<span> </span>${lastincident[0].lastname}</td>
+                        <td id="phonecar">${lastincident[0].phone}</td>
+                        <td id="lastvisitedcar">None</td>`;
+        }
+        $(function () {
+          $(".viewbutton").click(function () {
+            //get data from table row
+
+            var lice = $(this).parents("tr").find(".licenseplate").text();
+            var cust = $(this).parents("tr").find(".customername").text();
+            var fname = cust.split(" ")[0];
+            var lname = cust.split(" ")[1];
+            var type = $(this).parents("tr").find(".type").text();
+            var star = $(this).parents("tr").find(".starttime").text();
+            var end = $(this).parents("tr").find(".endtime").text();
+            var stat = $(this).parents("tr").find(".status").text();
+            var desc = $(this).parents("tr").find(".description").text();
+
+
+            //assign to value for input box inside modal
+            $("#lice").val(lice);
+            $("#type").val(type);
+            $("#star").val(star);
+            $("#end").val(end);
+            $("#stat").val(stat);
+            $("#desc").val(desc);
+
+            if (lname == "None") {
+              $("#cust").val(fname + " ");
+            } else {
+              $("#cust").val(cust);
+            }
+
+            //open modal
+            $("#viewincident").modal();
+          });
+        });
+      });
+    });
 
   </script>
 
