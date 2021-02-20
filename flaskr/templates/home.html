@@ -304,10 +304,6 @@
     }
 
     .jumbotron {
-      /* background-image: url('static/header-background.jpg'); */
-      /* background-attachment: fixed;
-      background-size: 100%;
-      background-repeat: no-repeat; */
       background-color: #2f4f4f;
       color: #fff;
       padding: 0px 25px;
@@ -544,7 +540,7 @@
               <div class="col-sm-12 form-group">
                 <label for="activityaddact">Activity:</label><br>
                 <textarea class="form-control" id="activityaddact" name="activityaddact" placeholder="Activity" rows="5"
-                  type="text"></textarea>
+                  type="text" maxlength="500"></textarea>
               </div>
             </div>
           </div>
@@ -576,7 +572,7 @@
               <div class="col-sm-8 form-group">
                 <input type="hidden" id="incidaddinc" name="incidaddinc" value="">
                 <input class="form-control" id="licenseplateaddincfromhis" name="licenseplateaddincfromhis"
-                  placeholder="License Plate" type="text" value="" readonly>
+                  placeholder="License Plate" type="text" readonly>
               </div>
             </div>
             <div class="row">
@@ -585,11 +581,11 @@
               </div>
               <div class="col-sm-4 form-group">
                 <input class="form-control" id="cusfirstnameaddincfromhis" name="cusfirstnameaddincfromhis"
-                  placeholder="Customer Firstname" type="text">
+                  placeholder="Customer Firstname" type="text" maxlength="50">
               </div>
               <div class="col-sm-4 form-group">
                 <input class="form-control" id="cuslastnameaddincfromhis" name="cuslastnameaddincfromhis"
-                  placeholder="Customer Lastname" type="text">
+                  placeholder="Customer Lastname" type="text" maxlength="50">
               </div>
             </div>
             <div class="row">
@@ -598,7 +594,7 @@
               </div>
               <div class="col-sm-8 form-group">
                 <input class="form-control" id="phoneaddincfromhis" name="phoneaddincfromhis" placeholder="Phone"
-                  type="text">
+                  type="text" maxlength="10">
               </div>
             </div>
             <div class="row">
@@ -606,7 +602,7 @@
                 <label for="typeaddincfromhis">Type:</label>
               </div>
               <div class="col-sm-2 form-group">
-                <input type="radio" id="noteaddincfromhis" name="typeaddincfromhis" value="Note">
+                <input type="radio" id="noteaddincfromhis" name="typeaddincfromhis" value="Note" required>
                 <label for="noteaddincfromhis" style="font-size:14px; font-weight: 50;">Note</label>
               </div>
               <div class="col-sm-2 form-group">
@@ -624,7 +620,7 @@
               </div>
               <div class="col-sm-8 form-group">
                 <textarea class="form-control" id="descriptionaddincfromhis" name="descriptionaddincfromhis"
-                  placeholder="Description" rows="5" required></textarea>
+                  placeholder="Description" rows="5" maxlength="1000" required></textarea>
               </div>
             </div>
           </div>
@@ -656,7 +652,7 @@
               </div>
               <div class="col-sm-8 form-group">
                 <input class="form-control" id="licenseplateaddinc" name="licenseplateaddinc"
-                  placeholder="License Plate" type="text" required>
+                  placeholder="License Plate" type="text" maxlength="10" required>
               </div>
             </div>
             <div class="row">
@@ -665,11 +661,11 @@
               </div>
               <div class="col-sm-4 form-group">
                 <input class="form-control" id="cusfirstnameaddinc" name="cusfirstnameaddinc"
-                  placeholder="Customer Firstname" type="text">
+                  placeholder="Customer Firstname" maxlength="50" type="text">
               </div>
               <div class="col-sm-4 form-group">
                 <input class="form-control" id="cuslastnameaddinc" name="cuslastnameaddinc"
-                  placeholder="Customer Lastname" type="text">
+                  placeholder="Customer Lastname" maxlength="50" type="text">
               </div>
             </div>
             <div class="row">
@@ -677,7 +673,8 @@
                 <label for="phoneaddinc">Phone:</label>
               </div>
               <div class="col-sm-8 form-group">
-                <input class="form-control" id="phoneaddinc" name="phoneaddinc" placeholder="Phone" type="text">
+                <input class="form-control" id="phoneaddinc" name="phoneaddinc" placeholder="Phone" type="text"
+                  maxlength="10">
               </div>
             </div>
             <div class="row">
@@ -685,7 +682,7 @@
                 <label for="typeaddinc">Type:</label>
               </div>
               <div class="col-sm-2 form-group">
-                <input type="radio" id="noteaddinc" name="typeaddinc" value="Note">
+                <input type="radio" id="noteaddinc" name="typeaddinc" value="Note" required>
                 <label for="noteaddinc" style="font-size:14px; font-weight: 50;">Note</label>
               </div>
               <div class="col-sm-2 form-group">
@@ -703,7 +700,7 @@
               </div>
               <div class="col-sm-8 form-group">
                 <textarea class="form-control" id="descriptionaddinc" name="descriptionaddinc" placeholder="Description"
-                  rows="5" required></textarea>
+                  rows="5" maxlength="1000" required></textarea>
               </div>
             </div>
           </div>
@@ -736,7 +733,7 @@
               <div class="col-sm-8 form-group">
                 <input type="hidden" id="ideditinc" name="ideditinc">
                 <input class="form-control" id="licenseplateeditinc" name="licenseplateeditinc"
-                  placeholder="License Plate" value="" type="text" required readonly>
+                  placeholder="License Plate" value="" type="text" maxlength="10" required readonly>
               </div>
             </div>
             <div class="row">
@@ -745,11 +742,11 @@
               </div>
               <div class="col-sm-4 form-group">
                 <input class="form-control" id="cusfirstnameeditinc" name="cusfirstnameeditinc"
-                  placeholder="Customer Firstname" type="text">
+                  placeholder="Customer Firstname" maxlength="50" type="text">
               </div>
               <div class="col-sm-4 form-group">
                 <input class="form-control" id="cuslastnameeditinc" name="cuslastnameeditinc"
-                  placeholder="Customer Lastname" type="text">
+                  placeholder="Customer Lastname" maxlength="50" type="text">
               </div>
             </div>
             <div class="row">
@@ -757,7 +754,8 @@
                 <label for="phoneeditinc">Phone:</label>
               </div>
               <div class="col-sm-8 form-group">
-                <input class="form-control" id="phoneeditinc" name="phoneeditinc" placeholder="Phone" type="text">
+                <input class="form-control" id="phoneeditinc" name="phoneeditinc" placeholder="Phone" maxlength="10"
+                  type="text">
               </div>
             </div>
             <div class="row">
@@ -766,7 +764,7 @@
                 <input type="hidden" id="radiovalue" name="radiovalue">
               </div>
               <div class="col-sm-2 form-group">
-                <input type="radio" id="noteeditinc" name="typeeditinc" value="Note">
+                <input type="radio" id="noteeditinc" name="typeeditinc" value="Note" required>
                 <label for="noteeditinc" style="font-size:14px; font-weight: 50;">Note</label>
               </div>
               <div class="col-sm-2 form-group">
@@ -784,7 +782,7 @@
               </div>
               <div class="col-sm-8 form-group">
                 <textarea class="form-control" id="descriptioneditinc" name="descriptioneditinc"
-                  placeholder="Description" rows="5" required></textarea>
+                  placeholder="Description" rows="5" maxlength="1000" required></textarea>
               </div>
             </div>
             <div class="modal-footer">
@@ -817,7 +815,7 @@
               <div class="col-sm-8 form-group">
                 <input type="hidden" id="carideditcar" name="carideditcar" value="">
                 <input class="form-control" id="licenseplateeditcar" name="licenseplateeditcar"
-                  placeholder="License Plate" type="text" value="" required>
+                  placeholder="License Plate" type="text" value="" maxlength="10" required>
               </div>
             </div>
             <div class="row">
@@ -826,11 +824,11 @@
               </div>
               <div class="col-sm-4 form-group">
                 <input class="form-control" id="cusfirstnameeditcar" name="cusfirstnameeditcar"
-                  placeholder="Customer Firstname" type="text">
+                  placeholder="Customer Firstname" maxlength="50" type="text">
               </div>
               <div class="col-sm-4 form-group">
                 <input class="form-control" id="cuslastnameeditcar" name="cuslastnameeditcar"
-                  placeholder="Customer Lastname" type="text">
+                  placeholder="Customer Lastname" maxlength="50" type="text">
               </div>
             </div>
             <div class="row">
@@ -838,7 +836,8 @@
                 <label for="phoneeditcar">Phone:</label>
               </div>
               <div class="col-sm-8 form-group">
-                <input class="form-control" id="phoneeditcar" name="phoneeditcar" placeholder="Phone" type="text">
+                <input class="form-control" id="phoneeditcar" name="phoneeditcar" placeholder="Phone" maxlength="10"
+                  type="text">
               </div>
             </div>
           </div>

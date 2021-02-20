@@ -304,10 +304,6 @@
     }
 
     .jumbotron {
-      /* background-image: url('static/header-background.jpg'); */
-      /* background-attachment: fixed;
-      background-size: 100%;
-      background-repeat: no-repeat; */
       background-color: #2f4f4f;
       color: #fff;
       padding: 0px 25px;
@@ -321,11 +317,6 @@
     .modal {
       padding-top: 2%;
     }
-
-    /* .modal-backdrop {
-      opacity: 0.5 !important;
-    } */
-
 
     .search input[type=text] {
       width: 20px;
@@ -346,7 +337,10 @@
       width: 100%;
     }
 
-    /* pop up */
+    textarea {
+      resize: none;
+    }
+
     @import url(https://fonts.googleapis.com/css?family=PT+Sans:400,700,400italic);
 
     @-webkit-keyframes popUpEntrada {
@@ -415,8 +409,7 @@
     html,
     root,
     document {
-      display: block;
-      height: 500px;
+      display: block height: 500px;
     }
 
     .popUpFundo {
@@ -656,7 +649,6 @@
       height: 60px;
     }
 
-
     .alert.puEnviar {
       display: none;
     }
@@ -673,22 +665,6 @@
       -webkit-animation: popUpSaida 0.5s;
       -webkit-animation-fill-mode: forwards;
       animation-fill-mode: forwards;
-    }
-
-    .blue {
-      background-color: #51b2d6;
-    }
-
-    .blue>button {
-      background-color: #38a7d0;
-    }
-
-    .blue>button:hover {
-      background-color: #72c1de;
-    }
-
-    .popUpFundo.blue {
-      background-color: #134152;
     }
 
     .green {
@@ -737,80 +713,6 @@
 
     .popUpFundo.orange {
       background-color: #8c5b02;
-    }
-
-    .purple {
-      background-color: #ab4bd5;
-    }
-
-    .purple>button {
-      background-color: #a238d0;
-    }
-
-    .purple>button:hover {
-      background-color: #b159d8;
-    }
-
-    .popUpFundo.purple {
-      background-color: #3f114a;
-    }
-
-    .white {
-      background-color: #fff;
-      color: #555;
-    }
-
-    .white>h1 {
-      color: #000;
-    }
-
-    .white>button {
-      background-color: #f3f3f3;
-      color: #555;
-    }
-
-    .white>button:hover {
-      background-color: #e3e3e3;
-    }
-
-    .popUpFundo.white {
-      background-color: #555;
-    }
-
-
-    /*
-That part is just for the form
-*/
-    .colorfulForm {
-      width: 350px;
-      margin: 60px auto;
-    }
-
-    .colorfulForm input,
-    .colorfulForm textarea,
-    .colorfulForm select {
-      box-sizing: border-box;
-      -webkit-box-sizing: border-box;
-      -moz-box-sizing: border-box;
-      width: 350px;
-      padding: 5px;
-      background-color: #f3f3f3;
-      border: 1px solid #ccc;
-      border-radius: 2px;
-    }
-
-    .colorfulForm label {
-      display: block;
-      font-family: Verdana, Arial;
-      margin: 10px 0 5px 0;
-    }
-
-    .colorfulForm button {
-      width: 100px;
-      margin: 3px 7px;
-      padding: 5px;
-      color: #fff;
-      border-style: none;
     }
   </style>
 
@@ -884,14 +786,6 @@ That part is just for the form
       </h4>
     </div>
   </div>
-
-  <section class="colorfulForm">
-    <input type="hidden" class="l2" id="mode" value="alert">
-    <input type="hidden" class="l2" id="size" value="m">
-    <label>Color</label>
-    <button class="l1 red">red</button>
-    <button class="l1 orange">orange</button>
-  </section>
 
   <!-- Container (About Section) -->
   <div id="historyrecord" class="container-fluid">
@@ -1007,6 +901,14 @@ That part is just for the form
           </div>
           <div class="row">
             <div class="col-sm-4 form-group">
+              <label for="phoneviewinc">Phone:</label>
+            </div>
+            <div class="col-sm-8 form-group">
+              <input id="phon" class="form-control" type="text" readonly>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-4 form-group">
               <label for="typeviewinc">Type:</label>
             </div>
             <div class="col-sm-8 form-group">
@@ -1091,6 +993,16 @@ That part is just for the form
       </div>
     </div>
   </div>
+  <audio id="red" preload="auto">
+    <source src="static/red.mp3">
+  </audio>
+  <audio id="green" preload="auto">
+    <source src="static/green.mp3">
+  </audio>
+  <audio id="yellow" preload="auto">
+    <source src="static/yellow.mp3">
+  </audio>
+
 
   <!-- Image of location/map -->
   <!-- <img src="/w3images/map.jpg" class="w3-image w3-greyscale-min" style="width:100%"> -->
@@ -1208,13 +1120,12 @@ That part is just for the form
 
         var lice = $(this).parents("tr").find(".licenseplate").text();
         var cust = $(this).parents("tr").find(".customername").text();
-        var fname = cust.split(" ")[0];
-        var lname = cust.split(" ")[1];
         var type = $(this).parents("tr").find(".type").text();
         var star = $(this).parents("tr").find(".starttime").text();
         var end = $(this).parents("tr").find(".endtime").text();
         var stat = $(this).parents("tr").find(".status").text();
         var desc = $(this).parents("tr").find(".description").text();
+        var phon = $(this).parents("tr").find(".phone").text();
 
 
         //assign to value for input box inside modal
@@ -1224,11 +1135,12 @@ That part is just for the form
         $("#end").val(end);
         $("#stat").val(stat);
         $("#desc").val(desc);
+        $("#cust").val(cust);
 
-        if (lname == "None") {
-          $("#cust").val(fname + " ");
+        if (phone == "None") {
+          $("#phon").val("");
         } else {
-          $("#cust").val(cust);
+          $("#phon").val(phon);
         }
 
         //open modal
@@ -1257,9 +1169,14 @@ That part is just for the form
 
       for (var i = 0; i < data.length; i++) {
 
+        var lastname = data[i].lastname;
+        if (data[i].firstname != "" && data[i].lastname == "None") {
+          lastname = "";
+        }
+
         incidenttbody.insertRow(-1).innerHTML += `<td id="idinc" class="incidentid">${data[i].id}</td>
                         <td id="licenseinc" class="licenseplate">${data[i].licenseplate}</td>
-                        <td id="customernameinc" class="customername">${data[i].firstname}<span> </span>${data[i].lastname}</td>
+                        <td id="customernameinc" class="customername">${data[i].firstname}<span> </span>${lastname}</td>
                         <td id="typeinc" class="type">${data[i].type}</td>
                         <td id="starttimeinc" class="starttime">${data[i].starttime}</td>
                         <td id="endtimeinc" class="endtime">${data[i].endtime}</td>
@@ -1279,9 +1196,14 @@ That part is just for the form
 
       for (var i = 0; i < data.length; i++) {
 
+        var lastname = data[i].lastname;
+        if (data[i].firstname != "" && data[i].lastname == "None") {
+          lastname = "";
+        }
+
         cartbody.insertRow(-1).innerHTML += `<td id="idcar">${data[i].id}</td>
                         <td id="licensecar">${data[i].licenseplate}</td>
-                        <td id="customernamecar">${data[i].firstname}<span> </span>${data[i].lastname}</td>
+                        <td id="customernamecar">${data[i].firstname}<span> </span>${lastname}</td>
                         <td id="phonecar">${data[i].phone}</td>
                         <td id="lastvisitedcar">${data[i].lastvisited}</td>`;
       }
@@ -1303,6 +1225,7 @@ That part is just for the form
       var historytbody = document.getElementById("historytbody");
       var incidenttbody = document.getElementById("incidenttbody");
       var cartbody = document.getElementById("cartbody");
+      var alert = false;
 
       var socket = io.connect('http://127.0.0.1:5000/web', {
         reconnection: false
@@ -1333,13 +1256,45 @@ That part is just for the form
         enterlicense.innerHTML = msg.enterlicense;
         entertime.innerHTML = msg.entertime;
         lastenter = JSON.parse(msg.lastenter);
-        checkcar = false
+        checkcar = false;
+
+        if (alert == true) {
+          janelaPopUp.fecha();
+          alert = false;
+        }
+
+        for (var i = 0; i < incidenttbody.rows.length; i++) {
+          var cells = incidenttbody.rows[i].cells;
+          if (msg.enterlicense == cells[1].innerHTML && cells[6].innerHTML == "Active" && cells[3].innerHTML == "Blacklist") {
+            janelaPopUp.abre("example", 'm red alert', "BLACKLIST", msg.enterlicense);
+            document.getElementById('red').play();
+            alert = true;
+            break;
+          }
+          if (msg.enterlicense == cells[1].innerHTML && cells[6].innerHTML == "Active" && cells[3].innerHTML == "VIP") {
+            janelaPopUp.abre("example", 'm orange alert', "VIP", msg.enterlicense);
+            document.getElementById('yellow').play();
+            alert = true;
+            break;
+          }
+          if (msg.enterlicense == cells[1].innerHTML && cells[6].innerHTML == "Active" && cells[3].innerHTML == "Note") {
+            janelaPopUp.abre("example", 'm green alert', "NOTE", msg.enterlicense);
+            document.getElementById('green').play();
+            alert = true;
+            break;
+          }
+        }
 
         historytbody.insertRow(0).innerHTML += `<td id="idhis">${lastenter[0].id}</td>
                                         <td id="licensehis">${lastenter[0].licenseplate}</td>
                                         <td id="entimehis">${lastenter[0].entertime}</td>
                                         <td id="extimehis">${lastenter[0].exittime}</td>
                                         <td id="activityhis" style="width: 400px;">${lastenter[0].activity}</td>`;
+
+        var lastname = lastenter[0].lastname;
+        if (lastenter[0].firstname != "" && lastenter[0].lastname == "None") {
+          lastname = "";
+        }
 
         for (var i = 0; i < cartbody.rows.length; i++) {
           var cells = cartbody.rows[i].cells;
@@ -1352,7 +1307,7 @@ That part is just for the form
         if (checkcar == false) {
           cartbody.insertRow(-1).innerHTML += `<td id="idcar">${lastenter[0].carid}</td>
                         <td id="licensecar">${lastenter[0].licenseplate}</td>
-                        <td id="customernamecar">${lastenter[0].firstname}<span> </span>${lastenter[0].lastname}</td>
+                        <td id="customernamecar">${lastenter[0].firstname}<span> </span>${lastname}</td>
                         <td id="phonecar">${lastenter[0].phone}</td>
                         <td id="lastvisitedcar">${lastenter[0].entertime}</td>`;
         }
@@ -1388,10 +1343,14 @@ That part is just for the form
 
       socket.on('server2web_addincfromhis', (msg) => {
         var lastincident = JSON.parse(msg.lastincident);
+        var lastname = lastincident[0].lastname;
+        if (lastincident[0].firstname != "" && lastincident[0].lastname == "None") {
+          lastname = "";
+        }
 
         incidenttbody.insertRow(-1).innerHTML += `<td id="idinc" class="incidentid">${lastincident[0].id}</td>
                         <td id="licenseinc" class="licenseplate">${lastincident[0].licenseplate}</td>
-                        <td id="customernameinc" class="customername">${lastincident[0].firstname}<span> </span>${lastincident[0].lastname}</td>
+                        <td id="customernameinc" class="customername">${lastincident[0].firstname}<span> </span>${lastname}</td>
                         <td id="typeinc" class="type">${lastincident[0].type}</td>
                         <td id="starttimeinc" class="starttime">${lastincident[0].starttime}</td>
                         <td id="endtimeinc" class="endtime">${lastincident[0].endtime}</td>
@@ -1405,7 +1364,7 @@ That part is just for the form
         for (var i = 0; i < incidenttbody.rows.length; i++) {
           var cells = incidenttbody.rows[i].cells;
           if (lastincident[0].licenseplate == cells[1].innerHTML) {
-            cells[2].innerHTML = lastincident[0].firstname + " " + lastincident[0].lastname;
+            cells[2].innerHTML = lastincident[0].firstname + " " + lastname;
             cells[10].innerHTML = lastincident[0].phone;
           }
         }
@@ -1413,10 +1372,9 @@ That part is just for the form
         for (var i = 0; i < cartbody.rows.length; i++) {
           var cells = cartbody.rows[i].cells;
           if (lastincident[0].licenseplate == cells[1].innerHTML) {
-            cells[2].innerHTML = lastincident[0].firstname + " " + lastincident[0].lastname;
+            cells[2].innerHTML = lastincident[0].firstname + " " + lastname;
             cells[3].innerHTML = lastincident[0].phone;
             checkcar = true
-            console.log(checkcar)
             break
           }
         }
@@ -1427,13 +1385,12 @@ That part is just for the form
 
             var lice = $(this).parents("tr").find(".licenseplate").text();
             var cust = $(this).parents("tr").find(".customername").text();
-            var fname = cust.split(" ")[0];
-            var lname = cust.split(" ")[1];
             var type = $(this).parents("tr").find(".type").text();
             var star = $(this).parents("tr").find(".starttime").text();
             var end = $(this).parents("tr").find(".endtime").text();
             var stat = $(this).parents("tr").find(".status").text();
             var desc = $(this).parents("tr").find(".description").text();
+            var phon = $(this).parents("tr").find(".phone").text();
 
 
             //assign to value for input box inside modal
@@ -1443,11 +1400,12 @@ That part is just for the form
             $("#end").val(end);
             $("#stat").val(stat);
             $("#desc").val(desc);
+            $("#cust").val(cust);
 
-            if (lname == "None") {
-              $("#cust").val(fname + " ");
+            if (phone == "None") {
+              $("#phon").val("");
             } else {
-              $("#cust").val(cust);
+              $("#phon").val(phon);
             }
 
             //open modal
@@ -1458,18 +1416,23 @@ That part is just for the form
 
       socket.on('server2web_editinc', (msg) => {
         var editedinc = JSON.parse(msg.editedincident)
+        var lastname = editedinc[0].lastname;
+        if (editedinc[0].firstname != "" && editedinc[0].lastname == "None") {
+          lastname = "";
+        }
 
         for (var i = 0; i < incidenttbody.rows.length; i++) {
           var cells = incidenttbody.rows[i].cells;
           if (editedinc[0].id == cells[0].innerHTML) {
-            cells[2].innerHTML = editedinc[0].firstname + " " + editedinc[0].lastname;
+            cells[2].innerHTML = editedinc[0].firstname + " " + lastname;
             cells[3].innerHTML = editedinc[0].type;
             cells[7].innerHTML = editedinc[0].userfirstname + " " + editedinc[0].userlastname;
             cells[8].innerHTML = editedinc[0].description;
+            cells[10].innerHTML = editedinc[0].phone;
           }
           if (editedinc[0].licenseplate == cells[1].innerHTML) {
-            if (cells[2].innerHTML != editedinc[0].firstname + " " + editedinc[0].lastname) {
-              cells[2].innerHTML = editedinc[0].firstname + " " + editedinc[0].lastname;
+            if (cells[2].innerHTML != editedinc[0].firstname + " " + lastname) {
+              cells[2].innerHTML = editedinc[0].firstname + " " + lastname;
             }
           }
         }
@@ -1477,7 +1440,7 @@ That part is just for the form
         for (var i = 0; i < cartbody.rows.length; i++) {
           var cells = cartbody.rows[i].cells;
           if (editedinc[0].carid == cells[0].innerHTML) {
-            cells[2].innerHTML = editedinc[0].firstname + " " + editedinc[0].lastname;
+            cells[2].innerHTML = editedinc[0].firstname + " " + lastname;
             cells[3].innerHTML = editedinc[0].phone;
             break
           }
@@ -1502,17 +1465,21 @@ That part is just for the form
       socket.on('server2web_editcar', (msg) => {
         var check = false;
         var oldlicense = ""
+        var lastname = msg.lastname;
+        if (msg.firstname != "" && msg.lastname == "None") {
+          lastname = "";
+        }
 
         for (var i = 0; i < cartbody.rows.length; i++) {
           var cells = cartbody.rows[i].cells;
           if (msg.id == cells[0].innerHTML) {
 
-            if (cells[1].innerHTML == msg.license && cells[2].innerHTML == msg.firstname + " " + msg.lastname) {
+            if (cells[1].innerHTML == msg.license && cells[2].innerHTML == msg.firstname + " " + lastname) {
               check = true;
             }
             oldlicense = cells[1].innerHTML;
             cells[1].innerHTML = msg.license;
-            cells[2].innerHTML = msg.firstname + " " + msg.lastname;
+            cells[2].innerHTML = msg.firstname + " " + lastname;
             cells[3].innerHTML = msg.phone;
             break
           }
@@ -1522,7 +1489,8 @@ That part is just for the form
             var cells = incidenttbody.rows[i].cells;
             if (oldlicense == cells[1].innerHTML) {
               cells[1].innerHTML = msg.license;
-              cells[2].innerHTML = msg.firstname + " " + msg.lastname;
+              cells[2].innerHTML = msg.firstname + " " + lastname;
+              cells[10].innerHTML = msg.phone;
             }
           }
         }
@@ -1530,10 +1498,14 @@ That part is just for the form
       socket.on('server2web_addinc', (msg) => {
         var lastincident = JSON.parse(msg.lastincident);
         var checkcar = false;
+        var lastname = lastincident[0].lastname;
+        if (lastincident[0].firstname != "" && lastincident[0].lastname == "None") {
+          lastname = "";
+        }
 
         incidenttbody.insertRow(-1).innerHTML += `<td id="idinc" class="incidentid">${lastincident[0].id}</td>
                         <td id="licenseinc" class="licenseplate">${lastincident[0].licenseplate}</td>
-                        <td id="customernameinc" class="customername">${lastincident[0].firstname}<span> </span>${lastincident[0].lastname}</td>
+                        <td id="customernameinc" class="customername">${lastincident[0].firstname}<span> </span>${lastname}</td>
                         <td id="typeinc" class="type">${lastincident[0].type}</td>
                         <td id="starttimeinc" class="starttime">${lastincident[0].starttime}</td>
                         <td id="endtimeinc" class="endtime">${lastincident[0].endtime}</td>
@@ -1547,7 +1519,7 @@ That part is just for the form
         for (var i = 0; i < incidenttbody.rows.length; i++) {
           var cells = incidenttbody.rows[i].cells;
           if (lastincident[0].licenseplate == cells[1].innerHTML) {
-            cells[2].innerHTML = lastincident[0].firstname + " " + lastincident[0].lastname;
+            cells[2].innerHTML = lastincident[0].firstname + " " + lastname;
             cells[10].innerHTML = lastincident[0].phone;
           }
         }
@@ -1555,17 +1527,16 @@ That part is just for the form
         for (var i = 0; i < cartbody.rows.length; i++) {
           var cells = cartbody.rows[i].cells;
           if (lastincident[0].licenseplate == cells[1].innerHTML) {
-            cells[2].innerHTML = lastincident[0].firstname + " " + lastincident[0].lastname;
+            cells[2].innerHTML = lastincident[0].firstname + " " + lastname;
             cells[3].innerHTML = lastincident[0].phone;
             checkcar = true
-            console.log(checkcar)
             break
           }
         }
         if (checkcar == false) {
           cartbody.insertRow(-1).innerHTML += `<td id="idcar">${lastincident[0].carid}</td>
                         <td id="licensecar">${lastincident[0].licenseplate}</td>
-                        <td id="customernamecar">${lastincident[0].firstname}<span> </span>${lastincident[0].lastname}</td>
+                        <td id="customernamecar">${lastincident[0].firstname}<span> </span>${lastname}</td>
                         <td id="phonecar">${lastincident[0].phone}</td>
                         <td id="lastvisitedcar">None</td>`;
         }
@@ -1575,13 +1546,12 @@ That part is just for the form
 
             var lice = $(this).parents("tr").find(".licenseplate").text();
             var cust = $(this).parents("tr").find(".customername").text();
-            var fname = cust.split(" ")[0];
-            var lname = cust.split(" ")[1];
             var type = $(this).parents("tr").find(".type").text();
             var star = $(this).parents("tr").find(".starttime").text();
             var end = $(this).parents("tr").find(".endtime").text();
             var stat = $(this).parents("tr").find(".status").text();
             var desc = $(this).parents("tr").find(".description").text();
+            var phon = $(this).parents("tr").find(".phone").text();
 
 
             //assign to value for input box inside modal
@@ -1591,11 +1561,12 @@ That part is just for the form
             $("#end").val(end);
             $("#stat").val(stat);
             $("#desc").val(desc);
+            $("#cust").val(cust);
 
-            if (lname == "None") {
-              $("#cust").val(fname + " ");
+            if (phone == "None") {
+              $("#phon").val("");
             } else {
-              $("#cust").val(cust);
+              $("#phon").val(phon);
             }
 
             //open modal
@@ -1603,11 +1574,10 @@ That part is just for the form
           });
         });
       });
-      var licenseplatehis = $(this).parent
 
       var janelaPopUp = new Object();
       janelaPopUp.abre = function (id, classes, titulo, corpo, functionCancelar, functionEnviar, textoCancelar, textoEnviar) {
-        var cancelar = (textoCancelar !== undefined) ? textoCancelar : 'Cancel';
+        var cancelar = (textoCancelar !== undefined) ? textoCancelar : 'Close';
         var enviar = (textoEnviar !== undefined) ? textoEnviar : 'Send';
         classes += ' ';
         var classArray = classes.split(' ');
@@ -1617,17 +1587,14 @@ That part is just for the form
         $.each(classArray, function (index, value) {
           switch (value) {
             case 'alert': classBot += ' alert '; break;
-            case 'blue': classesFundo += this + ' ';
             case 'green': classesFundo += this + ' ';
             case 'red': classesFundo += this + ' ';
-            case 'white': classesFundo += this + ' ';
             case 'orange': classesFundo += this + ' ';
-            case 'purple': classesFundo += this + ' ';
             default: classes += this + ' '; break;
           }
         });
         var popFundo = '<div id="popFundo_' + id + '" class="popUpFundo ' + classesFundo + '"></div>'
-        var janela = '<div id="' + id + '" class="popUp ' + classes + '"><h1>' + "NOTE" + "</h1><div style=" + 'width:90%;height:100%;margin:15px 0px 0px 15px;text-align:center;position:fixed;' + "><span> <div class=" + 'row' + "> <div class=" + 'col-sm-4 form-group' + " style=" + 'text-align:right;' + "> <label for =" + 'Licenseplateviewinc' + ">License Plate: </label></div>" + "<div class =" + 'col-sm-8 form-group' + " style=" + 'text-align:left;' + "> <p style=" + 'margin:0px;' + ">พษ2556</p></div></div>" + "<div class=" + 'row' + "> <div class=" + 'col-sm-4 form-group' + " style=" + 'text-align:right;' + "> <label for=" + 'cusnameviewinc' + ">Customer Name:</label>" + "</div> <div class=" + 'col-sm-8 form-group' + " style=" + 'text-align:left;' + "> <p style=" + 'margin:0px;' + ">ลลิษา มโนบาล</p></div></div>" + "<div class=" + 'row' + "> <div class=" + 'col-sm-4 form-group' + " style=" + 'text-align:right;' + " > <label for=" + 'descriptionviewinc' + ">Description:</label></div> <div class=" + 'col-sm-8 form-group' + " style=" + 'text-align:left; bottom-border:none;' + "> <p>หักค่าน้ำมันจาก YG Entertainment</p></span></div></div>" + "<span><div style=" + 'margin-top:25px;' + "><button class='puCancelar " + classBot + "' id='" + id + "_cancelar' data-parent=" + id + ">" + cancelar + "</button><button class='puEnviar " + classBot + "' data-parent=" + id + " id='" + id + "_enviar'>" + enviar + "</button></div></span></div>";
+        var janela = '<div id="' + id + '" class="popUp ' + classes + '"><h1>' + titulo + "</h1><div><span>" + corpo + "</span></div><button class='puCancelar " + classBot + "' id='" + id + "_cancelar' data-parent=" + id + ">" + cancelar + "</button><button class='puEnviar " + classBot + "' data-parent=" + id + " id='" + id + "_enviar'>" + enviar + "</button></div>";
         $("window, body").css('overflow', 'hidden');
 
         $("body").append(popFundo);
@@ -1652,7 +1619,6 @@ That part is just for the form
             janelaPopUp.fecha(id);
           }
         });
-
       };
       janelaPopUp.fecha = function (id) {
         if (id !== undefined) {
@@ -1665,8 +1631,6 @@ That part is just for the form
               $("window, body").css('overflow', 'auto');
             }
           });
-
-
         }
         else {
           $(".popUp").removeClass("popUpEntrada").addClass("popUpSaida");
@@ -1676,17 +1640,11 @@ That part is just for the form
             $(".popUp").remove();
             $("window, body").css('overflow', 'auto');
           });
-
-
         }
       }
-
-
-      $(function () {
-        $(".l1").click(function () {
-          var myText = $("#myText").val();
-          janelaPopUp.abre("asdf", $("#size").val() + " " + $(this).html() + ' ' + $("#mode").val(), $("#title").val(), myText)
-        })
+      $(".alertbutton").on("click", function () {
+        var myText = $("#myText").val();
+        janelaPopUp.abre("asdf", $("#size").val() + " " + $(this).html() + ' ' + $("#mode").val(), $("#title").val(), myText)
       });
     });
 
