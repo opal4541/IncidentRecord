@@ -1266,19 +1266,19 @@
         for (var i = 0; i < incidenttbody.rows.length; i++) {
           var cells = incidenttbody.rows[i].cells;
           if (msg.enterlicense == cells[1].innerHTML && cells[6].innerHTML == "Active" && cells[3].innerHTML == "Blacklist") {
-            janelaPopUp.abre("example", 'm red alert', "BLACKLIST", msg.enterlicense);
+            janelaPopUp.abre("example", 'm red alert', "BLACKLIST", cells[1].innerHTML);
             document.getElementById('red').play();
             alert = true;
             break;
           }
           if (msg.enterlicense == cells[1].innerHTML && cells[6].innerHTML == "Active" && cells[3].innerHTML == "VIP") {
-            janelaPopUp.abre("example", 'm orange alert', "VIP", msg.enterlicense);
+            janelaPopUp.abre("example", 'm orange alert', "VIP", cells[1].innerHTML);
             document.getElementById('yellow').play();
             alert = true;
             break;
           }
           if (msg.enterlicense == cells[1].innerHTML && cells[6].innerHTML == "Active" && cells[3].innerHTML == "Note") {
-            janelaPopUp.abre("example", 'm green alert', "NOTE", msg.enterlicense);
+            janelaPopUp.abre("example", 'm green alert', "NOTE", cells[1].innerHTML);
             document.getElementById('green').play();
             alert = true;
             break;
