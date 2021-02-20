@@ -275,8 +275,8 @@ def addActivity():
     addactivity = cursor.fetchone()
 
     socketio.emit('server2web_addact', {
-        'id': adactivity[0],
-        'activity': str(adactivity[1])
+        'id': addactivity[0],
+        'activity': str(addactivity[1])
     },
                   namespace='/web')
 

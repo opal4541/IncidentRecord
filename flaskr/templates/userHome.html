@@ -1226,6 +1226,7 @@
       var incidenttbody = document.getElementById("incidenttbody");
       var cartbody = document.getElementById("cartbody");
       var alert = false;
+      var alertid = 0
 
       var socket = io.connect('http://127.0.0.1:5000/web', {
         reconnection: false
@@ -1259,31 +1260,39 @@
         checkcar = false;
 
         if (alert == true) {
-          janelaPopUp.fecha();
+          janelaPopUp.fecha(alertid - 1);
           alert = false;
         }
 
         for (var i = 0; i < incidenttbody.rows.length; i++) {
           var cells = incidenttbody.rows[i].cells;
           if (msg.enterlicense == cells[1].innerHTML && cells[6].innerHTML == "Active" && cells[3].innerHTML == "Blacklist") {
-            janelaPopUp.abre("example", 'm red alert', "BLACKLIST", cells[1].innerHTML);
+            var text = `<div><div class="col-sm-4" style="text-align: right;">License Plate:</div><div class="col-sm-8" style="text-align: left;">${cells[1].innerHTML}</div></div><div><div class="col-sm-4" style="text-align: right;">Name:</div><div class="col-sm-8" style="text-align: left;">${cells[2].innerHTML}</div></div><div><div class="col-sm-4" style="text-align: right;">Description:</div><div class="col-sm-8" style="text-align: left; word-break: break-all">${cells[8].innerHTML}</div></div>`
+
+            janelaPopUp.abre(alertid, 'm red alert', "BLACKLIST", text);
             document.getElementById('red').play();
             alert = true;
             break;
           }
           if (msg.enterlicense == cells[1].innerHTML && cells[6].innerHTML == "Active" && cells[3].innerHTML == "VIP") {
-            janelaPopUp.abre("example", 'm orange alert', "VIP", cells[1].innerHTML);
+            var text = `<div><div class="col-sm-4" style="text-align: right;">License Plate:</div><div class="col-sm-8" style="text-align: left;">${cells[1].innerHTML}</div></div><div><div class="col-sm-4" style="text-align: right;">Name:</div><div class="col-sm-8" style="text-align: left;">${cells[2].innerHTML}</div></div><div><div class="col-sm-4" style="text-align: right;">Description:</div><div class="col-sm-8" style="text-align: left; word-break: break-all">${cells[8].innerHTML}</div></div>`
+
+            janelaPopUp.abre(alertid, 'm orange alert', "VIP", text);
             document.getElementById('yellow').play();
             alert = true;
             break;
           }
           if (msg.enterlicense == cells[1].innerHTML && cells[6].innerHTML == "Active" && cells[3].innerHTML == "Note") {
-            janelaPopUp.abre("example", 'm green alert', "NOTE", cells[1].innerHTML);
+            var text = `<div><div class="col-sm-4" style="text-align: right;">License Plate:</div><div class="col-sm-8" style="text-align: left;">${cells[1].innerHTML}</div></div><div><div class="col-sm-4" style="text-align: right;">Name:</div><div class="col-sm-8" style="text-align: left;">${cells[2].innerHTML}</div></div><div><div class="col-sm-4" style="text-align: right;">Description:</div><div class="col-sm-8" style="text-align: left; word-break: break-all">${cells[8].innerHTML}</div></div>`
+
+            janelaPopUp.abre(alertid, 'm green alert', "NOTE", text);
             document.getElementById('green').play();
             alert = true;
             break;
           }
         }
+        alertid += 1;
+
 
         historytbody.insertRow(0).innerHTML += `<td id="idhis">${lastenter[0].id}</td>
                                         <td id="licensehis">${lastenter[0].licenseplate}</td>
@@ -1431,9 +1440,8 @@
             cells[10].innerHTML = editedinc[0].phone;
           }
           if (editedinc[0].licenseplate == cells[1].innerHTML) {
-            if (cells[2].innerHTML != editedinc[0].firstname + " " + lastname) {
-              cells[2].innerHTML = editedinc[0].firstname + " " + lastname;
-            }
+            cells[2].innerHTML = editedinc[0].firstname + " " + lastname;
+            cells[10].innerHTML = editedinc[0].phone
           }
         }
 
@@ -1495,6 +1503,7 @@
           }
         }
       });
+
       socket.on('server2web_addinc', (msg) => {
         var lastincident = JSON.parse(msg.lastincident);
         var checkcar = false;
@@ -1607,7 +1616,6 @@
         $("#" + id + '_cancelar').on("click", function () {
           if ((functionCancelar !== undefined) && (functionCancelar !== '')) {
             functionCancelar();
-
           } else {
             janelaPopUp.fecha(id);
           }
@@ -1642,6 +1650,7 @@
           });
         }
       }
+
       $(".alertbutton").on("click", function () {
         var myText = $("#myText").val();
         janelaPopUp.abre("asdf", $("#size").val() + " " + $(this).html() + ' ' + $("#mode").val(), $("#title").val(), myText)
