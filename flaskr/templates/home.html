@@ -432,15 +432,16 @@
       -moz-box-sizing: border-box;
       display: none;
       position: fixed;
-      top: 40%;
+      top: 50%;
       left: 50%;
       padding: 0;
       font-size: 14px;
-      font-family: 'PT Sans', sans-serif;
+      font-family: Montserrat, sans-serif;
       color: #fff;
       border-style: none;
       z-index: 999;
-      overflow: hidden;
+      overflow: auto;
+      border-radius: 10px;
     }
 
     .popUp button:focus {
@@ -1589,24 +1590,21 @@
         for (var i = 0; i < incidenttbody.rows.length; i++) {
           var cells = incidenttbody.rows[i].cells;
           if (msg.enterlicense == cells[1].innerHTML && cells[6].innerHTML == "Active" && cells[3].innerHTML == "Blacklist") {
-            var text = `<div><div class="col-sm-4" style="text-align: right;">License Plate:</div><div class="col-sm-8" style="text-align: left;">${cells[1].innerHTML}</div></div><div><div class="col-sm-4" style="text-align: right;">Name:</div><div class="col-sm-8" style="text-align: left;">${cells[2].innerHTML}</div></div><div><div class="col-sm-4" style="text-align: right;">Description:</div><div class="col-sm-8" style="text-align: left; word-break: break-all">${cells[8].innerHTML}</div></div>`
-
+            var text = `<div><div><div class="col-xs-4" style="text-align: left; font-size: 10px">License Plate:</div><div class="col-xs-8" style="text-align: left;">${cells[1].innerHTML}</div></div><div><div class="col-xs-4" style="text-align: left; font-size: 10px">Name:</div><div class="col-xs-8" style="text-align: left;">${cells[2].innerHTML}</div></div><div><div class="col-xs-4" style="text-align: left; font-size: 10px">Description:</div><div class="col-xs-8" style="text-align: left; word-break: break-all;">${cells[8].innerHTML}</div></div></div>`
             janelaPopUp.abre(alertid, 'm red alert', "BLACKLIST", text);
             document.getElementById('red').play();
             alert = true;
             break;
           }
           if (msg.enterlicense == cells[1].innerHTML && cells[6].innerHTML == "Active" && cells[3].innerHTML == "VIP") {
-            var text = `<div><div class="col-sm-4" style="text-align: right;">License Plate:</div><div class="col-sm-8" style="text-align: left;">${cells[1].innerHTML}</div></div><div><div class="col-sm-4" style="text-align: right;">Name:</div><div class="col-sm-8" style="text-align: left;">${cells[2].innerHTML}</div></div><div><div class="col-sm-4" style="text-align: right;">Description:</div><div class="col-sm-8" style="text-align: left; word-break: break-all">${cells[8].innerHTML}</div></div>`
-
+            var text = `<div><div><div class="col-xs-4" style="text-align: left; font-size: 10px">License Plate:</div><div class="col-xs-8" style="text-align: left;">${cells[1].innerHTML}</div></div><div><div class="col-xs-4" style="text-align: left; font-size: 10px">Name:</div><div class="col-xs-8" style="text-align: left;">${cells[2].innerHTML}</div></div><div><div class="col-xs-4" style="text-align: left; font-size: 10px">Description:</div><div class="col-xs-8" style="text-align: left; word-break: break-all;">${cells[8].innerHTML}</div></div></div>`
             janelaPopUp.abre(alertid, 'm orange alert', "VIP", text);
             document.getElementById('yellow').play();
             alert = true;
             break;
           }
           if (msg.enterlicense == cells[1].innerHTML && cells[6].innerHTML == "Active" && cells[3].innerHTML == "Note") {
-            var text = `<div><div class="col-sm-4" style="text-align: right;">License Plate:</div><div class="col-sm-8" style="text-align: left;">${cells[1].innerHTML}</div></div><div><div class="col-sm-4" style="text-align: right;">Name:</div><div class="col-sm-8" style="text-align: left;">${cells[2].innerHTML}</div></div><div><div class="col-sm-4" style="text-align: right;">Description:</div><div class="col-sm-8" style="text-align: left; word-break: break-all">${cells[8].innerHTML}</div></div>`
-
+            var text = `<div><div><div class="col-xs-4" style="text-align: left; font-size: 10px">License Plate:</div><div class="col-xs-8" style="text-align: left;">${cells[1].innerHTML}</div></div><div><div class="col-xs-4" style="text-align: left; font-size: 10px">Name:</div><div class="col-xs-8" style="text-align: left;">${cells[2].innerHTML}</div></div><div><div class="col-xs-4" style="text-align: left; font-size: 10px">Description:</div><div class="col-xs-8" style="text-align: left; word-break: break-all;">${cells[8].innerHTML}</div></div></div>`
             janelaPopUp.abre(alertid, 'm green alert', "NOTE", text);
             document.getElementById('green').play();
             alert = true;
