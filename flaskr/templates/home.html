@@ -15,6 +15,8 @@
   <link href="{{url_for('static', filename='style.css')}}" rel="stylesheet">
   <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.1/socket.io.js">
   </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css">
 
   <style>
     body {
@@ -1451,9 +1453,48 @@
         //open modal
         $("#editcar").modal();
       });
-
+      $("#confirmaddact").click(function () {
+        $('#addactivity').modal('toggle');
+        swal("Success", "Add activity success", "success")
+      });
+      $("#confirmaddincfromhis").click(function () {
+        $('#addincidentfromhis').modal('toggle');
+        swal("Success", "Add incident success", "success")
+      });
+      $("#confirmeditinc").click(function () {
+        $('#editincident').modal('toggle');
+        swal("Success", "Edit incident information success", "success")
+      });
+      $("#confirmeditcar").click(function () {
+        $('#editcar').modal('toggle');
+        swal("Success", "Edit car information success", "success")
+      });
+      $("#confirmaddinc").click(function () {
+        $('#addincident').modal('toggle');
+        swal("Success", "Add incident success", "success")
+      });
     });
 
+    function archiveFunction() {
+      event.preventDefault(); // prevent form submit
+      var form = event.target.form; // storing the form
+      swal({
+        title: "Are you sure?",
+        text: "You will deactivate it, you won't be able to reactivate it again.",
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#DD6B55",
+        confirmButtonText: "Confirm",
+        cancelButtonText: "Cancel",
+        closeOnConfirm: true,
+        closeOnCancel: true
+      },
+        function (isConfirm) {
+          if (isConfirm) {
+            form.submit();          // submitting the form when user press yes
+          }
+        });
+    }
 
     var historyArray = JSON.parse({{ historyData | tojson | safe }})
 
@@ -1508,7 +1549,7 @@
                         <td>
                           <form action="{{url_for('deactivate')}}" method="post">
                             <input type="hidden" id="inciddeact" name="inciddeact" value="${data[i].id}">
-                            <button id="deactivatebutton" type="submit" class="btn button2">Deactivate</button>
+                            <button id="deactivatebutton" type="submit" class="btn button2" onclick="archiveFunction()">Deactivate</button>
                           </form>
                         </td>`;
       }
@@ -1774,7 +1815,7 @@
                         <td>
                           <form action="{{url_for('deactivate')}}" method="post">
                             <input type="hidden" id="inciddeact" name="inciddeact" value="${lastincident[0].id}">
-                            <button id="deactivatebutton" type="submit" class="btn button2">Deactivate</button>
+                            <button id="deactivatebutton" type="submit" class="btn button2"  onclick="archiveFunction()">Deactivate</button>
                           </form>
                         </td>`;
 
@@ -1863,12 +1904,14 @@
         var id = msg.id;
         var endtime = msg.endtime;
         var status = msg.status;
+        var user = msg.user;
 
         for (var i = 0; i < incidenttbody.rows.length; i++) {
           var cells = incidenttbody.rows[i].cells;
           if (id == cells[0].innerHTML) {
             cells[5].innerHTML = endtime;
             cells[6].innerHTML = status;
+            cells[7].innerHTML = user;
             break
           }
         }
@@ -1934,7 +1977,7 @@
                         <td>
                           <form action="{{url_for('deactivate')}}" method="post">
                             <input type="hidden" id="inciddeact" name="inciddeact" value="${lastincident[0].id}">
-                            <button id="deactivatebutton" type="submit" class="btn button2">Deactivate</button>
+                            <button id="deactivatebutton" type="submit" class="btn button2" onclick="archiveFunction()">Deactivate</button>
                           </form>
                         </td>`;
 
@@ -2093,6 +2136,8 @@
         var myText = $("#myText").val();
         janelaPopUp.abre("asdf", $("#size").val() + " " + $(this).html() + ' ' + $("#mode").val(), $("#title").val(), myText)
       });
+
+
     });
   </script>
 

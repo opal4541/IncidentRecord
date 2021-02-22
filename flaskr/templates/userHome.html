@@ -956,44 +956,7 @@
     </div>
   </div>
 
-  <div class="modal fade" id="iewincident" role="dialog">
-    <div class="modal-dialog">
-
-      <!-- Modal content-->
-      <div class="modal-content">
-        <div class="modal-header alert-success">
-          <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h2 class="modal-title"><strong>NOTE!</strong></h2>
-        </div>
-        <div class="modal-body">
-          <div class="row">
-            <div class="col-sm-4 form-group">
-              <label for="licenseplateviewinc">License Plate:</label>
-            </div>
-            <div class="col-sm-8 form-group">
-              <p>พษ2556</p>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-sm-4 form-group">
-              <label for="cusnameviewinc">Customer Name:</label>
-            </div>
-            <div class="col-sm-8 form-group">
-              <p>ลลิษา มโนบา</p>
-            </div>
-          </div>
-          <div class=" row">
-            <div class="col-sm-4 form-group">
-              <label for="descriptionviewinc">Description:</label>
-            </div>
-            <div class="col-sm-8 form-group">
-              <p>หักค่าน้ำมันจาก YG Entertainment</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+  
   <audio id="red" preload="auto">
     <source src="static/red.mp3">
   </audio>
@@ -1457,12 +1420,14 @@
         var id = msg.id;
         var endtime = msg.endtime;
         var status = msg.status;
+        var user = msg.user;
 
         for (var i = 0; i < incidenttbody.rows.length; i++) {
           var cells = incidenttbody.rows[i].cells;
           if (id == cells[0].innerHTML) {
             cells[5].innerHTML = endtime;
             cells[6].innerHTML = status;
+            cells[7].innerHTML = user;
             break
           }
         }
