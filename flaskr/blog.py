@@ -732,7 +732,7 @@ def deleteuser():
     cursor.execute("DELETE From [User] WHERE UserID = ?", (userid))
     connection.commit()
 
-    return ('', 204)
+    return redirect(url_for('home'))
 
 if __name__ == '__main__':
     socketio.run(app=app, host='127.0.0.1', port=5000)
