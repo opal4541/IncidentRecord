@@ -92,8 +92,8 @@ def handle_cv_message(message):
     exLicense = message['exitlicense']
     exTime = message['exittime']
     lastExit = cursor.execute(
-        'SELECT TOP 1 H.HistoryID, H.ExitTimestamp FROM History H JOIN Car C ON H.CarID = C.CarID WHERE H.ExitTimestamp IS NOT NULL AND C.LicensePlate = ? ORDER BY H.HistoryID DESC', exLicense
-    )
+        'SELECT TOP 1 H.HistoryID, H.ExitTimestamp FROM History H JOIN Car C ON H.CarID = C.CarID WHERE H.ExitTimestamp IS NOT NULL AND C.LicensePlate = ? ORDER BY H.HistoryID DESC',
+        exLicense)
     lastExit = cursor.fetchone()
 
     lastexit_list = []
@@ -280,7 +280,7 @@ def addActivity():
     },
                   namespace='/web')
 
-    return redirect(url_for('home'))
+    return ('', 204)
 
 
 @app.route('/addincidentfromhistory', methods=['POST'])
@@ -320,8 +320,8 @@ def addIncidentFromHistory():
     connection.commit()
 
     incident = cursor.execute(
-        'SELECT TOP 1 I.IncidentID, C.LicensePlate, CUS.FirstName, CUS.LastName, I.Type, I.StartTimestamp, I.EndTimestamp, I.Status, U.FirstName, U.LastName, I.Description, CUS.Phone, C.CarID FROM Incident I JOIN Car C ON I.CarID = C.CarID JOIN Customer CUS ON C.CarID = CUS.CarID JOIN [User] U ON U.UserID = I.UserID WHERE C.LicensePlate = ? ORDER BY IncidentID DESC', licenseplate
-    )
+        'SELECT TOP 1 I.IncidentID, C.LicensePlate, CUS.FirstName, CUS.LastName, I.Type, I.StartTimestamp, I.EndTimestamp, I.Status, U.FirstName, U.LastName, I.Description, CUS.Phone, C.CarID FROM Incident I JOIN Car C ON I.CarID = C.CarID JOIN Customer CUS ON C.CarID = CUS.CarID JOIN [User] U ON U.UserID = I.UserID WHERE C.LicensePlate = ? ORDER BY IncidentID DESC',
+        licenseplate)
     incident = cursor.fetchone()
 
     incident_list = []
@@ -347,7 +347,7 @@ def addIncidentFromHistory():
     socketio.emit('server2web_addincfromhis', {'lastincident': incident_json},
                   namespace='/web')
 
-    return redirect(url_for('home'))
+    return ('', 204)
 
 
 @app.route('/editincident', methods=['POST'])
@@ -411,7 +411,7 @@ def editIncident():
                   {'editedincident': editedincident_json},
                   namespace='/web')
 
-    return redirect(url_for('home'))
+    return ('', 204)
 
 
 @app.route('/deactivate', methods=['POST'])
@@ -419,24 +419,37 @@ def deactivate():
     incidentId = request.form['inciddeact']
     time = datetime.datetime.now()
     time = time.strftime("%Y-%m-%d %H:%M:%S")
+
+    userid = cursor.execute(
+        "SELECT UserID From [User] WHERE [User].FirstName = ? AND [User].LastName = ?",
+        (session['firstname'], session['lastname']))
+    userid = cursor.fetchone()
+
+    status = cursor.execute("SELECT Status From Incident WHERE IncidentID = ?",
+                            incidentId)
+    status = cursor.fetchone()
+    if status[0] != "Active":
+        return ('', 204)
+
     cursor.execute(
-        "UPDATE Incident SET EndTimestamp = ?, Status = ? WHERE IncidentID = ?",
-        (time, "Inactive", incidentId))
+        "UPDATE Incident SET UserID = ?, EndTimestamp = ?, Status = ? WHERE IncidentID = ?",
+        (userid[0], time, "Inactive", incidentId))
     connection.commit()
 
     deactinc = cursor.execute(
-        'SELECT I.IncidentID, I.EndTimestamp, I.Status FROM Incident I WHERE IncidentID = ?',
+        'SELECT I.IncidentID, I.EndTimestamp, I.Status, U.FirstName, U.LastName FROM Incident I JOIN [User] U ON I.UserID = U.UserID WHERE IncidentID = ?',
         incidentId)
     deactinc = cursor.fetchone()
 
     socketio.emit('server2web_deact', {
         'id': deactinc[0],
         'endtime': str(deactinc[1]),
-        'status': str(deactinc[2])
+        'status': str(deactinc[2]),
+        'user': str(deactinc[3] + " " + deactinc[4])
     },
                   namespace='/web')
 
-    return redirect(url_for('home'))
+    return ('', 204)
 
 
 @app.route('/addincident', methods=['POST'])
@@ -474,8 +487,8 @@ def addIncident():
         connection.commit()
 
         incident = cursor.execute(
-        'SELECT TOP 1 I.IncidentID, C.LicensePlate, CUS.FirstName, CUS.LastName, I.Type, I.StartTimestamp, I.EndTimestamp, I.Status, U.FirstName, U.LastName, I.Description, CUS.Phone, C.CarID FROM Incident I JOIN Car C ON I.CarID = C.CarID JOIN Customer CUS ON C.CarID = CUS.CarID JOIN [User] U ON U.UserID = I.UserID WHERE C.LicensePlate = ? ORDER BY IncidentID DESC', licenseplate
-        )
+            'SELECT TOP 1 I.IncidentID, C.LicensePlate, CUS.FirstName, CUS.LastName, I.Type, I.StartTimestamp, I.EndTimestamp, I.Status, U.FirstName, U.LastName, I.Description, CUS.Phone, C.CarID FROM Incident I JOIN Car C ON I.CarID = C.CarID JOIN Customer CUS ON C.CarID = CUS.CarID JOIN [User] U ON U.UserID = I.UserID WHERE C.LicensePlate = ? ORDER BY IncidentID DESC',
+            licenseplate)
         incident = cursor.fetchone()
 
         incident_list = []
@@ -499,9 +512,9 @@ def addIncident():
         incident_json = json.dumps(incident_list)
 
         socketio.emit('server2web_addinc', {'lastincident': incident_json},
-                    namespace='/web')
+                      namespace='/web')
 
-        return redirect(url_for('home'))
+        return ('', 204)
 
     cursor.execute('INSERT INTO Car(LicensePlate) VALUES (?)', (licenseplate))
     connection.commit()
@@ -548,7 +561,7 @@ def addIncident():
     socketio.emit('server2web_addinc', {'lastincident': incident_json},
                   namespace='/web')
 
-    return redirect(url_for('home'))
+    return ('', 204)
 
 
 @app.route('/editcar', methods=['POST'])
@@ -570,9 +583,10 @@ def editCar():
     cursor.execute('UPDATE Car SET LicensePlate = ? WHERE CarID = ?',
                    (licenseplate, carId))
     connection.commit()
-    
+
     editedcar = cursor.execute(
-        'SELECT C.CarID, C.LicensePlate, CUS.FirstName, CUS.LastName, CUS.Phone FROM Car C JOIN Customer CUS ON C.CarID = CUS.CarID WHERE C.carID = ?',carId)
+        'SELECT C.CarID, C.LicensePlate, CUS.FirstName, CUS.LastName, CUS.Phone FROM Car C JOIN Customer CUS ON C.CarID = CUS.CarID WHERE C.carID = ?',
+        carId)
     editedcar = cursor.fetchone()
 
     socketio.emit('server2web_editcar', {
@@ -584,7 +598,7 @@ def editCar():
     },
                   namespace='/web')
 
-    return redirect(url_for('home'))
+    return ('', 204)
 
 
 if __name__ == '__main__':

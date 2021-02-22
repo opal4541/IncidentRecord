@@ -15,6 +15,9 @@
   <link href="{{url_for('static', filename='style.css')}}" rel="stylesheet">
   <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.1/socket.io.js">
   </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+  <link rel="stylesheet" type="text/css"
+    href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css">
 
   <style>
     body {
@@ -432,15 +435,16 @@
       -moz-box-sizing: border-box;
       display: none;
       position: fixed;
-      top: 40%;
+      top: 50%;
       left: 50%;
       padding: 0;
       font-size: 14px;
-      font-family: 'PT Sans', sans-serif;
+      font-family: Montserrat, sans-serif;
       color: #fff;
       border-style: none;
       z-index: 999;
-      overflow: hidden;
+      overflow: auto;
+      border-radius: 10px;
     }
 
     .popUp button:focus {
@@ -846,7 +850,7 @@
       </div>
     </div>
     <div class="slideanim" style="text-align: center;">
-      <button class="btn button1" style="margin: 30px auto;" data-toggle="modal" data-target="#addincident">Add
+      <button id="addincbutton" class="btn button1" style="margin: 30px auto;" data-target="#addincident">Add
         Incident</button>
     </div>
   </div>
@@ -937,16 +941,21 @@
           <button type="button" class="close" data-dismiss="modal">&times;</button>
           <h2 class="modal-title">Add Incident</h2>
         </div>
-        <form action="{{url_for('addIncidentFromHistory')}}" method="post">
+        <form name="addincfromhisform" action="{{url_for('addIncidentFromHistory')}}" method="post"
+          onsubmit="return validateaddincfromhisForm()">
           <div class="modal-body">
             <div class="row">
               <div class="col-sm-4 form-group">
                 <label for="licenseplateaddincfromhis">License Plate:</label>
               </div>
               <div class="col-sm-8 form-group">
-                <input type="hidden" id="incidaddinc" name="incidaddinc" value="">
+                <input type="hidden" id="incidaddinc" name="incidaddinc">
                 <input class="form-control" id="licenseplateaddincfromhis" name="licenseplateaddincfromhis"
                   placeholder="License Plate" type="text" readonly>
+                <p id="alertaddincfromhis"
+                  style="display:none; color: lightcoral; font-size: 10px; word-break: break-all;">
+                  This licenseplate is already registered in the incident record, please edit or deactivate the existing
+                  incident before adding the new incident.</p>
               </div>
             </div>
             <div class="row">
@@ -1018,7 +1027,8 @@
           <button type="button" class="close" data-dismiss="modal">&times;</button>
           <h2 class="modal-title">Add Incident</h2>
         </div>
-        <form action="{{url_for('addIncident')}}" method="post">
+        <form name="addincform" action="{{url_for('addIncident')}}" method="post"
+          onsubmit="return validateaddincForm()">
           <div class="modal-body">
             <div class="row">
               <div class="col-sm-4 form-group">
@@ -1027,6 +1037,9 @@
               <div class="col-sm-8 form-group">
                 <input class="form-control" id="licenseplateaddinc" name="licenseplateaddinc"
                   placeholder="License Plate" type="text" maxlength="10" required>
+                <p id="alertaddinc" style="display:none; color: lightcoral; font-size: 10px; word-break: break-all;">
+                  This licenseplate is already registered in the incident record, please edit or deactivate the existing
+                  incident before adding the new incident.</p>
               </div>
             </div>
             <div class="row">
@@ -1244,6 +1257,84 @@
   </footer>
 
   <script>
+
+    function validateaddincForm() {
+      var incidenttbody = document.getElementById("incidenttbody");
+      var license = document.forms["addincform"]["licenseplateaddinc"].value;
+      var type = document.forms["addincform"]["typeaddinc"].value;
+      var description = document.forms["addincform"]["descriptionaddinc"].value;
+      var alert = document.getElementById("alertaddinc");
+      var found = false;
+      for (var i = 0; i < incidenttbody.rows.length; i++) {
+        var cells = incidenttbody.rows[i].cells;
+        if (license == cells[1].innerHTML && cells[6].innerHTML == "Active") {
+          found = true
+        }
+      }
+      if (license != "" && type != "" && description != "") {
+        if (found == false) {
+          $('#addincident').modal('toggle');
+          swal("Success", "Add incident success", "success")
+          alert.style.display = "none";
+          return true;
+        } else {
+          alert.style.display = "block";
+          return false;
+        }
+      }
+      return false
+    }
+
+    function validateaddincfromhisForm() {
+      var incidenttbody = document.getElementById("incidenttbody");
+      var license = document.forms["addincfromhisform"]["licenseplateaddincfromhis"].value;
+      var type = document.forms["addincfromhisform"]["typeaddincfromhis"].value;
+      var description = document.forms["addincfromhisform"]["descriptionaddincfromhis"].value;
+      var alert = document.getElementById("alertaddincfromhis");
+      var found = false;
+      for (var i = 0; i < incidenttbody.rows.length; i++) {
+        var cells = incidenttbody.rows[i].cells;
+        if (license == cells[1].innerHTML && cells[6].innerHTML == "Active") {
+          found = true
+        }
+      }
+      if (license != "" && type != "" && description != "") {
+        if (found == false) {
+          $('#addincidentfromhis').modal('toggle');
+          swal("Success", "Add incident success", "success")
+          alert.style.display = "none";
+          return true;
+        } else {
+          alert.style.display = "block";
+          return false;
+        }
+      }
+      return false
+    }
+
+    function archiveFunction() {
+      event.preventDefault(); // prevent form submit
+      var form = event.target.form; // storing the form
+      swal({
+        title: "Are you sure?",
+        text: "You will deactivate it, you won't be able to reactivate it again.",
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#DD6B55",
+        confirmButtonText: "Confirm",
+        cancelButtonText: "Cancel",
+        closeOnConfirm: false,
+        closeOnCancel: true
+      },
+        function (isConfirm) {
+          if (isConfirm) {
+            form.submit();
+            swal("Deactivate!", "The incident has been deactivated.", "success");
+          }
+        });
+    }
+
+
     $(document).ready(function () {
       // Add smooth scrolling to all links in navbar + footer link
       $(".navbar a, footer a[href='#myPage']").on('click', function (event) {
@@ -1354,9 +1445,11 @@
         var lname = $(this).parents("tr").find("#lastnamehis").text();
         var phone = $(this).parents("tr").find("#phonehis").text();
 
+        var type = document.getElementsByName("typeaddincfromhis");
+
         $("#licenseplateaddincfromhis").val(lice);
         $("#cusfirstnameaddincfromhis").val(fname);
-
+        $("#descriptionaddincfromhis").val("");
 
         if (lname == "None") {
           $("#cuslastnameaddincfromhis").val("");
@@ -1424,6 +1517,18 @@
         $("#editincident").modal();
       });
 
+      $("#addincbutton").click(function () {
+        var type = document.getElementsByName("typeaddincfromhis");
+        $("#licenseplateaddinc").val("");
+        $("#cusfirstnameaddinc").val("");
+        $("#cuslastnameaddinc").val("");
+        $("#phoneaddinc").val("");
+        $("#descriptionaddinc").val("");
+
+        $("#addincident").modal();
+      });
+
+
       $(".editcarbutton").click(function () {
         //get data from table row
         var id = $(this).parents("tr").find("#idcar").text();
@@ -1450,9 +1555,19 @@
         //open modal
         $("#editcar").modal();
       });
-
+      $("#confirmaddact").click(function () {
+        $('#addactivity').modal('toggle');
+        swal("Success", "Add activity success", "success")
+      });
+      $("#confirmeditinc").click(function () {
+        $('#editincident').modal('toggle');
+        swal("Success", "Edit incident information success", "success")
+      });
+      $("#confirmeditcar").click(function () {
+        $('#editcar').modal('toggle');
+        swal("Success", "Edit car information success", "success")
+      });
     });
-
 
     var historyArray = JSON.parse({{ historyData | tojson | safe }})
 
@@ -1507,7 +1622,7 @@
                         <td>
                           <form action="{{url_for('deactivate')}}" method="post">
                             <input type="hidden" id="inciddeact" name="inciddeact" value="${data[i].id}">
-                            <button id="deactivatebutton" type="submit" class="btn button2">Deactivate</button>
+                            <button id="deactivatebutton" type="submit" class="btn button2" onclick="archiveFunction()">Deactivate</button>
                           </form>
                         </td>`;
       }
@@ -1589,24 +1704,21 @@
         for (var i = 0; i < incidenttbody.rows.length; i++) {
           var cells = incidenttbody.rows[i].cells;
           if (msg.enterlicense == cells[1].innerHTML && cells[6].innerHTML == "Active" && cells[3].innerHTML == "Blacklist") {
-            var text = `<div><div class="col-sm-4" style="text-align: right;">License Plate:</div><div class="col-sm-8" style="text-align: left;">${cells[1].innerHTML}</div></div><div><div class="col-sm-4" style="text-align: right;">Name:</div><div class="col-sm-8" style="text-align: left;">${cells[2].innerHTML}</div></div><div><div class="col-sm-4" style="text-align: right;">Description:</div><div class="col-sm-8" style="text-align: left; word-break: break-all">${cells[8].innerHTML}</div></div>`
-
+            var text = `<div><div><div class="col-xs-4" style="text-align: left; font-size: 10px">License Plate:</div><div class="col-xs-8" style="text-align: left;">${cells[1].innerHTML}</div></div><div><div class="col-xs-4" style="text-align: left; font-size: 10px">Name:</div><div class="col-xs-8" style="text-align: left;">${cells[2].innerHTML}</div></div><div><div class="col-xs-4" style="text-align: left; font-size: 10px">Description:</div><div class="col-xs-8" style="text-align: left; word-break: break-all;">${cells[8].innerHTML}</div></div></div>`
             janelaPopUp.abre(alertid, 'm red alert', "BLACKLIST", text);
             document.getElementById('red').play();
             alert = true;
             break;
           }
           if (msg.enterlicense == cells[1].innerHTML && cells[6].innerHTML == "Active" && cells[3].innerHTML == "VIP") {
-            var text = `<div><div class="col-sm-4" style="text-align: right;">License Plate:</div><div class="col-sm-8" style="text-align: left;">${cells[1].innerHTML}</div></div><div><div class="col-sm-4" style="text-align: right;">Name:</div><div class="col-sm-8" style="text-align: left;">${cells[2].innerHTML}</div></div><div><div class="col-sm-4" style="text-align: right;">Description:</div><div class="col-sm-8" style="text-align: left; word-break: break-all">${cells[8].innerHTML}</div></div>`
-
+            var text = `<div><div><div class="col-xs-4" style="text-align: left; font-size: 10px">License Plate:</div><div class="col-xs-8" style="text-align: left;">${cells[1].innerHTML}</div></div><div><div class="col-xs-4" style="text-align: left; font-size: 10px">Name:</div><div class="col-xs-8" style="text-align: left;">${cells[2].innerHTML}</div></div><div><div class="col-xs-4" style="text-align: left; font-size: 10px">Description:</div><div class="col-xs-8" style="text-align: left; word-break: break-all;">${cells[8].innerHTML}</div></div></div>`
             janelaPopUp.abre(alertid, 'm orange alert', "VIP", text);
             document.getElementById('yellow').play();
             alert = true;
             break;
           }
           if (msg.enterlicense == cells[1].innerHTML && cells[6].innerHTML == "Active" && cells[3].innerHTML == "Note") {
-            var text = `<div><div class="col-sm-4" style="text-align: right;">License Plate:</div><div class="col-sm-8" style="text-align: left;">${cells[1].innerHTML}</div></div><div><div class="col-sm-4" style="text-align: right;">Name:</div><div class="col-sm-8" style="text-align: left;">${cells[2].innerHTML}</div></div><div><div class="col-sm-4" style="text-align: right;">Description:</div><div class="col-sm-8" style="text-align: left; word-break: break-all">${cells[8].innerHTML}</div></div>`
-
+            var text = `<div><div><div class="col-xs-4" style="text-align: left; font-size: 10px">License Plate:</div><div class="col-xs-8" style="text-align: left;">${cells[1].innerHTML}</div></div><div><div class="col-xs-4" style="text-align: left; font-size: 10px">Name:</div><div class="col-xs-8" style="text-align: left;">${cells[2].innerHTML}</div></div><div><div class="col-xs-4" style="text-align: left; font-size: 10px">Description:</div><div class="col-xs-8" style="text-align: left; word-break: break-all;">${cells[8].innerHTML}</div></div></div>`
             janelaPopUp.abre(alertid, 'm green alert', "NOTE", text);
             document.getElementById('green').play();
             alert = true;
@@ -1776,7 +1888,7 @@
                         <td>
                           <form action="{{url_for('deactivate')}}" method="post">
                             <input type="hidden" id="inciddeact" name="inciddeact" value="${lastincident[0].id}">
-                            <button id="deactivatebutton" type="submit" class="btn button2">Deactivate</button>
+                            <button id="deactivatebutton" type="submit" class="btn button2" onclick="archiveFunction()">Deactivate</button>
                           </form>
                         </td>`;
 
@@ -1865,12 +1977,14 @@
         var id = msg.id;
         var endtime = msg.endtime;
         var status = msg.status;
+        var user = msg.user;
 
         for (var i = 0; i < incidenttbody.rows.length; i++) {
           var cells = incidenttbody.rows[i].cells;
           if (id == cells[0].innerHTML) {
             cells[5].innerHTML = endtime;
             cells[6].innerHTML = status;
+            cells[7].innerHTML = user;
             break
           }
         }
@@ -1936,7 +2050,7 @@
                         <td>
                           <form action="{{url_for('deactivate')}}" method="post">
                             <input type="hidden" id="inciddeact" name="inciddeact" value="${lastincident[0].id}">
-                            <button id="deactivatebutton" type="submit" class="btn button2">Deactivate</button>
+                            <button id="deactivatebutton" type="submit" class="btn button2" onclick="archiveFunction()">Deactivate</button>
                           </form>
                         </td>`;
 
@@ -2095,6 +2209,8 @@
         var myText = $("#myText").val();
         janelaPopUp.abre("asdf", $("#size").val() + " " + $(this).html() + ' ' + $("#mode").val(), $("#title").val(), myText)
       });
+
+
     });
   </script>
 
