@@ -884,6 +884,39 @@
   </div>
 
 
+  <!-- Container (Portfolio Section) -->
+  <div id="userrecord" class="container-fluid bg-grey">
+    <div class="container">
+      <h1>User Record</h1>
+      <div class="search">
+        <input style="float: right;" type="text" id="usersearch" onkeyup="filterUser()" placeholder="Search">
+      </div><br><br>
+      <div class="table-wrapper" style="overflow-x:auto;">
+        <table id="usertable" class="w3-hoverable slideanim">
+          <thead>
+            <tr>
+              <p>
+                <th>#</th>
+                <th>Username</th>
+                <th>Password</th>
+                <th>Name</th>
+                <th>User Type</th>
+                <th>Details </th>
+                <th> </th>
+              </p>
+            </tr>
+          </thead>
+          <tbody id="usertbody">
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="slideanim" style="text-align: center;">
+      <button class="btn button1" style="margin: 30px auto;" data-toggle="modal" data-target="#adduser">Add
+        User</button>
+    </div>
+  </div>
+
   <!-- Add activity form -->
   <div class="modal fade" id="addactivity" role="dialog">
     <div class="modal-dialog">
@@ -1247,6 +1280,139 @@
     <source src="static/yellow.mp3">
   </audio>
 
+<!-- Edit User form -->
+  <div class="modal fade" id="edituser" role="dialog">
+    <div class="modal-dialog">
+
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h2 class="modal-title">Edit User</h2>
+        </div>
+        <form action="{{url_for('edituser')}}" method="post">
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-sm-4 form-group">
+                <label for="usernameedituser">Username:</label>
+              </div>
+              <div class="col-sm-8 form-group">
+                <input type="hidden" id="idedituser" name="idedituser" value="">
+                <input class="form-control" id="usernameedituser" name="usernameedituser" placeholder="Username"
+                  type="text" value="" maxlength="50" required>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-4 form-group">
+                <label for="passwordedituser">Password:</label>
+              </div>
+              <div class="col-sm-8 form-group">
+                <input class="form-control" id="passwordedituser" name="passwordedituser" placeholder="Password"
+                  type="text" value="" maxlength="30" required>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-4 form-group">
+                <label for="nameedituser">Name:</label>
+              </div>
+              <div class="col-sm-4 form-group">
+                <input class="form-control" id="firstnameedituser" name="firstnameedituser" placeholder="User Firstname"
+                  maxlength="50" type="text">
+              </div>
+              <div class="col-sm-4 form-group">
+                <input class="form-control" id="lastnameedituser" name="lastnameedituser" placeholder="User Lastname"
+                  maxlength="50" type="text">
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-4 form-group">
+                <label for="typeedituser">Type:</label>
+              </div>
+              <div class="col-sm-2 form-group">
+                <input type="radio" id="Adminedituser" name="typeedituser" value="Admin" required>
+                <label for="Adminedituser" style="font-size:14px; font-weight: 50;">Admin</label>
+              </div>
+              <div class="col-sm-2 form-group">
+                <input type="radio" id="useredituser" name="typeedituser" value="User">
+                <label for="useredituser" style="font-size:14px; font-weight: 50;">User</label>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <!-- <button type="button" class="btn button2" data-dismiss="modal">Cancel</button> -->
+            <button id="confirmedituser" type="submit" class="btn button1">Confirm</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- add user form -->
+  <div class="modal fade" id="adduser" role="dialog">
+    <div class="modal-dialog">
+
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h2 class="modal-title">Add User</h2>
+        </div>
+        <form action="{{url_for('do_adduser')}}" method="post">
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-sm-4 form-group">
+                <label for="usernameregister">Username:</label>
+              </div>
+              <div class="col-sm-8 form-group">
+                <input class="form-control" id="addusername" name="addusername" placeholder="Username" type="text"
+                  maxlength="50" required>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-4 form-group">
+                <label for="usernameregister">Password:</label>
+              </div>
+              <div class="col-sm-8 form-group">
+                <input class="form-control" id="addpassword" name="addpassword" placeholder="Password" type="text"
+                  maxlength="30" required>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-4 form-group">
+                <label for="nameregister">Name:</label>
+              </div>
+              <div class="col-sm-4 form-group">
+                <input class="form-control" id="addfirstname" name="addfirstname" placeholder="Firstname" maxlength="50"
+                  type="text" required>
+              </div>
+              <div class="col-sm-4 form-group">
+                <input class="form-control" id="addlastname" name="addlastname" placeholder="Lastname" maxlength="50"
+                  type="text" required>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-4 form-group">
+                <label for="addusertype">Type:</label>
+              </div>
+              <div class="col-sm-2 form-group">
+                <input type="radio" id="addtypeadmin" name="addusertype" value="Admin" required>
+                <label for="addtypeadmin" style="font-size:14px; font-weight: 50;">Admin</label>
+              </div>
+              <div class="col-sm-2 form-group">
+                <input type="radio" id="addtypeuser" name="addusertype" value="User">
+                <label for="addtypeadmin" style="font-size:14px; font-weight: 50;">User</label>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <!-- <button type="button" class="btn button2" data-dismiss="modal">Cancel</button> -->
+            <button id="confirmadduser" type="submit" class="btn button1">Confirm</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- Image of location/map -->
   <!-- <img src="/w3images/map.jpg" class="w3-image w3-greyscale-min" style="width:100%"> -->
 
@@ -1441,6 +1607,10 @@
       $("input:radio[name=typeeditinc]").val([value]);
     }
 
+    function checkButtonUser(value) {
+      $("input:radio[name=typeedituser]").val([value]);
+    }
+
     function filterCar(event) {
       var filter = event.target.value.toUpperCase();
       var rows = document.querySelector("#cartable tbody").rows;
@@ -1461,6 +1631,27 @@
     }
 
     document.querySelector('#carsearch').addEventListener('keyup', filterCar, false);
+
+    function filterUser(event) {
+      var filter = event.target.value.toUpperCase();
+      var rows = document.querySelector("#usertable tbody").rows;
+
+      for (var i = 0; i < rows.length; i++) {
+        var firstCol = rows[i].cells[0].textContent.toUpperCase();
+        var secondCol = rows[i].cells[1].textContent.toUpperCase();
+        var thirdCol = rows[i].cells[2].textContent.toUpperCase();
+        var fourthCol = rows[i].cells[3].textContent.toUpperCase();
+        var fifthCol = rows[i].cells[4].textContent.toUpperCase();
+
+        if (firstCol.indexOf(filter) > -1 || secondCol.indexOf(filter) > -1 || thirdCol.indexOf(filter) > -1 || fourthCol.indexOf(filter) > -1 || fifthCol.indexOf(filter) > -1) {
+          rows[i].style.display = "";
+        } else {
+          rows[i].style.display = "none";
+        }
+      }
+    }
+
+    document.querySelector('#usersearch').addEventListener('keyup', filterUser, false);
 
     $(function () {
       $(".addincfromhisbutton").click(function () {
@@ -1594,6 +1785,25 @@
       });
     });
 
+    $(".edituserbutton").click(function () {
+      //get data from table row
+      var id = $(this).parents("tr").find("#iduser").text();
+      var username = $(this).parents("tr").find("#username").text();
+      var password = $(this).parents("tr").find("#userpassword").text();
+      var name = $(this).parents("tr").find("#nameofuser").text();
+      var fname = name.split(" ")[0];
+      var lname = name.split(" ")[1];
+      //assign to value for input box inside modal
+      $("#userideditcar").val(id);
+      $("#usernameedituser").val(username);
+      $("#passwordedituser").val(password);
+      $("#firstnameedituser").val(fname);
+      $("#lastnameedituser").val(lname);
+
+      //open modal
+      $("#edituser").modal();
+    });
+
     var historyArray = JSON.parse({{ historyData | tojson | safe }})
 
     function buildHistoryTable(data) {
@@ -1665,21 +1875,49 @@
         }
         cartbody.insertRow(-1).innerHTML += `<td id="idcar">${data[i].id}</td>
                         <td id="licensecar">${data[i].licenseplate}</td>
-                        <td id="customernamecar">${data[i].firstname}<span> </span>${lastname}</td>
+                        <td id="customernamecar">${data[i].firstname}<span> </span>${data[i].lastname}</td>
                         <td id="phonecar">${data[i].phone}</td>
                         <td id="lastvisitedcar">${data[i].lastvisited}</td>
                         <td><button class="editcarbutton btn button1" data-target="#editcar">Edit</button></td>`;
       }
     }
 
+    var userArray = JSON.parse({{ userData | tojson | safe }})
+
+    function buildUserTable(data) {
+      var usertbody = document.getElementById("usertbody");
+
+      for (var i = 0; i < data.length; i++) {
+        var lastname = data[i].lastname;
+        if (data[i].firstname != "" && data[i].lastname == "None") {
+          lastname = "";
+        }
+        usertbody.insertRow(-1).innerHTML += `<td id="iduser">${data[i].id}</td>
+                        <td id="username">${data[i].username}</td>
+                        <td id="userpassword">${data[i].password}</td>
+                        <td id="nameofuser">${data[i].firstname}<span> </span>${lastname}</td>
+                        <td id="usertype">${data[i].usertype}</td>
+                        <td>
+                          <button class="edituserbutton btn button1" data-toggle="modal" data-target="#edituser" 
+                          onclick="checkButtonUser('${data[i].usertype}')">Edit</button>
+                        </td>
+                        <td>
+                        <form action="{{url_for('deleteuser')}}" method="post">
+                            <input type="hidden" id="useriddelete" name="useriddelete" value="${data[i].id}">
+                            <button id="deletebutton" type="submit" class="btn button2">Delete</button>
+                          </form></td>`;
+      }
+    }
+
     buildHistoryTable(historyArray);
     buildIncidentTable(incidentArray);
     buildCarTable(carArray);
+    buildUserTable(userArray);
     document.addEventListener("DOMContentLoaded", function (event) {
       var enterimage = document.getElementById("entervid");
       var enterlicense = document.getElementById("enterlicense");
       var entertime = document.getElementById("entertime");
-      var exitimage = document.getElementById("exitvid");
+      var exitimage = document.getElementsById("exitvid");
       var exitlicense = document.getElementById("exitlicense");
       var exittime = document.getElementById("exittime");
       var lastenter;
@@ -2068,6 +2306,43 @@
         }  
       });
 
+      socket.on('server2web_edituser', (msg) => {
+        var edituser = JSON.parse(msg.edituser)
+
+        for (var i = 0; i < usertbody.rows.length; i++) {
+          var cells = usertbody.rows[i].cells;
+          // if (edituser[0].username == cells[1].innerHTML){
+          //   break
+          // }
+          if (edituser[0].id == cells[0].innerHTML) {
+            cells[1].innerHTML = edituser[0].username;
+            cells[2].innerHTML = edituser[0].password;
+            cells[3].innerHTML = edituser[0].firstname + " " + lastname;
+            cells[4].innerHTML = edituser[0].usertype;
+          }
+        }
+      });
+
+      socket.on('server2web_adduser', (msg) => {
+        var lastuser = JSON.parse(msg.lastuser);
+        var checkuser = false;
+
+        usertbody.insertRow(-1).innerHTML += `<td id="iduser">${lastuser[0].id}</td>
+                        <td id="username">${lastuser[0].username}</td>
+                        <td id="userpassword">${lastuser[0].password}</td>
+                        <td id="nameofuser">${lastuser[0].firstname}<span> </span>${lastname}</td>
+                        <td id="usertype">${lastuser[0].usertype}</td>
+                        <td>
+                          <button class="edituserbutton btn button1" data-target="#edituser" 
+                          onclick="checkButtonUser('${lastuser[0].usertype}')">Edit</button>
+                        </td>
+                        <td>
+                        <form action="{{url_for('deleteuser')}}" method="post">
+                            <input type="hidden" id="useriddelete" name="useriddelete" value="${lastuser[0].id}">
+                            <button id="deletebutton" type="submit" class="btn button2">Delete</button>
+                          </form></td>`;
+      });
+
       socket.on('server2web_addinc', (msg) => {
         var lastincident = JSON.parse(msg.lastincident);
         var checkcar = false;
@@ -2181,6 +2456,7 @@
           });
         });
       });
+
 
       var janelaPopUp = new Object();
       janelaPopUp.abre = function (id, classes, titulo, corpo, functionCancelar, functionEnviar, textoCancelar, textoEnviar) {
