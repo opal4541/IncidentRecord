@@ -640,12 +640,12 @@ def do_adduser():
     if oldusername:
         error = "The username already exist in the system"
         connection.commit()
-        return render_template('home.html', error=error)
+        return ('', 204)
     else:
         if fname and lname:
             error = "Firstname and Lastname already exist in the system"
             connection.commit()
-            return render_template('home.html', error=error)
+            return ('', 204)
         else:
             error = ""
             cursor.execute('INSERT INTO [User] (UserName, Password, FirstName, LastName, UserType) VALUES(?,?,?,?,?)', (username, password, firstname, lastname, usertype))
@@ -691,12 +691,12 @@ def edituser():
     if oldusername:
         error = "The username already exist in the system"
         connection.commit()
-        return render_template('home.html', error=error)
+        return ('', 204)
     else:
         if oldfname and oldlname:
             error = "Firstname and Lastname already exist in the system"
             connection.commit()
-            return render_template('home.html', error=error)
+            return ('', 204)
         else:
             error = ""
             cursor.execute('UPDATE [User] SET UserName = ?, Password = ?, FirstName = ?, LastName = ?, UserType = ?) WHERE UserID = ?', (username, password, fname, lname, usertype, userid))
