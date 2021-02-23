@@ -1464,6 +1464,12 @@
               cells[10].innerHTML = msg.phone;
             }
           }
+          for (var i = 0; i < historytbody.rows.length; i++) {
+            var cells = historytbody.rows[i].cells;
+            if (oldlicense == cells[1].innerHTML) {
+              cells[1].innerHTML = msg.license;
+            }
+          }
         }
       });
 

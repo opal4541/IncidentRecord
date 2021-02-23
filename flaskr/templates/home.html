@@ -1934,6 +1934,16 @@
             break
           }
         }
+
+        for (var i = 0; i < historytbody.rows.length; i++) {
+          var cells = historytbody.rows[i].cells;
+          if (lastincident[0].licenseplate == cells[1].innerHTML) {
+            cells[5].innerHTML = lastincident[0].firstname;
+            cells[6].innerHTML = lastname;
+            cells[7].innerHTML = lastincident[0].phone;
+          }
+        }
+
         $(function () {
           $(".editincidentbutton").click(function () {
             //get data from table row
@@ -2046,7 +2056,16 @@
               cells[10].innerHTML = msg.phone;
             }
           }
-        }
+          for (var i = 0; i < historytbody.rows.length; i++) {
+            var cells = historytbody.rows[i].cells;
+            if (oldlicense == cells[1].innerHTML) {
+              cells[1].innerHTML = msg.license;
+              cells[5].innerHTML = msg.firstname;
+              cells[6].innerHTML = lastname;
+              cells[7].innerHTML = msg.phone;
+            }
+          }
+        }  
       });
 
       socket.on('server2web_addinc', (msg) => {
