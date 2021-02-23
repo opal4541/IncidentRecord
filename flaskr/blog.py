@@ -190,6 +190,7 @@ def carTable():
 
     return json.dumps(car_list)
 
+
 @app.route('/usertable')
 def userTable():
     userData = cursor.execute('SELECT UserID, UserName, Password, FirstName, LastName, UserType From [User] Order By UserID')
@@ -210,6 +211,7 @@ def userTable():
         user_list.append(user_dict)
 
     return json.dumps(user_list)
+
 
 @app.route('/')
 def home():
@@ -630,32 +632,15 @@ def do_adduser():
     lastname = request.form['addlastname']
     usertype = request.form['addusertype']
     
-    oldusername = cursor.execute('SELECT UserName From [User] WHERE UserName = ?', (username))
-    oldusername = cursor.fetchone()
-    fname = cursor.execute('SELECT FirstName From [User] WHERE FirstName = ?', (firstname))
-    fname = cursor.fetchone()
-    lname = cursor.execute('SELECT LastName From [User] WHERE LastName = ?', (lastname))
-    lname = cursor.fetchone()
-
-    if oldusername:
-        error = "The username already exist in the system"
-        connection.commit()
-        return ('', 204)
-    else:
-        if fname and lname:
-            error = "Firstname and Lastname already exist in the system"
-            connection.commit()
-            return ('', 204)
-        else:
-            error = ""
-            cursor.execute('INSERT INTO [User] (UserName, Password, FirstName, LastName, UserType) VALUES(?,?,?,?,?)', (username, password, firstname, lastname, usertype))
-            connection.commit()
+    cursor.execute('INSERT INTO [User](UserName, Password, FirstName, LastName, UserType) VALUES(?,?,?,?,?)', (username, password, firstname, lastname, usertype))
+    connection.commit()
 
     user = cursor.execute(
-        'SELECT TOP 1 UserID, UserName, Password, FirstName, LastName, UserType from [User] WHERE UserName = ? ORDER BY UserID DESC', username
+        'SELECT TOP 1 UserID, UserName, Password, FirstName, LastName, UserType FROM [User] WHERE UserName = ? ORDER BY UserID DESC', username
     )
     user = cursor.fetchone()
     connection.commit()
+    
     user_list = []
     user_dict = {
         'id': user[0],

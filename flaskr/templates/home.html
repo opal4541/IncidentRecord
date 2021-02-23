@@ -739,6 +739,7 @@
           <li><a href="#historyrecord">HISTORY</a></li>
           <li><a href="#incidentrecord">INCIDENT</a></li>
           <li><a href="#carrecord">CAR</a></li>
+          <li><a href="#userrecord">USER</a></li>
           <li><a href="{{ url_for('logout') }}">LOGOUT</a></li>
         </ul>
       </div>
@@ -912,7 +913,8 @@
       </div>
     </div>
     <div class="slideanim" style="text-align: center;">
-      <button class="btn button1" style="margin: 30px auto;" data-toggle="modal" data-target="#adduser">Add
+      <button id="adduserbutton" class="btn button1" style="margin: 30px auto;"
+        data-target="#adduser">Add
         User</button>
     </div>
   </div>
@@ -1280,7 +1282,7 @@
     <source src="static/yellow.mp3">
   </audio>
 
-<!-- Edit User form -->
+  <!-- Edit User form -->
   <div class="modal fade" id="edituser" role="dialog">
     <div class="modal-dialog">
 
@@ -1357,59 +1359,61 @@
           <button type="button" class="close" data-dismiss="modal">&times;</button>
           <h2 class="modal-title">Add User</h2>
         </div>
-        <form action="{{url_for('do_adduser')}}" method="post">
-          <div class="modal-body">
-            <div class="row">
-              <div class="col-sm-4 form-group">
-                <label for="usernameregister">Username:</label>
-              </div>
-              <div class="col-sm-8 form-group">
-                <input class="form-control" id="addusername" name="addusername" placeholder="Username" type="text"
-                  maxlength="50" required>
-              </div>
+        <form name="adduserform" action="{{url_for('do_adduser')}}" method="post"
+          onsubmit="return validateadduserForm()"">
+          <div class=" modal-body">
+          <div class="row">
+            <div class="col-sm-4 form-group">
+              <label for="usernameregister">Username:</label>
             </div>
-            <div class="row">
-              <div class="col-sm-4 form-group">
-                <label for="usernameregister">Password:</label>
-              </div>
-              <div class="col-sm-8 form-group">
-                <input class="form-control" id="addpassword" name="addpassword" placeholder="Password" type="text"
-                  maxlength="30" required>
-              </div>
-            </div>
-            <div class="row">
-              <div class="col-sm-4 form-group">
-                <label for="nameregister">Name:</label>
-              </div>
-              <div class="col-sm-4 form-group">
-                <input class="form-control" id="addfirstname" name="addfirstname" placeholder="Firstname" maxlength="50"
-                  type="text" required>
-              </div>
-              <div class="col-sm-4 form-group">
-                <input class="form-control" id="addlastname" name="addlastname" placeholder="Lastname" maxlength="50"
-                  type="text" required>
-              </div>
-            </div>
-            <div class="row">
-              <div class="col-sm-4 form-group">
-                <label for="addusertype">Type:</label>
-              </div>
-              <div class="col-sm-2 form-group">
-                <input type="radio" id="addtypeadmin" name="addusertype" value="Admin" required>
-                <label for="addtypeadmin" style="font-size:14px; font-weight: 50;">Admin</label>
-              </div>
-              <div class="col-sm-2 form-group">
-                <input type="radio" id="addtypeuser" name="addusertype" value="User">
-                <label for="addtypeadmin" style="font-size:14px; font-weight: 50;">User</label>
-              </div>
+            <div class="col-sm-8 form-group">
+              <input class="form-control" id="addusername" name="addusername" placeholder="Username" type="text"
+                maxlength="50" required>
+              <p id="alertadduser" style="display:none; color: lightcoral; font-size: 10px; word-break: break-all;">
+                Existing username</p>
             </div>
           </div>
-          <div class="modal-footer">
-            <!-- <button type="button" class="btn button2" data-dismiss="modal">Cancel</button> -->
-            <button id="confirmadduser" type="submit" class="btn button1">Confirm</button>
+          <div class="row">
+            <div class="col-sm-4 form-group">
+              <label for="usernameregister">Password:</label>
+            </div>
+            <div class="col-sm-8 form-group">
+              <input class="form-control" id="addpassword" name="addpassword" placeholder="Password" type="text"
+                maxlength="30" required>
+            </div>
           </div>
-        </form>
+          <div class="row">
+            <div class="col-sm-4 form-group">
+              <label for="nameregister">Name:</label>
+            </div>
+            <div class="col-sm-4 form-group">
+              <input class="form-control" id="addfirstname" name="addfirstname" placeholder="Firstname" maxlength="50"
+                type="text" required>
+            </div>
+            <div class="col-sm-4 form-group">
+              <input class="form-control" id="addlastname" name="addlastname" placeholder="Lastname" maxlength="50"
+                type="text" required>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-4 form-group">
+              <label for="addusertype">Type:</label>
+            </div>
+            <div class="col-sm-2 form-group">
+              <input type="radio" id="addtypeadmin" name="addusertype" value="Admin" required>
+              <label for="addtypeadmin" style="font-size:14px; font-weight: 50;">Admin</label>
+            </div>
+            <div class="col-sm-2 form-group">
+              <input type="radio" id="addtypeuser" name="addusertype" value="User">
+              <label for="addtypeadmin" style="font-size:14px; font-weight: 50;">User</label>
+            </div>
+          </div>
       </div>
+      <div class="modal-footer">
+        <!-- <button type="button" class="btn button2" data-dismiss="modal">Cancel</button> -->
+        <button id="confirmadduser" type="submit" class="btn button1">Confirm</button>
+      </div>
+      </form>
     </div>
   </div>
 
@@ -1498,6 +1502,34 @@
         $('#editcar').modal('toggle');
         swal("Success", "Edit car information success", "success")
         return true;
+      }
+      return false
+    }
+
+    function validateadduserForm() {
+      var usertbody = document.getElementById("usertbody");
+      var username = document.forms["adduserform"]["addusername"].value;
+      var password = document.forms["adduserform"]["addpassword"].value;
+      var firstname = document.forms["adduserform"]["addfirstname"].value;
+      var lastname = document.forms["adduserform"]["addlastname"].value;
+      var alert = document.getElementById("alertadduser");
+      var found = false;
+      for (var i = 0; i < usertbody.rows.length; i++) {
+        var cells = usertbody.rows[i].cells;
+        if (username == cells[1].innerHTML) {
+          found = true
+        }
+      }
+      if (password != "" && firstname != "" && lastname != "") {
+        if (found == false) {
+          $('#adduser').modal('toggle');
+          swal("Success", "Add user success", "success")
+          alert.style.display = "none";
+          return true;
+        } else {
+          alert.style.display = "block";
+          return false;
+        }
       }
       return false
     }
@@ -1654,6 +1686,33 @@
     document.querySelector('#usersearch').addEventListener('keyup', filterUser, false);
 
     $(function () {
+      $(".addactbutton").click(function () {
+        //get data from table row
+        var id = $(this).parents("tr").find("#idhis").text();
+        var lice = $(this).parents("tr").find("#licensehis").text();
+        var ent = $(this).parents("tr").find("#entimehis").text();
+        var ext = $(this).parents("tr").find("#extimehis").text();
+        var act = $(this).parents("tr").find("#activityhis").text();
+        //assign to value for input box inside modal
+        $("#hisid").val(id);
+        $("#licenseplateaddact").val(lice);
+        $("#entertimeaddact").val(ent);
+        $("#exittimeaddact").val(ext);
+
+        if (act == "None") {
+          $("#activityaddact").val("");
+        } else {
+          $("#activityaddact").val(act);
+        }
+        //open modal
+        $("#addactivity").modal();
+      });
+
+      $("#confirmaddact").click(function () {
+        $('#addactivity').modal('toggle');
+        swal("Success", "Add activity success", "success")
+      });
+
       $(".addincfromhisbutton").click(function () {
         var lice = $(this).parents("tr").find("#licensehis").text();
         var fname = $(this).parents("tr").find("#firstnamehis").text();
@@ -1683,28 +1742,6 @@
         }
 
         $("#addincidentfromhis").modal();
-      });
-
-      $(".addactbutton").click(function () {
-        //get data from table row
-        var id = $(this).parents("tr").find("#idhis").text();
-        var lice = $(this).parents("tr").find("#licensehis").text();
-        var ent = $(this).parents("tr").find("#entimehis").text();
-        var ext = $(this).parents("tr").find("#extimehis").text();
-        var act = $(this).parents("tr").find("#activityhis").text();
-        //assign to value for input box inside modal
-        $("#hisid").val(id);
-        $("#licenseplateaddact").val(lice);
-        $("#entertimeaddact").val(ent);
-        $("#exittimeaddact").val(ext);
-
-        if (act == "None") {
-          $("#activityaddact").val("");
-        } else {
-          $("#activityaddact").val(act);
-        }
-        //open modal
-        $("#addactivity").modal();
       });
 
       $(".editincidentbutton").click(function () {
@@ -1752,7 +1789,6 @@
         $("#addincident").modal();
       });
 
-
       $(".editcarbutton").click(function () {
         //get data from table row
         var id = $(this).parents("tr").find("#idcar").text();
@@ -1779,29 +1815,39 @@
         //open modal
         $("#editcar").modal();
       });
-      $("#confirmaddact").click(function () {
-        $('#addactivity').modal('toggle');
-        swal("Success", "Add activity success", "success")
+
+      $(".edituserbutton").click(function () {
+        //get data from table row
+        var id = $(this).parents("tr").find("#iduser").text();
+        var username = $(this).parents("tr").find("#username").text();
+        var password = $(this).parents("tr").find("#userpassword").text();
+        var name = $(this).parents("tr").find("#nameofuser").text();
+        var fname = name.split(" ")[0];
+        var lname = name.split(" ")[1];
+        //assign to value for input box inside modal
+        $("#userideditcar").val(id);
+        $("#usernameedituser").val(username);
+        $("#passwordedituser").val(password);
+        $("#firstnameedituser").val(fname);
+        $("#lastnameedituser").val(lname);
+
+        //open modal
+        $("#edituser").modal();
       });
-    });
 
-    $(".edituserbutton").click(function () {
-      //get data from table row
-      var id = $(this).parents("tr").find("#iduser").text();
-      var username = $(this).parents("tr").find("#username").text();
-      var password = $(this).parents("tr").find("#userpassword").text();
-      var name = $(this).parents("tr").find("#nameofuser").text();
-      var fname = name.split(" ")[0];
-      var lname = name.split(" ")[1];
-      //assign to value for input box inside modal
-      $("#userideditcar").val(id);
-      $("#usernameedituser").val(username);
-      $("#passwordedituser").val(password);
-      $("#firstnameedituser").val(fname);
-      $("#lastnameedituser").val(lname);
+      $("#adduserbutton").click(function () {
+        var alert = document.getElementById("alertadduser");
+        alert.style.display = "none";
+        $("#addusername").val("");
+        $("#addpassword").val("");
+        $("#addfirstname").val("");
+        $("#addlastname").val("");
 
-      //open modal
-      $("#edituser").modal();
+        document.getElementById("addtypeadmin").checked = false;
+        document.getElementById("addtypeuser").checked = false;
+
+        $("#adduser").modal();
+      });
     });
 
     var historyArray = JSON.parse({{ historyData | tojson | safe }})
@@ -1898,7 +1944,7 @@
                         <td id="nameofuser">${data[i].firstname}<span> </span>${lastname}</td>
                         <td id="usertype">${data[i].usertype}</td>
                         <td>
-                          <button class="edituserbutton btn button1" data-toggle="modal" data-target="#edituser" 
+                          <button class="edituserbutton btn button1" data-target="#edituser" 
                           onclick="checkButtonUser('${data[i].usertype}')">Edit</button>
                         </td>
                         <td>
@@ -1917,7 +1963,7 @@
       var enterimage = document.getElementById("entervid");
       var enterlicense = document.getElementById("enterlicense");
       var entertime = document.getElementById("entertime");
-      var exitimage = document.getElementsById("exitvid");
+      var exitimage = document.getElementById("exitvid");
       var exitlicense = document.getElementById("exitlicense");
       var exittime = document.getElementById("exittime");
       var lastenter;
@@ -2113,6 +2159,7 @@
           }
         }
       });
+
       socket.on('server2web_addact', (msg) => {
         var id = msg.id;
         var activity = msg.activity;
@@ -2212,135 +2259,6 @@
             $("#editincident").modal();
           });
         });
-      });
-
-      socket.on('server2web_editinc', (msg) => {
-        var editedinc = JSON.parse(msg.editedincident)
-        var lastname = editedinc[0].lastname;
-        if (editedinc[0].firstname != "" && editedinc[0].lastname == "None") {
-          lastname = "";
-        }
-
-        for (var i = 0; i < incidenttbody.rows.length; i++) {
-          var cells = incidenttbody.rows[i].cells;
-          if (editedinc[0].id == cells[0].innerHTML) {
-            cells[2].innerHTML = editedinc[0].firstname + " " + lastname;
-            cells[3].innerHTML = editedinc[0].type;
-            cells[7].innerHTML = editedinc[0].userfirstname + " " + editedinc[0].userlastname;
-            cells[8].innerHTML = editedinc[0].description;
-            cells[10].innerHTML = editedinc[0].phone;
-          }
-          if (editedinc[0].licenseplate == cells[1].innerHTML) {
-            cells[2].innerHTML = editedinc[0].firstname + " " + lastname;
-            cells[10].innerHTML = editedinc[0].phone;
-          }
-        }
-
-        for (var i = 0; i < cartbody.rows.length; i++) {
-          var cells = cartbody.rows[i].cells;
-          if (editedinc[0].carid == cells[0].innerHTML) {
-            cells[2].innerHTML = editedinc[0].firstname + " " + lastname;
-            cells[3].innerHTML = editedinc[0].phone;
-            break
-          }
-        }
-      });
-
-      socket.on('server2web_deact', (msg) => {
-        var id = msg.id;
-        var endtime = msg.endtime;
-        var status = msg.status;
-        var user = msg.user;
-
-        for (var i = 0; i < incidenttbody.rows.length; i++) {
-          var cells = incidenttbody.rows[i].cells;
-          if (id == cells[0].innerHTML) {
-            cells[5].innerHTML = endtime;
-            cells[6].innerHTML = status;
-            cells[7].innerHTML = user;
-            break
-          }
-        }
-      });
-
-      socket.on('server2web_editcar', (msg) => {
-        var check = false;
-        var oldlicense = ""
-        var lastname = msg.lastname;
-        if (msg.firstname != "" && msg.lastname == "None") {
-          lastname = "";
-        }
-
-        for (var i = 0; i < cartbody.rows.length; i++) {
-          var cells = cartbody.rows[i].cells;
-          if (msg.id == cells[0].innerHTML) {
-
-            if (cells[1].innerHTML == msg.license && cells[2].innerHTML == msg.firstname + " " + lastname) {
-              check = true;
-            }
-            oldlicense = cells[1].innerHTML;
-            cells[1].innerHTML = msg.license;
-            cells[2].innerHTML = msg.firstname + " " + lastname;
-            cells[3].innerHTML = msg.phone;
-            break
-          }
-        }
-        if (check == false) {
-          for (var i = 0; i < incidenttbody.rows.length; i++) {
-            var cells = incidenttbody.rows[i].cells;
-            if (oldlicense == cells[1].innerHTML) {
-              cells[1].innerHTML = msg.license;
-              cells[2].innerHTML = msg.firstname + " " + lastname;
-              cells[10].innerHTML = msg.phone;
-            }
-          }
-          for (var i = 0; i < historytbody.rows.length; i++) {
-            var cells = historytbody.rows[i].cells;
-            if (oldlicense == cells[1].innerHTML) {
-              cells[1].innerHTML = msg.license;
-              cells[5].innerHTML = msg.firstname;
-              cells[6].innerHTML = lastname;
-              cells[7].innerHTML = msg.phone;
-            }
-          }
-        }  
-      });
-
-      socket.on('server2web_edituser', (msg) => {
-        var edituser = JSON.parse(msg.edituser)
-
-        for (var i = 0; i < usertbody.rows.length; i++) {
-          var cells = usertbody.rows[i].cells;
-          // if (edituser[0].username == cells[1].innerHTML){
-          //   break
-          // }
-          if (edituser[0].id == cells[0].innerHTML) {
-            cells[1].innerHTML = edituser[0].username;
-            cells[2].innerHTML = edituser[0].password;
-            cells[3].innerHTML = edituser[0].firstname + " " + lastname;
-            cells[4].innerHTML = edituser[0].usertype;
-          }
-        }
-      });
-
-      socket.on('server2web_adduser', (msg) => {
-        var lastuser = JSON.parse(msg.lastuser);
-        var checkuser = false;
-
-        usertbody.insertRow(-1).innerHTML += `<td id="iduser">${lastuser[0].id}</td>
-                        <td id="username">${lastuser[0].username}</td>
-                        <td id="userpassword">${lastuser[0].password}</td>
-                        <td id="nameofuser">${lastuser[0].firstname}<span> </span>${lastname}</td>
-                        <td id="usertype">${lastuser[0].usertype}</td>
-                        <td>
-                          <button class="edituserbutton btn button1" data-target="#edituser" 
-                          onclick="checkButtonUser('${lastuser[0].usertype}')">Edit</button>
-                        </td>
-                        <td>
-                        <form action="{{url_for('deleteuser')}}" method="post">
-                            <input type="hidden" id="useriddelete" name="useriddelete" value="${lastuser[0].id}">
-                            <button id="deletebutton" type="submit" class="btn button2">Delete</button>
-                          </form></td>`;
       });
 
       socket.on('server2web_addinc', (msg) => {
@@ -2457,6 +2375,134 @@
         });
       });
 
+      socket.on('server2web_editinc', (msg) => {
+        var editedinc = JSON.parse(msg.editedincident)
+        var lastname = editedinc[0].lastname;
+        if (editedinc[0].firstname != "" && editedinc[0].lastname == "None") {
+          lastname = "";
+        }
+
+        for (var i = 0; i < incidenttbody.rows.length; i++) {
+          var cells = incidenttbody.rows[i].cells;
+          if (editedinc[0].id == cells[0].innerHTML) {
+            cells[2].innerHTML = editedinc[0].firstname + " " + lastname;
+            cells[3].innerHTML = editedinc[0].type;
+            cells[7].innerHTML = editedinc[0].userfirstname + " " + editedinc[0].userlastname;
+            cells[8].innerHTML = editedinc[0].description;
+            cells[10].innerHTML = editedinc[0].phone;
+          }
+          if (editedinc[0].licenseplate == cells[1].innerHTML) {
+            cells[2].innerHTML = editedinc[0].firstname + " " + lastname;
+            cells[10].innerHTML = editedinc[0].phone;
+          }
+        }
+
+        for (var i = 0; i < cartbody.rows.length; i++) {
+          var cells = cartbody.rows[i].cells;
+          if (editedinc[0].carid == cells[0].innerHTML) {
+            cells[2].innerHTML = editedinc[0].firstname + " " + lastname;
+            cells[3].innerHTML = editedinc[0].phone;
+            break
+          }
+        }
+      });
+
+      socket.on('server2web_deact', (msg) => {
+        var id = msg.id;
+        var endtime = msg.endtime;
+        var status = msg.status;
+        var user = msg.user;
+
+        for (var i = 0; i < incidenttbody.rows.length; i++) {
+          var cells = incidenttbody.rows[i].cells;
+          if (id == cells[0].innerHTML) {
+            cells[5].innerHTML = endtime;
+            cells[6].innerHTML = status;
+            cells[7].innerHTML = user;
+            break
+          }
+        }
+      });
+
+      socket.on('server2web_editcar', (msg) => {
+        var check = false;
+        var oldlicense = ""
+        var lastname = msg.lastname;
+        if (msg.firstname != "" && msg.lastname == "None") {
+          lastname = "";
+        }
+
+        for (var i = 0; i < cartbody.rows.length; i++) {
+          var cells = cartbody.rows[i].cells;
+          if (msg.id == cells[0].innerHTML) {
+
+            if (cells[1].innerHTML == msg.license && cells[2].innerHTML == msg.firstname + " " + lastname) {
+              check = true;
+            }
+            oldlicense = cells[1].innerHTML;
+            cells[1].innerHTML = msg.license;
+            cells[2].innerHTML = msg.firstname + " " + lastname;
+            cells[3].innerHTML = msg.phone;
+            break
+          }
+        }
+        if (check == false) {
+          for (var i = 0; i < incidenttbody.rows.length; i++) {
+            var cells = incidenttbody.rows[i].cells;
+            if (oldlicense == cells[1].innerHTML) {
+              cells[1].innerHTML = msg.license;
+              cells[2].innerHTML = msg.firstname + " " + lastname;
+              cells[10].innerHTML = msg.phone;
+            }
+          }
+          for (var i = 0; i < historytbody.rows.length; i++) {
+            var cells = historytbody.rows[i].cells;
+            if (oldlicense == cells[1].innerHTML) {
+              cells[1].innerHTML = msg.license;
+              cells[5].innerHTML = msg.firstname;
+              cells[6].innerHTML = lastname;
+              cells[7].innerHTML = msg.phone;
+            }
+          }
+        }
+      });
+
+      socket.on('server2web_edituser', (msg) => {
+        var edituser = JSON.parse(msg.edituser)
+
+        for (var i = 0; i < usertbody.rows.length; i++) {
+          var cells = usertbody.rows[i].cells;
+          // if (edituser[0].username == cells[1].innerHTML){
+          //   break
+          // }
+          if (edituser[0].id == cells[0].innerHTML) {
+            cells[1].innerHTML = edituser[0].username;
+            cells[2].innerHTML = edituser[0].password;
+            cells[3].innerHTML = edituser[0].firstname + " " + lastname;
+            cells[4].innerHTML = edituser[0].usertype;
+          }
+        }
+      });
+
+      socket.on('server2web_adduser', (msg) => {
+        var lastuser = JSON.parse(msg.lastuser);
+
+        console.log(lastuser)
+        usertbody.insertRow(-1).innerHTML += `<td id="iduser">${lastuser[0].id}</td>
+                        <td id="username">${lastuser[0].username}</td>
+                        <td id="userpassword">${lastuser[0].password}</td>
+                        <td id="nameofuser">${lastuser[0].firstname}<span> </span>${lastuser[0].lastname}</td>
+                        <td id="usertype">${lastuser[0].usertype}</td>
+                        <td>
+                          <button class="edituserbutton btn button1" data-target="#edituser" 
+                          onclick="checkButtonUser('${lastuser[0].usertype}')">Edit</button>
+                        </td>
+                        <td>
+                        <form action="{{url_for('deleteuser')}}" method="post">
+                            <input type="hidden" id="useriddelete" name="useriddelete" value="${lastuser[0].id}">
+                            <button id="deletebutton" type="submit" class="btn button2">Delete</button>
+                          </form></td>`;
+      });
 
       var janelaPopUp = new Object();
       janelaPopUp.abre = function (id, classes, titulo, corpo, functionCancelar, functionEnviar, textoCancelar, textoEnviar) {
