@@ -193,7 +193,9 @@ def carTable():
 
 @app.route('/usertable')
 def userTable():
-    userData = cursor.execute('SELECT UserID, UserName, Password, FirstName, LastName, UserType From [User] Order By UserID')
+    userData = cursor.execute(
+        'SELECT UserID, UserName, Password, FirstName, LastName, UserType, Status From [User] Order By UserID'
+    )
     userData = cursor.fetchall()
 
     user_list = []
@@ -206,7 +208,8 @@ def userTable():
             'password': str(user[2]),
             'firstname': str(user[3]),
             'lastname': str(user[4]),
-            'usertype': str(user[5])
+            'usertype': str(user[5]),
+            'status': str(user[6])
         }
         user_list.append(user_dict)
 
@@ -263,6 +266,11 @@ def do_login():
         'SELECT * FROM [User] WHERE userName = ? AND password = ?',
         (username, password))
     account = cursor.fetchone()
+
+    if account and account[6] != 'Active':
+        error = "This user is inactive"
+        return render_template('login.html', error=error)
+
     if account:
         session['loggedin'] = True
         session['firstname'] = account[3]
@@ -624,23 +632,27 @@ def editCar():
 
     return ('', 204)
 
-@app.route('/adduser', methods = ['POST'])
+
+@app.route('/adduser', methods=['POST'])
 def do_adduser():
     username = request.form['addusername']
     password = request.form['addpassword']
     firstname = request.form['addfirstname']
     lastname = request.form['addlastname']
     usertype = request.form['addusertype']
-    
-    cursor.execute('INSERT INTO [User](UserName, Password, FirstName, LastName, UserType) VALUES(?,?,?,?,?)', (username, password, firstname, lastname, usertype))
+    status = request.form['addstatus']
+
+    cursor.execute(
+        'INSERT INTO [User](UserName, Password, FirstName, LastName, UserType, Status) VALUES(?,?,?,?,?,?)',
+        (username, password, firstname, lastname, usertype, status))
     connection.commit()
 
     user = cursor.execute(
-        'SELECT TOP 1 UserID, UserName, Password, FirstName, LastName, UserType FROM [User] WHERE UserName = ? ORDER BY UserID DESC', username
-    )
+        'SELECT TOP 1 UserID, UserName, Password, FirstName, LastName, UserType, Status FROM [User] WHERE UserName = ? ORDER BY UserID DESC',
+        username)
     user = cursor.fetchone()
     connection.commit()
-    
+
     user_list = []
     user_dict = {
         'id': user[0],
@@ -648,14 +660,16 @@ def do_adduser():
         'password': str(user[2]),
         'firstname': str(user[3]),
         'lastname': str(user[4]),
-        'usertype' : str(user[5])
+        'usertype': str(user[5]),
+        'status': str(user[6])
     }
     user_list.append(user_dict)
     user_json = json.dumps(user_list)
 
     socketio.emit('server2web_adduser', {'lastuser': user_json},
-                namespace='/web')
+                  namespace='/web')
     return ('', 204)
+
 
 @app.route('/edituser', methods=['POST'])
 def edituser():
@@ -665,30 +679,16 @@ def edituser():
     fname = request.form['firstnameedituser']
     lname = request.form['lastnameedituser']
     usertype = request.form['typeedituser']
+    status = request.form['statusedituser']
 
-    oldusername = cursor.execute('SELECT UserName From [User] WHERE UserName = ?', (username))
-    oldusername = cursor.fetchone()
-    oldfname = cursor.execute('SELECT FirstName From [User] WHERE FirstName = ?', (fname))
-    oldfname = cursor.fetchone()
-    oldlname = cursor.execute('SELECT LastName From [User] WHERE LastName = ?', (lname))
-    oldlname = cursor.fetchone()
+    error = ""
+    cursor.execute(
+        'UPDATE [User] SET UserName = ?, Password = ?, FirstName = ?, LastName = ?, UserType = ?, Status = ? WHERE UserID = ?',
+        (username, password, fname, lname, usertype, status, userid))
+    connection.commit()
 
-    if oldusername:
-        error = "The username already exist in the system"
-        connection.commit()
-        return ('', 204)
-    else:
-        if oldfname and oldlname:
-            error = "Firstname and Lastname already exist in the system"
-            connection.commit()
-            return ('', 204)
-        else:
-            error = ""
-            cursor.execute('UPDATE [User] SET UserName = ?, Password = ?, FirstName = ?, LastName = ?, UserType = ?) WHERE UserID = ?', (username, password, fname, lname, usertype, userid))
-            connection.commit()
-    
     edituser = cursor.execute(
-        'SELECT UserID, UserName, Password, FirstName, LastName, UserType WHERE UserID = ?',
+        'SELECT UserID, UserName, Password, FirstName, LastName, UserType, Status FROM [User] WHERE UserID = ?',
         userid)
     edituser = cursor.fetchone()
 
@@ -699,25 +699,18 @@ def edituser():
         'password': str(edituser[2]),
         'firstname': str(edituser[3]),
         'lastname': str(edituser[4]),
-        'usertype': str(edituser[5])
+        'usertype': str(edituser[5]),
+        'status': str(edituser[6])
     }
 
     edituser_list.append(edituser_dict)
     edituser_json = json.dumps(edituser_list)
 
-    socketio.emit('server2web_edituser',
-                  {'edituser': edituser_json},
+    socketio.emit('server2web_edituser', {'edituser': edituser_json},
                   namespace='/web')
 
     return ('', 204)
 
-@app.route('/deleteuser', methods=['POST'])
-def deleteuser():
-    userid = request.form['useriddelete']
-    cursor.execute("DELETE From [User] WHERE UserID = ?", (userid))
-    connection.commit()
-
-    return redirect(url_for('home'))
 
 if __name__ == '__main__':
     socketio.run(app=app, host='127.0.0.1', port=5000)
