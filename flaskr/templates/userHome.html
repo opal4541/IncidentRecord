@@ -213,7 +213,10 @@
       }
     }
 
-    @media screen and (max-width: 768px) {
+    @media screen and (max-width: 1024px) {
+      .container {
+        width: 100%;
+      }
       .col-sm-4 {
         text-align: center;
         margin: 25px 0;
@@ -1047,7 +1050,8 @@
         var sixthCol = rows[i].cells[5].textContent.toUpperCase();
         var seventhCol = rows[i].cells[6].textContent.toUpperCase();
         var eigthCol = rows[i].cells[7].textContent.toUpperCase();
-        if (firstCol.indexOf(filter) > -1 || secondCol.indexOf(filter) > -1 || thirdCol.indexOf(filter) > -1 || fourthCol.indexOf(filter) > -1 || fifthCol.indexOf(filter) > -1 || sixthCol.indexOf(filter) > -1 || seventhCol.indexOf(filter) > -1 || eigthCol.indexOf(filter) > -1) {
+        var ninthCol = rows[i].cells[8].textContent.toUpperCase();
+        if (firstCol.indexOf(filter) > -1 || secondCol.indexOf(filter) > -1 || thirdCol.indexOf(filter) > -1 || fourthCol.indexOf(filter) > -1 || fifthCol.indexOf(filter) > -1 || sixthCol.indexOf(filter) > -1 || seventhCol.indexOf(filter) > -1 || eigthCol.indexOf(filter) > -1 || ninthCol.indexOf(filter) > -1) {
           rows[i].style.display = "";
         } else {
           rows[i].style.display = "none";

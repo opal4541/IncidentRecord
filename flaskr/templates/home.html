@@ -216,9 +216,28 @@
       }
     }
 
-    @media screen and (max-width: 768px) {
+    @media screen and (max-width: 1024px) {
+      .navbar {
+        letter-spacing: 2px;
+      }
+
+      .container {
+        width: 100%;
+      }
+
+      .col-sm-2 {
+        margin: 25px 0;
+      }
+
       .col-sm-4 {
-        text-align: center;
+        margin: 25px 0;
+      }
+
+      .col-sm-8 {
+        margin: 25px 0;
+      }
+
+      .col-sm-12 {
         margin: 25px 0;
       }
 
@@ -1282,7 +1301,8 @@
           <button type="button" class="close" data-dismiss="modal">&times;</button>
           <h2 class="modal-title">Edit User</h2>
         </div>
-        <form name="edituserform" action="{{url_for('edituser')}}" method="post" onsubmit="return validateedituserForm()">
+        <form name="edituserform" action="{{url_for('edituser')}}" method="post"
+          onsubmit="return validateedituserForm()">
           <div class="modal-body">
             <div class="row">
               <div class="col-sm-4 form-group">
@@ -1671,7 +1691,8 @@
         var sixthCol = rows[i].cells[5].textContent.toUpperCase();
         var seventhCol = rows[i].cells[6].textContent.toUpperCase();
         var eigthCol = rows[i].cells[7].textContent.toUpperCase();
-        if (firstCol.indexOf(filter) > -1 || secondCol.indexOf(filter) > -1 || thirdCol.indexOf(filter) > -1 || fourthCol.indexOf(filter) > -1 || fifthCol.indexOf(filter) > -1 || sixthCol.indexOf(filter) > -1 || seventhCol.indexOf(filter) > -1 || eigthCol.indexOf(filter) > -1) {
+        var ninthCol = rows[i].cells[8].textContent.toUpperCase();
+        if (firstCol.indexOf(filter) > -1 || secondCol.indexOf(filter) > -1 || thirdCol.indexOf(filter) > -1 || fourthCol.indexOf(filter) > -1 || fifthCol.indexOf(filter) > -1 || sixthCol.indexOf(filter) > -1 || seventhCol.indexOf(filter) > -1 || eigthCol.indexOf(filter) > -1 || ninthCol.indexOf(filter) > -1) {
           rows[i].style.display = "";
         } else {
           rows[i].style.display = "none";
@@ -1712,8 +1733,9 @@
         var thirdCol = rows[i].cells[2].textContent.toUpperCase();
         var fourthCol = rows[i].cells[3].textContent.toUpperCase();
         var fifthCol = rows[i].cells[4].textContent.toUpperCase();
+        var sixthCol = rows[i].cell[5].textContent.toUpperCase();
 
-        if (firstCol.indexOf(filter) > -1 || secondCol.indexOf(filter) > -1 || thirdCol.indexOf(filter) > -1 || fourthCol.indexOf(filter) > -1 || fifthCol.indexOf(filter) > -1) {
+        if (firstCol.indexOf(filter) > -1 || secondCol.indexOf(filter) > -1 || thirdCol.indexOf(filter) > -1 || fourthCol.indexOf(filter) > -1 || fifthCol.indexOf(filter) > -1 || sixthCol.indexOf(filter) > -1) {
           rows[i].style.display = "";
         } else {
           rows[i].style.display = "none";
@@ -2513,7 +2535,7 @@
 
         for (var i = 0; i < usertbody.rows.length; i++) {
           var cells = usertbody.rows[i].cells;
-          
+
           if (edituser[0].id == cells[0].innerHTML) {
             cells[1].innerHTML = edituser[0].username;
             cells[2].innerHTML = edituser[0].password;
