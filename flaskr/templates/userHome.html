@@ -1071,8 +1071,8 @@
         var thirdCol = rows[i].cells[2].textContent.toUpperCase();
         var fourthCol = rows[i].cells[3].textContent.toUpperCase();
         var fifthCol = rows[i].cells[4].textContent.toUpperCase();
-        var sixthCol = rows[i].cells[5].textContent.toUpperCase();
-        if (firstCol.indexOf(filter) > -1 || secondCol.indexOf(filter) > -1 || thirdCol.indexOf(filter) > -1 || fourthCol.indexOf(filter) > -1 || fifthCol.indexOf(filter) > -1 || sixthCol.indexOf(filter) > -1) {
+
+        if (firstCol.indexOf(filter) > -1 || secondCol.indexOf(filter) > -1 || thirdCol.indexOf(filter) > -1 || fourthCol.indexOf(filter) > -1 || fifthCol.indexOf(filter) > -1) {
           rows[i].style.display = "";
         } else {
           rows[i].style.display = "none";

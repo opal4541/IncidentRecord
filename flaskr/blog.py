@@ -2,6 +2,7 @@ from flask import Flask, render_template, redirect, url_for, request, session, j
 import pyodbc
 import datetime
 from flask_socketio import SocketIO
+from flask_cors import CORS, cross_origin
 
 connection = pyodbc.connect('Driver={SQL Server};'
                             'Server=.;'
@@ -11,7 +12,8 @@ cursor = connection.cursor()
 
 app = Flask(__name__, static_folder='static')
 app.secret_key = '123456789'
-socketio = SocketIO(app)
+CORS(app)
+socketio = SocketIO(app, cors_allowed_origins="*")
 enImage = ''
 enLicense = ''
 enTime = ''
@@ -19,6 +21,11 @@ exImage = ''
 exLicense = ''
 exTime = ''
 
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS')
+    return response
 
 @socketio.on('connect', namespace='/web')
 def connect_web():
@@ -713,4 +720,4 @@ def edituser():
 
 
 if __name__ == '__main__':
-    socketio.run(app=app, host='127.0.0.1', port=5000)
+    socketio.run(app=app, host='localhost', port=5000)
