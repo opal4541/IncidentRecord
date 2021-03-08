@@ -113,9 +113,9 @@ def main(video, server_addr):
 
     while True:
         r, img = stream.read()
-        ratio = img.shape[0] / 600.0
+        ratio = img.shape[0] / 500.0
         orig = img.copy()
-        img = imutils.resize(img, height=600)
+        img = imutils.resize(img, height=500)
 
         gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
         blur = cv2.GaussianBlur(gray, (5, 5), 0)
@@ -219,4 +219,4 @@ def addEnterHistory(licensePlate, time):
 
 
 if __name__ == "__main__":
-    main('sidevid.mp4', '127.0.0.1')
+    main('rtsp://admin:op6010017@192.168.1.39:10554/tcp/av0_0', '127.0.0.1')
