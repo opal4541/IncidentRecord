@@ -139,7 +139,7 @@ def hisTable():
 @app.route('/inctable')
 def incTable():
     incidentData = cursor.execute(
-        'SELECT I.IncidentID, C.LicensePlate, CUS.FirstName, CUS.LastName, I.Type, I.StartTimestamp, I.EndTimestamp, I.Status, U.FirstName, U.LastName, I.Description, CUS.Phone, C.CarID FROM Incident I JOIN Car C ON I.CarID = C.CarID JOIN Customer CUS ON C.CarID = CUS.CarID JOIN [User] U ON U.UserID = I.UserID'
+        'SELECT I.IncidentID, C.LicensePlate, CUS.FirstName, CUS.LastName, I.Type, I.StartTimestamp, I.EndTimestamp, I.Status, U.FirstName, U.LastName, I.Description, CUS.Phone, C.CarID FROM Incident I JOIN Car C ON I.CarID = C.CarID JOIN Customer CUS ON C.CarID = CUS.CarID JOIN [User] U ON U.UserID = I.UserID ORDER BY I.IncidentID ASC'
     )
     incidentData = cursor.fetchall()
 
@@ -170,7 +170,7 @@ def incTable():
 @app.route('/cartable')
 def carTable():
     carData = cursor.execute(
-        'SELECT C.CarID, C.LicensePlate, CUS.FirstName, CUS.LastName, CUS.Phone, MAX(H.EnterTimestamp) FROM History H RIGHT JOIN Car C ON H.CarID = C.CarID JOIN Customer CUS ON C.CarID = CUS.CarID  GROUP BY C.LicensePlate, C.CarID, CUS.CarID, CUS.FirstName, CUS.LastName, CUS.Phone ORDER BY C.CarID'
+        'SELECT C.CarID, C.LicensePlate, CUS.FirstName, CUS.LastName, CUS.Phone, MAX(H.EnterTimestamp) FROM History H RIGHT JOIN Car C ON H.CarID = C.CarID JOIN Customer CUS ON C.CarID = CUS.CarID  GROUP BY C.LicensePlate, C.CarID, CUS.CarID, CUS.FirstName, CUS.LastName, CUS.Phone ORDER BY C.CarID ASC'
     )
     carData = cursor.fetchall()
 
@@ -194,7 +194,7 @@ def carTable():
 @app.route('/usertable')
 def userTable():
     userData = cursor.execute(
-        'SELECT UserID, UserName, Password, FirstName, LastName, UserType, Status From [User] Order By UserID'
+        'SELECT UserID, UserName, Password, FirstName, LastName, UserType, Status From [User] Order By UserID ASC'
     )
     userData = cursor.fetchall()
 

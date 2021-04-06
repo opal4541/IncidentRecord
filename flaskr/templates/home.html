@@ -985,7 +985,7 @@
   </div>
 
   <!-- Add Incident from history form -->
-  <div class="modal fade" id="addincidentfromhis" role="dialog">
+  <div class="modal fade" id="addincidentfromhis" role="dialog" style="padding-top: 5%">
     <div class="modal-dialog">
 
       <!-- Modal content-->
@@ -1071,7 +1071,7 @@
 
 
   <!-- Add Incident form -->
-  <div class="modal fade" id="addincident" role="dialog">
+  <div class="modal fade" id="addincident" role="dialog" style="padding-top: 5%">
     <div class="modal-dialog">
 
       <!-- Modal content-->
@@ -1155,7 +1155,7 @@
 
 
   <!-- Edit Incident form -->
-  <div class="modal fade" id="editincident" data-target="" role="dialog">
+  <div class="modal fade" id="editincident" data-target="" role="dialog" style="padding-top: 5%">
     <div class="modal-dialog">
 
       <!-- Modal content-->
@@ -2039,7 +2039,7 @@
       var alert = false;
       var alertid = 0
 
-      var socket = io.connect('http://127.0.0.1:5000/web', {
+      var socket = io.connect('http://00dde9f16887.ngrok.io/web', {
         reconnection: false
       });
 
@@ -2301,6 +2301,7 @@
             var name = $(this).parents("tr").find("#customernameinc").text();
             var fname = name.split(" ")[0];
             var lname = name.split(" ")[1];
+            var type = $(this).parents("tr").find("#typeinc").text();
             var desc = $(this).parents("tr").find("#descriptioninc").text();
             var phone = $(this).parents("tr").find("#phoneinc").text();
             //assign to value for input box inside modal
@@ -2308,6 +2309,7 @@
             $("#licenseplateeditinc").val(lice);
             $("#cusfirstnameeditinc").val(fname);
             $("#descriptioneditinc").val(desc);
+            $("input:radio[name=typeeditinc]").val([type]);
 
             if (lname == "None") {
               $("#cuslastnameeditinc").val("");

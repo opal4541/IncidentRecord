@@ -113,9 +113,9 @@ def main(video, server_addr):
 
     while True:
         r, img = stream.read()
-        ratio = img.shape[0] / 600.0
+        ratio = img.shape[0] / 500.0
         orig = img.copy()
-        img = imutils.resize(img, height=600)
+        img = imutils.resize(img, height=500)
 
         gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
         blur = cv2.GaussianBlur(gray, (5, 5), 0)
@@ -150,7 +150,7 @@ def main(video, server_addr):
                 res = res.translate({
                     ord(i): None
                     for i in
-                    '|-=+[]\n(*)%|"{<>}/?!.«,;: “๐abcdefghijklmnopqrstuvwxyz/ุ๑๒๓๔ู฿๕๖๗๘๙"ๆ้ไำะัโเ๊ีาิแ์ื'
+                    '|-=+[]\n(*)%|"{<>}/?!.«,;: “๐abcdefghijklmnopqrstuvwxyz/ุ๑๒๓๔ู฿๕๖๗๘๙"ๆ้ไำะัโเ๊ีาิแ์ื็'
                 })
                 if len(res) in range(4, 8):
                     digitsocr.append(res)
@@ -196,4 +196,4 @@ def addExitHistory(licensePlate, time):
 
 
 if __name__ == "__main__":
-    main('sidevid.mp4', '127.0.0.1')
+    main('testalert1.mp4', '127.0.0.1')

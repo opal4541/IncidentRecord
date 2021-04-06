@@ -150,7 +150,7 @@ def main(video, server_addr):
                 res = res.translate({
                     ord(i): None
                     for i in
-                    '|-=+[]\n(*)%|"{<>}/?!.«,;: “๐abcdefghijklmnopqrstuvwxyz/ุ๑๒๓๔ู฿๕๖๗๘๙"ๆ้ไำะัโเ๊ีาิแ์ื'
+                    '|-=+[]\n(*)%|"{<>}/?!.«,;: “๐abcdefghijklmnopqrstuvwxyz/ุ๑๒๓๔ู฿๕๖๗๘๙"ๆ้ไำะัโเ๊ีาิแ์ื็'
                 })
                 if len(res) in range(4, 8):
                     digitsocr.append(res)
@@ -219,4 +219,5 @@ def addEnterHistory(licensePlate, time):
 
 
 if __name__ == "__main__":
-    main('rtsp://admin:op6010017@192.168.1.39:10554/tcp/av0_0', '127.0.0.1')
+    # main('rtsp://admin:sonofabird@192.168.1.4:10554/tcp/av0_0', '127.0.0.1')
+    main('testalert1.mp4', '127.0.0.1')
